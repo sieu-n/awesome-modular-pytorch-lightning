@@ -1,5 +1,7 @@
 # awesome-modular-pytorch-lightning
-[WIP] awesome-modular-pytorch-lightning, NOTE: The repository is currently under development, and is unstable.
+[WIP] awesome-modular-pytorch-lightning, **WARNING: The repository is currently under development, and is unstable.**
+
+If you are interested in participating, please contact `sieunpark77@gmail.com`!!!
 
 What is `Awesome-Modular-pytorch-Lightning`(AML) for?
 - AML is a repo based on `pytorch-lightning`, which currently supports a number of popular subtasks and training procedures in Computer Vision. I hope people can use use this repo to easily experiment their ideas on the most modern training procudures for a fair comparison.
