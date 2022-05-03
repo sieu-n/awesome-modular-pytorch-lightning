@@ -6,5 +6,4 @@ import torch
 import torchvision
 
 
-def torchvision_dataset():
-    
+def torchvision_dataset(name):

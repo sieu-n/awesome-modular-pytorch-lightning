@@ -1,2 +1,6 @@
+# for ML
 torch
+timm
 pytorch-lightning
+
+# utils
