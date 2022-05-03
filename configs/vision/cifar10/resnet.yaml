@@ -1,1 +1,6 @@
-dummy: "hello"
+data: "HI"
+  TYPE: "torchvision"
+  NAME: "CIFAR10"
+  dataset_config: 
+    root: "./cifar10"
+  
