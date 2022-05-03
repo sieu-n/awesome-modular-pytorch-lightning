@@ -1,10 +1,10 @@
-# awesome-modular-pytorch-lightning
+# awesome-modular-pytorch-lightning⚡️
 [WIP] awesome-modular-pytorch-lightning, **WARNING: The repository is currently under development, and is unstable.**
 
 If you are interested in participating, please contact `sieunpark77@gmail.com`!!!
 
-What is `Awesome-Modular-pytorch-Lightning`(AML) for?
-- AML is a repo based on `pytorch-lightning`, which currently supports a number of popular subtasks and training procedures in Computer Vision. I hope people can use use this repo to easily experiment their ideas on the most modern training procudures for a fair comparison.
+What is `Awesome-Modular-pytorch-Lightning⚡️`(AML) for?
+- AML is a repo based on `pytorch-lightning`, which currently supports a number of popular subtasks and training procedures in Computer Vision. I hope people can use this repo to easily experiment their ideas on the most modern training procudures for a fair comparison.
 - While designing this repo, I really wanted to make it convinient so that every component(function and classes) of the repo could easily be copied and used in another repo and run standalone. To achive this, I try to avoid making dependancies on ANY of the code, by avoiding the use interface-classes and subclassing.
 - Please feel free to suggest changes to the design of the repo, as I am not the best coder or researcher you might think of 🙂
 
