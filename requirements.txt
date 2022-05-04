@@ -1,6 +1,7 @@
-# for ML
-torch
-timm
-pytorch-lightning
 
 # utils
+pre-commit
+pytorch-lightning
+timm
+# for ML
+torch

@@ -31,4 +31,9 @@ jobs:
 
           # https://github.com/github/super-linter/blob/main/docs/using-rules-files.md
           LINTER_RULES_PATH: /
-          PYTHON_FLAKE8_CONFIG_FILE: .flake8
+          PYTHON_PYLINT_CONFIG_FILE: linting/.pylintrc
+          PYTHON_FLAKE8_CONFIG_FILE: linting/.flake8
+          PYTHON_ISORT_CONFIG_FILE: linting/.isort.cfg
+          PYTHON_MYPY_CONFIG_FILE: linting/.mypy.ini
+          YAML_CONFIG_FILE: linting/.yaml-lint.yml
+          MARKDOWN_CONFIG_FILE: linting/.markdownlint.yml
