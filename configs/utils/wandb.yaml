@@ -1,0 +1,3 @@
+wandb:
+  project: "CIFAR10"
+  group: "resnet"

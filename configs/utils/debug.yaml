@@ -1,0 +1,2 @@
+# base config for debugging.
+VERBOSE: "DEBUG"  # will print every single detail.

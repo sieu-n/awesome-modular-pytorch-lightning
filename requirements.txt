@@ -1,6 +1,7 @@
 
 # utils
 pre-commit
+PyYAML == 6.0
 pytorch-lightning
 timm
 # for ML

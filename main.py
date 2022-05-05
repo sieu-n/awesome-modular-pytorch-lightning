@@ -1,8 +1,9 @@
 from argparse import ArgumentParser
 
-# custom
-from utils.configs import read_configs
+import pytorch_lightning as pl
 
+from utils.configs import read_configs
+from utils.experiment import setup_env, build_dataset
 
 if __name__ == "__main__":
     # read config yaml paths
@@ -12,24 +13,23 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = read_configs(args.configs)
 
+    setup_env(config)
+
     # load data
-    f_trn_augmentation = # TODO
-    f_val_preprocessing = # TODO
+    datasets = build_dataset()
+    trn_dataset, val_dataset = datasets["trn"], datasets["val"]
 
-    trn_dataset, val_dataset = # TODO
-
-    trn_dataloader = # TODO
-    val_dataloader = # TODO
+    trn_dataloader = 0# TODO
+    val_dataloader = 0# TODO
 
     # callbacks
-    wandb_callback = #TODO
-    checkpoint_callback = #TODO
+    wandb_callback = 0#TODO
+    checkpoint_callback = 0#TODO
     ...
 
     # model
-    model = # TODO(instance of pl.LightningModule)
+    model = 0# TODO(instance of pl.LightningModule)
     trainer = pl.Trainer()
 
 
-    trainer.fit(model, train_dataloader, val_dataloader)
-
+    trainer.fit(model, trn_dataloader, val_dataloader)
