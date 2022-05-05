@@ -1,6 +1,6 @@
 import os
-import datetime
 
+from datetime import datetime
 import json
 
 from data.dataset.utils import torchvision_dataset
@@ -77,5 +77,6 @@ def set_timestamp():
 
 def print_to_end(char="#"):
     rows, columns = os.popen('stty size', 'r').read().split()
+    columns = max(columns, 40)
     spaces = char * (int(columns) // len(char))
     print(spaces)

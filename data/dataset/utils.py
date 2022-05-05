@@ -1,6 +1,6 @@
 import torchvision.datasets as TD
 
-from utils.configs import merge_configs
+from utils.configs import merge_config
 
 
 def torchvision_dataset(name, cfg):
@@ -14,7 +14,7 @@ def torchvision_dataset(name, cfg):
         incoming_cfg = cfg["dataset_subset_cfg"][subset_key]
         if not isinstance(incoming_cfg, dict):
             incoming_cfg = {}
-        subset_cfg = merge_configs(cfg["dataset_base_cfg"], incoming_cfg)
+        subset_cfg = merge_config(cfg["dataset_base_cfg"], incoming_cfg)
         # create dataset.
         datasets[subset_key] = ds_builder(**subset_cfg)
 

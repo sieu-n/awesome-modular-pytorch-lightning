@@ -5,7 +5,7 @@ dataset:
   dataset_base_cfg: 
     root: "./cifar10"
     download: True
-  dataset_subset_config:
+  dataset_subset_cfg:
     trn:
       train: True
     val:

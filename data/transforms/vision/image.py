@@ -1,3 +1,4 @@
+import torch
 import torchvision.transforms.functional as TF
 
 from data.transforms.vision.utils import _BaseTransform
@@ -5,24 +6,40 @@ from data.transforms.vision.utils import _BaseTransform
 
 class Normalize(_BaseTransform):
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
-        """Normalize input image with predefined mean/std."""
-        self.mean = mean
-        self.std = std
+        """
+        Normalize input image with predefined mean/std.
 
-    def image_transform(self, image):
+        Parameters
+        ----------
+        mean: list, len=3
+            mean values of (r, g, b) channels to use for normalizing.
+        std: list, len=3
+            stddev values of (r, g, b) channels to use for normalizing.
+        """
+        self.mean = torch.tensor(mean)
+        self.std = torch.tensor(std)
+
+    def input_transform(self, image):
         return image.sub_(self.mean).div_(self.std)
 
 
-class UnNormalize(object):
+class UnNormalize(_BaseTransform):
     def __init__(self, mean, std):
         """
-        Inverse normalization given mean/std values.
+        Inverse normalization given predefined mean/std values.
         reference: https://discuss.pytorch.org/t/simple-way-to-inverse-transform-normalization/4821/2
-        """
-        self.mean = mean
-        self.std = std
 
-    def __call__(self, tensor):
+        Parameters
+        ----------
+        mean: list, len=3
+            mean values of (r, g, b) channels to use for normalizing.
+        std: list, len=3
+            stddev values of (r, g, b) channels to use for normalizing.
+        """
+        self.mean = torch.tensor(mean)
+        self.std = torch.tensor(std)
+
+    def input_transform(self, tensor):
         """
         Parameters
         ----------
@@ -38,12 +55,12 @@ class UnNormalize(object):
 
 
 class ToTensor(_BaseTransform):
-    def image_transform(self, image):
+    def input_transform(self, image):
         return TF.to_tensor(image)
 
 
 class ToPIL(_BaseTransform):
-    def image_transform(self, image):
+    def input_transform(self, image):
         return TF.to_pil_image(image)
 
 

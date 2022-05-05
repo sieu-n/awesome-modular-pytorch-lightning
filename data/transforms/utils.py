@@ -37,7 +37,8 @@ class ApplyDataTransformations(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        return self.transforms(self.base_dataset[idx])
+        x, y = self.base_dataset[idx]
+        return self.transforms(x, y)
 
 
 class ComposeTransforms:

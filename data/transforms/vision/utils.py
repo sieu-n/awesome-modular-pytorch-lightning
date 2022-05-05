@@ -8,5 +8,5 @@ class TorchTransforms(_BaseTransform):
         self.transform_f = TT.__dict__[NAME](**kwargs)
         print(f"[*] Found name `{NAME} from `torchvision.transforms`.")
 
-    def transform(self, image):
+    def input_transform(self, image):
         return self.transform_f(image)
