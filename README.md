@@ -6,7 +6,7 @@ If you are interested in participating, please contact `sieunpark77@gmail.com`!!
 What is `Awesome-Modular-pytorch-Lightning⚡️`(AML) for?
 - AML is a repo based on `pytorch-lightning`, which currently supports a number of popular subtasks and training procedures in Computer Vision. I hope people can use this repo to easily experiment their ideas on the most modern training procudures for a fair comparison.
 - While designing this repo, I really wanted to make it convinient so that every component(function and classes) of the repo could easily be copied and used in another repo and run standalone. To achive this, I try to avoid making dependancies on ANY of the code, by avoiding the use interface-classes and subclassing.
-- Please feel free to suggest changes to the design of the repo, as I am not the best coder or researcher you might think of 🙂
+- Please feel free to suggest changes to the design of the repo
 
 I felt that the design of `pytorch-lightning` is a very effective method to be less abstract in terms of implementation while being flexible to many deep-learning algorithms. 
 Although popular repos such as `MM{Detection, ...}` or `detectron` already has implementaion of many popular frameworks often implemented by the authors of the paper and other
