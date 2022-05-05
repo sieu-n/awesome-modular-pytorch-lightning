@@ -4,19 +4,10 @@
 If you are interested in participating, please contact `sieunpark77@gmail.com`!!!
 
 What is `Modular-pytorch-Lightning⚡️`(ML) for?
-- AML is a repo based on `pytorch-lightning`, which currently supports a number of popular subtasks and training procedures in Computer Vision. I hope people can use this repo to easily experiment their ideas on the most modern training procudures for a fair comparison.
-- While designing this repo, I really wanted to make it convinient so that every component(function and classes) of the repo could easily be copied and used in another repo and run standalone. To achive this, I try to avoid making dependancies on ANY of the code, by avoiding the use interface-classes and subclassing.
-- Please feel free to suggest changes to the design of the repo
+- AML is based on `pytorch-lightning` and aims at supporting many popular subtasks and training procedures in Computer Vision.
+- One of the designing principles of `modular-pytorch-lightning` is to make it convinient to use every component(function and classes) outside the repo. To achive this, I avoided making any un-essential dependancies on most of the code, by avoiding too much abstraction and subclassing in particular.
 
-I felt that the design of `pytorch-lightning` is a very effective method to be less abstract in terms of implementation while being flexible to many deep-learning algorithms. 
-Although popular repos such as `MM{Detection, ...}` or `detectron` already has implementaion of many popular frameworks often implemented by the authors of the paper and other
-great contributors, some repos are too complicated or abstract to be able to actually look at the implementation of algorithms. 
-
-The motivation of this repo is:
-- Abstract implementations in comprehensive repos ㅁㄴ above might be challenging especially to beginners and learners(like me)
-- Sometimes, you just want to check the implementation detail of the code, but don't want to dig through the entire repository.
-- There is no `MM{Detection, ...}` for `pytorch-lightning`, so why no make one!
-In the other side, many reproductions don't discuss the performance, and there might be bugs or differences in other hyperparameters. Despite limitations in GPU compute, we wanted to be robust in terms of the integrity of implementations.
+I felt that the design of `pytorch-lightning` is very effective in this terms.
 
 This repository is designed to utilize many amazing and robust and open-source projects such as `timm`, `pytorch`, and more. 
 
