@@ -3,8 +3,8 @@
 
 If you are interested in participating, please contact `sieunpark77@gmail.com`!!!
 
-What is `Modular-pytorch-Lightning⚡️`(ML) for?
-- AML is based on `pytorch-lightning` and aims at supporting many popular subtasks and training procedures in Computer Vision.
+What is `Modular-pytorch-Lightning⚡️`(MLight) for?
+- MLight is based on `pytorch-lightning` and aims at supporting many popular subtasks and training procedures in Computer Vision and potentially other fields.
 - One of the designing principles of `modular-pytorch-lightning` is to make it convinient to use every component(function and classes) outside the repo. To achive this, I avoided making any un-essential dependancies on most of the code, by avoiding too much abstraction and subclassing in particular.
 
 I felt that the design of `pytorch-lightning` is very effective in this terms.
