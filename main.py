@@ -13,13 +13,12 @@ if __name__ == "__main__":
     config = read_configs(args.configs)
 
     # load data
-    f_train_augmentation = # TODO
+    f_trn_augmentation = # TODO
     f_val_preprocessing = # TODO
 
-    train_dataset = # TODO
-    val_dataset = # TODO
+    trn_dataset, val_dataset = # TODO
 
-    train_dataloader = # TODO
+    trn_dataloader = # TODO
     val_dataloader = # TODO
 
     # callbacks

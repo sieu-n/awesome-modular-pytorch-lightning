@@ -1,14 +1,14 @@
 import yaml
 
 
-def _read_yaml(yaml_path):
+def read_yaml(yaml_path):
     """Load configs from yaml file and return dictionary. """
     with open(yaml_path, "r") as yamlfile:
         cfg = yaml.load(yamlfile, Loader=yaml.FullLoader)
     return cfg
 
 
-def _merge_config(cfg_base, cfg_from):
+def merge_config(cfg_base, cfg_from):
     """
     Overwrite `cfg_base` with values of `cfg_from`. For example:
     cfg_base = {
@@ -78,6 +78,6 @@ def read_configs(yaml_paths):
     assert len(yaml_paths) > 0
     # override last config.
     for yaml_path in yaml_paths[::-1]:
-        new_config = _read_yaml(yaml_path)
-        config = _merge_config(config, new_config)
+        new_config = read_yaml(yaml_path)
+        config = merge_config(config, new_config)
     return config
