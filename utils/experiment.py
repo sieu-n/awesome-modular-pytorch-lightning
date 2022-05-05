@@ -1,3 +1,8 @@
+import os
+import datetime
+
+import json
+
 from data.dataset.utils import torchvision_dataset
 from data.transforms.utils import (ApplyDataTransformations, ComposeTransforms)
 import data.transforms.vision as DT_V
@@ -44,11 +49,33 @@ def build_dataset(dataset_cfg, transform_cfg):
             transforms[subset] += t
 
     # 3. apply transformations and return datasets that will actually be used.
-    transforms = {subset: ComposeTransforms(transforms[subset])}
+    transforms = {subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()}
     return {subset: ApplyDataTransformations(base_dataset=datasets[subset], transforms=transforms[subset])
             for subset in datasets.keys()}
 
 
 def setup_env(config):
-    verbose = config.get("VERBOSE", default="DEFAULT")
+    verbose = config.get("VERBOSE", "DEFAULT")
     set_verbose(verbose)
+
+    set_timestamp()
+
+    # print final config.
+    print_to_end("=")
+
+    print("modular-PyTorch-lightning")
+    print("[*] Env setup is completed, start_time:", os.environ["CYCLE_NAME"])
+    print("")
+    print("Final config after merging:", json.dumps(config, indent=2, sort_keys=True))
+
+    print_to_end("=")
+
+
+def set_timestamp():
+    os.environ["CYCLE_NAME"] = datetime.now().strftime('%b%d_%H-%M-%S')
+
+
+def print_to_end(char="#"):
+    rows, columns = os.popen('stty size', 'r').read().split()
+    spaces = char * (int(columns) // len(char))
+    print(spaces)

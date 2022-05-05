@@ -74,10 +74,10 @@ def read_configs(yaml_paths):
     dict
         Dictionary contining final configs from multiple `yaml` files.
     """
-    config = {}
+    cfg = {}
     assert len(yaml_paths) > 0
     # override last config.
     for yaml_path in yaml_paths[::-1]:
-        new_config = read_yaml(yaml_path)
-        config = merge_config(config, new_config)
-    return config
+        new_cfg = read_yaml(yaml_path)
+        cfg = merge_config(cfg, new_cfg)
+    return cfg

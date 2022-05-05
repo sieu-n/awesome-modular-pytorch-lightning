@@ -1,0 +1,8 @@
+# base config for training.
+VERBOSE: "DEFAULT"
+
+vis:
+  view_train_augmentation:
+    save_to: "results/training_samples.png"
+    subplot_dim: [5, 5]
+    imsize: 3

@@ -13,6 +13,30 @@ class Normalize(_BaseTransform):
         return image.sub_(self.mean).div_(self.std)
 
 
+class UnNormalize(object):
+    def __init__(self, mean, std):
+        """
+        Inverse normalization given mean/std values.
+        reference: https://discuss.pytorch.org/t/simple-way-to-inverse-transform-normalization/4821/2
+        """
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, tensor):
+        """
+        Parameters
+        ----------
+            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
+        Returns
+        -------
+            Tensor: Normalized image.
+        """
+        for t, m, s in zip(tensor, self.mean, self.std):
+            t.mul_(s).add_(m)
+            # The normalize code -> t.sub_(m).div_(s)
+        return tensor
+
+
 class ToTensor(_BaseTransform):
     def image_transform(self, image):
         return TF.to_tensor(image)

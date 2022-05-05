@@ -3,6 +3,7 @@
 pre-commit
 PyYAML == 6.0
 pytorch-lightning
+matplotlib
 timm
 # for ML
 torch

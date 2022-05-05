@@ -4,6 +4,8 @@ import pytorch_lightning as pl
 
 from utils.configs import read_configs
 from utils.experiment import setup_env, build_dataset
+from utils.visualization.vision import PlotSamples
+
 
 if __name__ == "__main__":
     # read config yaml paths
@@ -11,13 +13,16 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--configs", nargs="+", required=True)
 
     args = parser.parse_args()
-    config = read_configs(args.configs)
+    cfg = read_configs(args.configs)
 
-    setup_env(config)
+    setup_env(cfg)
 
     # load data
-    datasets = build_dataset()
+    datasets = build_dataset(cfg["dataset"], cfg["transform"])
     trn_dataset, val_dataset = datasets["trn"], datasets["val"]
+
+    if "vis" in cfg and "view_train_augmentation" in cfg["vis"]:
+        PlotSamples(**cfg["vis"]["view_train_augmentation"])
 
     trn_dataloader = 0# TODO
     val_dataloader = 0# TODO
