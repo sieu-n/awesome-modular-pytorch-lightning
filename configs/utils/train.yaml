@@ -1,8 +1,23 @@
 # base config for training.
 VERBOSE: "DEFAULT"
+DEBUG_MODE: False
 
-vis:
+debug:
   view_train_augmentation:
     save_to: "results/training_samples.png"
     subplot_dim: [5, 5]
     imsize: 3
+
+hardware:
+  dataloader:
+    base_dataloader:
+      num_workers: 8
+      pin_memory: True
+      shuffle: True
+      prefetch_factor: 2
+    trn:
+      shuffle: True
+    val:
+      shuffle: False
+      drop_last: False
+  gpu_ids: [0]  # [0] for training in Google COLAB.

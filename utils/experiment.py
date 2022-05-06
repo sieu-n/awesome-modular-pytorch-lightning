@@ -2,15 +2,22 @@ import os
 
 from datetime import datetime
 import json
+import yaml
 
 from data.dataset.utils import torchvision_dataset
 from data.transforms.utils import (ApplyDataTransformations, ComposeTransforms)
 import data.transforms.vision as DT_V
-
+from architecture.model import 
 from .verbose import set_verbose
 
 """ Implement utilities used in `main.py`.
 """
+
+
+def build_model(model_cfg):
+
+
+def build_backbone(backbone_cfg)
 
 
 def build_dataset(dataset_cfg, transform_cfg):
@@ -54,19 +61,30 @@ def build_dataset(dataset_cfg, transform_cfg):
             for subset in datasets.keys()}
 
 
-def setup_env(config):
-    verbose = config.get("VERBOSE", "DEFAULT")
+def setup_env(cfg):
+    verbose = cfg.get("VERBOSE", "DEFAULT")
+    # set os.environ
     set_verbose(verbose)
-
     set_timestamp()
+    os.environ["DEBUG_MODE"] = cfg["DEBUG_MODE"]
 
     # print final config.
+    pretty_cfg = json.dumps(cfg, indent=2, sort_keys=True)
     print_to_end("=")
 
     print("modular-PyTorch-lightning")
     print("[*] Env setup is completed, start_time:", os.environ["CYCLE_NAME"])
     print("")
-    print("Final config after merging:", json.dumps(config, indent=2, sort_keys=True))
+    print("Final config after merging:", pretty_cfg)
+
+    filename = f"configs/logs/{os.environ['CYCLE_NAME']}"
+    print(f"Saving config to: {filename}.yaml")
+    with open(filename + ".yaml", 'w') as file:
+        yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
+
+    print(f"Saving config to: {filename}.json")
+    with open(filename + ".json", 'w') as file:
+        json.dump(cfg, file)
 
     print_to_end("=")
 
@@ -77,6 +95,6 @@ def set_timestamp():
 
 def print_to_end(char="#"):
     rows, columns = os.popen('stty size', 'r').read().split()
-    columns = max(columns, 40)
-    spaces = char * (int(columns) // len(char))
+    columns = max(int(columns), 40)
+    spaces = char * (columns // len(char))
     print(spaces)

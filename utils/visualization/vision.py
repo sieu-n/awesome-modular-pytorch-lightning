@@ -23,7 +23,7 @@ def PlotSamples(dataset, subplot_dim=(5, 5), save_to="results/samples_vis.png", 
         else:
             image = un_norm_f(*image)[0]
 
-        plt.subplot(w, h, i + 1)
+        plt.subplot(w, h, i)
         plt.imshow(image)
         plt.axis('off')
 

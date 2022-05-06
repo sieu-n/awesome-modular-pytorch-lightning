@@ -1,0 +1,20 @@
+
+training:
+  batch_size: 64
+  optimizer:
+  optimizer_cfg:
+  losses:
+
+validation:
+  batch_size: 64
+  metrics: 
+
+model:
+  classifier: 
+    ID: ClassificationHead
+    input: "output"
+    cfg: 
+      reduction: "gap"
+      dropout:
+        p: 0.2
+      num_classes: 10

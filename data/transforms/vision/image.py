@@ -20,7 +20,9 @@ class Normalize(_BaseTransform):
         self.std = torch.tensor(std)
 
     def input_transform(self, image):
-        return image.sub_(self.mean).div_(self.std)
+        for t, m, s in zip(image, self.mean, self.std):
+            t.sub_(m).div_(s)
+        return image
 
 
 class UnNormalize(_BaseTransform):
