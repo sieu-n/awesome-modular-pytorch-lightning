@@ -32,5 +32,7 @@ Notes(rules) for development
 
 ## About me
 
-- Contact: sieunpark77@gmail.com / sp380@student.london.ac.uk
+- Contact: 
+  - sieunpark77@gmail.com / sp380@student.london.ac.uk
+  - jsw050429@gmail.com
 - @opentowork, internships oppertunities:)
