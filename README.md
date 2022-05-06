@@ -1,4 +1,4 @@
-# modular-pytorch-lightning⚡️
+# LightEx: modular-pytorch-lightning-extensions⚡️
 [WIP] modular-pytorch-lightning, **WARNING: The repository is currently under development, and is unstable.**
 
 If you are interested in participating, please contact `sieunpark77@gmail.com`!!!
