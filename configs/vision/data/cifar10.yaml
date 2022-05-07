@@ -10,7 +10,9 @@ dataset:
       train: True
     val:
       train: False
-# data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
+  trn_size: 50000
+  val_size: 10000
+# default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
 transform: [
   ["trn",
    [

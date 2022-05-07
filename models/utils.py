@@ -6,20 +6,20 @@ import torchvision.models as TM
 from utils.models import drop_layers_after
 
 
-def from_timm():
+def timm_feature_extractor():
     # TODO: Load model from `timm`.
     raise NotImplementedError("TODO")
 
 
-def from_torchvision(model_id, drop_after, **kwargs):
+def torchvision_feature_extractor(model_id, drop_after, **kwargs):
     """
     Load model(and pretrained-weights) implemented in `torchvision.models`. Although some of our custom
     architecture implementation is also sort of based on torchvision, we implement this method to support more
     models and access to pretrained checkpoints.
 
     Model catalog can be found in: https://pytorch.org/vision/stable/models.html#id1
-    TODO: support `torchvision` models for other tasks.
-    
+    TODO: support `torchvision` models for other tasks. e.g. video.
+
     Parameters
     ----------
     model_id: str
@@ -45,6 +45,6 @@ def from_torchvision(model_id, drop_after, **kwargs):
         feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads.
     """
     # find model with same id & create model
-    model = TM.__dict__[model_id](**kwargs)
+    model = getattr(TM, str([model_id]))(**kwargs)
     # detach final classification head(make it feature extractor)
     return drop_layers_after(model, drop_after)

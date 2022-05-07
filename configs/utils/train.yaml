@@ -8,16 +8,22 @@ debug:
     subplot_dim: [5, 5]
     imsize: 3
 
-hardware:
-  dataloader:
-    base_dataloader:
-      num_workers: 8
-      pin_memory: True
-      shuffle: True
-      prefetch_factor: 2
-    trn:
-      shuffle: True
-    val:
-      shuffle: False
-      drop_last: False
-  gpu_ids: [0]  # [0] for training in Google COLAB.
+trainer:
+  gpus: [0]  # [0] for training in Google COLAB.
+  accelerator: "dp"
+  accumulate_grad_batches: 1
+  sync_batchnorm: True
+  check_val_every_n_epoch: 5
+  precision: 32
+
+dataloader:
+  base_dataloader:
+    num_workers: 8
+    pin_memory: True
+    shuffle: True
+    prefetch_factor: 2
+  trn:
+    shuffle: True
+  val:
+    shuffle: False
+    drop_last: False

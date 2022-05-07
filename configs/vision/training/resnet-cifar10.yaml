@@ -1,8 +1,16 @@
-
 training:
+  ID: "ClassificationTrainer"
+
+  epochs: 200
+  lr: 0.1
   batch_size: 64
-  optimizer:
-  optimizer_cfg:
+
+  optimizer: "sgd"
+  optimizer_cfg:  
+    momentum: 0.9
+    weight_decay: 5e-4
+  lr_scheduler: "cosine"
+  lr_scheduler_cfg: {}
   losses:
 
 validation:
@@ -10,11 +18,14 @@ validation:
   metrics: 
 
 model:
-  classifier: 
-    ID: ClassificationHead
-    input: "output"
-    cfg: 
-      reduction: "gap"
-      dropout:
-        p: 0.2
-      num_classes: 10
+  TYPE: "custom"
+  ID: "ClassificationModel"
+  heads:
+    classifier: 
+      ID: ClassificationHead
+      input: "output"
+      cfg: 
+        reduction: "gap"
+        dropout: 0.2
+        num_classes: 10
+        return_logits: False # return softmax probability.

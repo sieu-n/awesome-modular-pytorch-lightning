@@ -1,3 +1,2 @@
 wandb:
-  project: "CIFAR10"
-  group: "resnet"
+  project: "modular-pytorch-lightning-extensions"

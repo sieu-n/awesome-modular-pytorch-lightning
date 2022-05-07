@@ -4,20 +4,44 @@ from datetime import datetime
 import json
 import yaml
 
+from pytorch_lightning.loggers import WandbLogger
+
+import models.model as LightModel
+from models.utils import torchvision_feature_extractor, timm_feature_extractor
 from data.dataset.utils import torchvision_dataset
 from data.transforms.utils import (ApplyDataTransformations, ComposeTransforms)
 import data.transforms.vision as DT_V
-from architecture.model import 
+
 from .verbose import set_verbose
 
 """ Implement utilities used in `main.py`.
 """
 
 
-def build_model(model_cfg):
+def build_network(model_cfg):
+    if model_cfg["TYPE"] == "custom":
+        model = getattr(LightModel, model_cfg["ID"])(model_cfg)
+    elif model_cfg["TYPE"] == "pretrained":
+        raise NotImplementedError()
+    else:
+        raise ValueError(f"Invalid `model.TYPE`: `{model_cfg['TYPE']}")
+
+    return model
 
 
-def build_backbone(backbone_cfg)
+def build_backbone(backbone_cfg):
+    if backbone_cfg["TYPE"] == "torchvision":
+        backbone = torchvision_feature_extractor(backbone_cfg["ID"], drop_after=backbone_cfg["drop_after"],
+                                                 **backbone_cfg["cfg"])
+    elif backbone_cfg["TYPE"] == "timm":
+        backbone = timm_feature_extractor(backbone_cfg["ID"], drop_after=backbone_cfg["drop_after"],
+                                          **backbone_cfg["cfg"])
+    elif backbone_cfg["TYPE"] == "custom":
+        raise NotImplementedError()
+    else:
+        raise ValueError(f"Invalid `model.backbone.TYPE`: `{backbone_cfg['TYPE']}")
+
+    return backbone
 
 
 def build_dataset(dataset_cfg, transform_cfg):
@@ -43,10 +67,10 @@ def build_dataset(dataset_cfg, transform_cfg):
                 name, kwargs = x
             # find transform name that matches `name` from TRANSFORM_DECLARATIONS
             TRANSFORM_DECLARATIONS = [DT_V]
-            is_name_in = [name in file.__dict__ for file in TRANSFORM_DECLARATIONS]
+            is_name_in = [hasattr(file, name) for file in TRANSFORM_DECLARATIONS]
             assert sum(is_name_in) == 1, f"Transform `{name}` was found in `{sum(is_name_in)} files."
             file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
-            transform_f = file.__dict__[name]
+            transform_f = getattr(file, name)
             print(f"[*] Transform {name} --> {transform_f}: found in {file.__name__}")
 
             # build transform using arguments.
@@ -87,6 +111,8 @@ def setup_env(cfg):
         json.dump(cfg, file)
 
     print_to_end("=")
+    experiment_name = f"run-{os.environ['CYCLE_NAME']}"
+    return experiment_name
 
 
 def set_timestamp():
@@ -98,3 +124,20 @@ def print_to_end(char="#"):
     columns = max(int(columns), 40)
     spaces = char * (columns // len(char))
     print(spaces)
+
+
+def create_logger(cfg, experiment_name="default-run"):
+    if "wandb" in cfg:
+        if "project" not in cfg["wandb"]:
+            cfg["wandb"]["project"] = "modular-pytorch-lightning-extensions"
+        logger = WandbLogger(
+            name=experiment_name,
+            **cfg["wandb"],
+        )
+    elif "tensorboard" in cfg:
+        raise NotImplementedError()
+    else:
+        print("[*] No logger is specified, returning `None`.")
+        return None
+    logger.log_hyperparams(cfg)
+    return logger

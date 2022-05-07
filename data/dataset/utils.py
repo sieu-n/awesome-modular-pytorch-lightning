@@ -7,7 +7,7 @@ def torchvision_dataset(name, cfg):
     """ Load dataset from torchvision."""
     subset_types = list(cfg["dataset_subset_cfg"].keys())
     print(f"[*] Attempting to load {subset_types} subsets of `{name}` dataset using `torchvision`.")
-    ds_builder = TD.__dict__[name]
+    ds_builder = getattr(TD, name)
 
     datasets = {}
     for subset_key in subset_types:
