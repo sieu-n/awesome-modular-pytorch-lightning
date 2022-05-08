@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from data.transforms.common import ComposeTransforms
-from data.transforms.vision.image import ToPIL, UnNormalize
+from data.transforms.vision import ToPIL, UnNormalize
 
 
 def PlotSamples(
@@ -36,4 +36,4 @@ def PlotSamples(
         plt.axis("off")
 
     plt.savefig(save_to)
-    plt.show()
+    plt.close()

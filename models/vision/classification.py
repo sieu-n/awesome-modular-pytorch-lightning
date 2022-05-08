@@ -1,13 +1,18 @@
 import torch.nn as nn
 from models.util import build_backbone
+import models.heads as TorchHeads
 
 
 class ClassificationModel(nn.Module):
     def __init__(self, model_cfg):
+        super().__init__()
         self.backbone = build_backbone(model_cfg["backbone"])
         # TODO: adaptively attach every element in model_cfg["heads"]
         classifier_cfg = model_cfg["heads"]["classifier"]
-        self.classifier = getattr(model_cfg, classifier_cfg["ID"])(**classifier_cfg)
+        self.classifier = getattr(TorchHeads, classifier_cfg["ID"])(
+            in_features=model_cfg["backbone"]["out_features"],
+            **classifier_cfg["cfg"],
+        )
 
     def forward(self, x):
         feature = self.backbone(x)

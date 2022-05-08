@@ -35,7 +35,7 @@ def drop_layers_after(base_model, key):
         Trimmed network.
     """
     print(f"[*] Trimming layers of model after {key}.")
-    if os.environ["DEBUG_MODE"]:
+    if os.environ["DEBUG_MODE"] == "TRUE":
         print("[*] Base model:", base_model)
     key = key.split("/")
 
@@ -51,6 +51,6 @@ def drop_layers_after(base_model, key):
 
     base_model = trim_block(base_model, 0)
 
-    if os.environ["DEBUG_MODE"]:
+    if os.environ["DEBUG_MODE"] == "TRUE":
         print("[*] Trimmed model:", base_model)
     return base_model

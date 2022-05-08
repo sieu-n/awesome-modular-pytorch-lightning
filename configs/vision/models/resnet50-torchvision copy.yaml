@@ -5,3 +5,4 @@ model:
     cfg:
       pretrained: False
     drop_after: "avgpool"
+    out_features: 2048

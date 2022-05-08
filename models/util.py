@@ -62,6 +62,6 @@ def torchvision_feature_extractor(model_id, drop_after, **kwargs):
         feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads.
     """
     # find model with same id & create model
-    model = getattr(TM, str([model_id]))(**kwargs)
+    model = getattr(TM, str(model_id))(**kwargs)
     # detach final classification head(make it feature extractor)
     return drop_layers_after(model, drop_after)

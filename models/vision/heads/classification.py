@@ -4,7 +4,7 @@ import torch.nn as nn
 class ClassificationHead(nn.Module):
     def __init__(
         self,
-        input_c,
+        in_features,
         num_classes,
         reduction="flatten",
         dropout=None,
@@ -15,7 +15,7 @@ class ClassificationHead(nn.Module):
 
         Parameters
         ----------
-        input_c: int
+        in_features: int
         num_classes: int
         reduction: nn.Module or str, default="flatten", optional
         dropout: float between (0.0, 1.0), default=None, optional
@@ -23,7 +23,7 @@ class ClassificationHead(nn.Module):
         """
         super(ClassificationHead, self).__init__()
         # build `fc` layer.
-        self.fc = nn.Linear(input_c, num_classes)
+        self.fc = nn.Linear(in_features, num_classes)
         # build `reduction` layer.
         if isinstance(reduction, nn.Module):
             self.reduction = reduction

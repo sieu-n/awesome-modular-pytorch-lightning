@@ -6,5 +6,6 @@ pre-commit
 pytorch-lightning
 PyYAML == 6.0
 timm
+wandb
 # for ML
 torch

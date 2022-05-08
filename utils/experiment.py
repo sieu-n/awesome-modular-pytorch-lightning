@@ -80,7 +80,7 @@ def setup_env(cfg):
     # set os.environ
     set_verbose(verbose)
     set_timestamp()
-    os.environ["DEBUG_MODE"] = cfg["DEBUG_MODE"]
+    os.environ["DEBUG_MODE"] = "TRUE" if cfg["DEBUG_MODE"] else "FALSE"
 
     # print final config.
     pretty_cfg = json.dumps(cfg, indent=2, sort_keys=True)
