@@ -24,7 +24,7 @@ Notes(rules) for development
 
 ## Progress
 
-### Training procedure -- `LightningModule`
+### Training procedure (`LightningModule`)
 
 ### Model architectures
 
