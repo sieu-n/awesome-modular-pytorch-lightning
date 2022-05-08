@@ -1,9 +1,10 @@
-'''ResNet in PyTorch. Support `low_res` argument for CIFAR10.
+"""ResNet in PyTorch. Support `low_res` argument for CIFAR10.
 
 Reference: https://github.com/kuangliu/pytorch-cifar
-'''
+"""
 import torch.nn as nn
-from torchvision.models.resnet import ResNet, BasicBlock, Bottleneck
+from torchvision.models.resnet import BasicBlock, Bottleneck
+from torchvision.models.resnet import ResNet as _ResNet
 
 
 def ResNet18(**kwargs):
@@ -22,7 +23,7 @@ def ResNet101(**kwargs):
     return ResNet(block=Bottleneck, layers=[3, 4, 23, 3], **kwargs)
 
 
-class ResNet(ResNet):
+class ResNet(_ResNet):
     def __init__(self, low_res=False, **kwargs):
         """
         Adapt torchvision.models.resnet.ResNet to extract features only.
@@ -42,7 +43,9 @@ class ResNet(ResNet):
         """
         super(ResNet, self).__init__(**kwargs)
         if low_res:
-            self.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+            self.conv1 = nn.Conv2d(
+                3, 64, kernel_size=3, stride=1, padding=1, bias=False
+            )
             self.maxpool = nn.Identity()
 
     def _forward_impl(self, x):

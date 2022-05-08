@@ -21,7 +21,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
 
     def evaluate(self, batch, stage=None):
         x, y = batch
-        pred = self(x)
+        pred = self.model(x)
         loss = self.loss_fn(pred, y)
         class_pred = torch.argmax(pred, dim=1)
         acc = accuracy(class_pred, y)

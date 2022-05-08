@@ -1,6 +1,6 @@
+import models.heads as TorchHeads
 import torch.nn as nn
 from models.util import build_backbone
-import models.heads as TorchHeads
 
 
 class ClassificationModel(nn.Module):

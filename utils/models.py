@@ -47,7 +47,9 @@ def drop_layers_after(base_model, key):
         if depth == len(key) - 1:
             return nn.Sequential(*child_blocks[:to_trim_idx])
 
-        new_block = child_blocks[:to_trim_idx] + [trim_block(child_blocks[to_trim_idx], depth + 1)]
+        new_block = child_blocks[:to_trim_idx] + [
+            trim_block(child_blocks[to_trim_idx], depth + 1)
+        ]
         print(new_block)
         return nn.Sequential(*new_block)
 

@@ -47,6 +47,7 @@ class ClassificationHead(nn.Module):
     def forward(self, x):
         # order: reduction -> dropout(optional) -> fc -> activation(optional).
         x = self.reduction(x)
+        x = x.view(x.shape[0], -1)
         if hasattr(self, "dropout"):
             x = self.dropout(x)
         x = self.fc(x)
