@@ -1,5 +1,7 @@
 import os
 
+import torch.nn as nn
+
 
 def drop_layers_after(base_model, key):
     """
@@ -40,14 +42,14 @@ def drop_layers_after(base_model, key):
     key = key.split("/")
 
     def trim_block(block, depth):
-        if depth == len(key):
-            return []
         child_blocks = list(block.children())
         to_trim_idx = child_blocks.index(getattr(block, key[depth]))
-        new_block = child_blocks[:to_trim_idx] + trim_block(
-            child_blocks[to_trim_idx], depth + 1
-        )
-        return new_block
+        if depth == len(key) - 1:
+            return nn.Sequential(*child_blocks[:to_trim_idx])
+
+        new_block = child_blocks[:to_trim_idx] + [trim_block(child_blocks[to_trim_idx], depth + 1)]
+        print(new_block)
+        return nn.Sequential(*new_block)
 
     base_model = trim_block(base_model, 0)
 

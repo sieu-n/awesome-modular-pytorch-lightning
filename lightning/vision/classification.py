@@ -9,10 +9,11 @@ class ClassificationTrainer(_BaseLightningTrainer):
         super().__init__(cfg, model)
         # define loss function.
         self.loss_fn = nn.NLLLoss()
+        self.model = model
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        pred = self(x)
+        pred = self.model(x)
 
         loss = self.loss_fn(pred, y)
         self.log("train_loss", loss)
@@ -28,3 +29,4 @@ class ClassificationTrainer(_BaseLightningTrainer):
         if stage:
             self.log(f"{stage}_loss", loss, prog_bar=True)
             self.log(f"{stage}_acc", acc, prog_bar=True)
+        return loss, acc

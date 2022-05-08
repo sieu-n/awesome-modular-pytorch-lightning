@@ -34,10 +34,10 @@ class _BaseLightningTrainer(pl.LightningModule):
         raise NotImplementedError()
 
     def validation_step(self, batch, batch_idx):
-        self.evaluate(batch, "val")
+        return self.evaluate(batch, "val")
 
     def test_step(self, batch, batch_idx):
-        self.evaluate(batch, "test")
+        return self.evaluate(batch, "test")
 
     def configure_optimizers(self):
         # optimizer

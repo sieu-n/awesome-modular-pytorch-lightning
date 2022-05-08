@@ -8,7 +8,7 @@ training:
   optimizer: "sgd"
   optimizer_cfg:
     momentum: 0.9
-    weight_decay: 5e-4
+    weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
   losses:
@@ -20,6 +20,10 @@ validation:
 model:
   TYPE: "custom"
   ID: "ClassificationModel"
+
+  backbone:
+    cfg:
+      low_res: True
   heads:
     classifier:
       ID: ClassificationHead

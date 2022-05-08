@@ -1,0 +1,5 @@
+model:
+  backbone:
+    TYPE: "custom"
+    ID: "ResNet50"
+    out_features: 2048

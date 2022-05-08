@@ -118,6 +118,7 @@ def print_to_end(char="#"):
 
 def create_logger(cfg, experiment_name="default-run"):
     if "wandb" in cfg:
+        print(f"wandb name: {experiment_name}")
         if "project" not in cfg["wandb"]:
             cfg["wandb"]["project"] = "modular-pytorch-lightning-extensions"
         logger = WandbLogger(

@@ -1,4 +1,5 @@
-import torchvision.models as TM
+import torchvision.models as TorchvisionModels
+import models.vision.backbone as CustomModels
 from utils.models import drop_layers_after
 
 
@@ -6,8 +7,8 @@ def build_backbone(backbone_cfg):
     if backbone_cfg["TYPE"] == "torchvision":
         backbone = torchvision_feature_extractor(
             backbone_cfg["ID"],
-            drop_after=backbone_cfg["drop_after"],
-            **backbone_cfg["cfg"],
+            drop_after=backbone_cfg.get("drop_after", None),
+            kwargs=backbone_cfg.get("cfg", {}),
         )
     elif backbone_cfg["TYPE"] == "timm":
         backbone = timm_feature_extractor(
@@ -16,7 +17,8 @@ def build_backbone(backbone_cfg):
             **backbone_cfg["cfg"],
         )
     elif backbone_cfg["TYPE"] == "custom":
-        raise NotImplementedError()
+        kwargs = backbone_cfg.get("cfg", {})
+        return getattr(CustomModels, str(backbone_cfg["ID"]))(**kwargs)
     else:
         raise ValueError(f"Invalid `model.backbone.TYPE`: `{backbone_cfg['TYPE']}")
 
@@ -28,7 +30,7 @@ def timm_feature_extractor():
     raise NotImplementedError("TODO")
 
 
-def torchvision_feature_extractor(model_id, drop_after, **kwargs):
+def torchvision_feature_extractor(model_id, drop_after=None, kwargs={}):
     """
     Load model(and pretrained-weights) implemented in `torchvision.models`. Although some of our custom
     architecture implementation is also sort of based on torchvision, we implement this method to support more
@@ -62,6 +64,8 @@ def torchvision_feature_extractor(model_id, drop_after, **kwargs):
         feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads.
     """
     # find model with same id & create model
-    model = getattr(TM, str(model_id))(**kwargs)
+    model = getattr(TorchvisionModels, str(model_id))(**kwargs)
     # detach final classification head(make it feature extractor)
-    return drop_layers_after(model, drop_after)
+    if drop_after:
+        drop_layers_after(model, drop_after)
+    return model
