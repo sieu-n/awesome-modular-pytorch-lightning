@@ -1,5 +1,5 @@
 import torch.nn as nn
-from utils.experiment import build_backbone
+from models.util import build_backbone
 
 
 class ClassificationModel(nn.Module):

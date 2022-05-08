@@ -1,5 +1,5 @@
 import torchvision.transforms as TT
-from data.transforms.utils import _BaseTransform
+from data.transforms.common import _BaseTransform
 
 
 class TorchTransforms(_BaseTransform):

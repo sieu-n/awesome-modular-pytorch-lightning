@@ -7,7 +7,6 @@ import models.model as TorchModel
 import yaml
 from data.dataset.util import torchvision_dataset
 from data.transforms.common import ApplyDataTransformations, ComposeTransforms
-from models.util import timm_feature_extractor, torchvision_feature_extractor
 from pytorch_lightning.loggers import WandbLogger
 
 from .verbose import set_verbose
@@ -25,27 +24,6 @@ def build_network(model_cfg):
         raise ValueError(f"Invalid `model.TYPE`: `{model_cfg['TYPE']}")
 
     return model
-
-
-def build_backbone(backbone_cfg):
-    if backbone_cfg["TYPE"] == "torchvision":
-        backbone = torchvision_feature_extractor(
-            backbone_cfg["ID"],
-            drop_after=backbone_cfg["drop_after"],
-            **backbone_cfg["cfg"],
-        )
-    elif backbone_cfg["TYPE"] == "timm":
-        backbone = timm_feature_extractor(
-            backbone_cfg["ID"],
-            drop_after=backbone_cfg["drop_after"],
-            **backbone_cfg["cfg"],
-        )
-    elif backbone_cfg["TYPE"] == "custom":
-        raise NotImplementedError()
-    else:
-        raise ValueError(f"Invalid `model.backbone.TYPE`: `{backbone_cfg['TYPE']}")
-
-    return backbone
 
 
 def build_dataset(dataset_cfg, transform_cfg):

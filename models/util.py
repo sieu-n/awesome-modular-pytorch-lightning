@@ -2,6 +2,27 @@ import torchvision.models as TM
 from utils.models import drop_layers_after
 
 
+def build_backbone(backbone_cfg):
+    if backbone_cfg["TYPE"] == "torchvision":
+        backbone = torchvision_feature_extractor(
+            backbone_cfg["ID"],
+            drop_after=backbone_cfg["drop_after"],
+            **backbone_cfg["cfg"],
+        )
+    elif backbone_cfg["TYPE"] == "timm":
+        backbone = timm_feature_extractor(
+            backbone_cfg["ID"],
+            drop_after=backbone_cfg["drop_after"],
+            **backbone_cfg["cfg"],
+        )
+    elif backbone_cfg["TYPE"] == "custom":
+        raise NotImplementedError()
+    else:
+        raise ValueError(f"Invalid `model.backbone.TYPE`: `{backbone_cfg['TYPE']}")
+
+    return backbone
+
+
 def timm_feature_extractor():
     # TODO: Load model from `timm`.
     raise NotImplementedError("TODO")
