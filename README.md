@@ -17,29 +17,23 @@ Notes(rules) for development
 - Function or class docstrings must follow Numpy [style guidelines](https://numpydoc.readthedocs.io/en/latest/format.html).
 - The performance of every implementation has to be validated before being merged into `main`. The results and config used to reproduce the results should be presented in the relevant `README.MD` file.
 
-## Links to track progress
-
-- Project Dashboard: [\[Trello\]](https://trello.com/b/AnOjqk1F/awesome-modular-pytorch-lightning-development)
-- Overview: <https://docs.google.com/document/d/1qqisfpLgEUqgGw1-5WjmaV5Px-y5n8UrBJKVhZfStfE/edit>
-
 ## Progress
 
-### Training procedure (`LightningModule`)
+- Training procedure (`LightningModule`)
+- Model architectures
+- Dataset
+- Other features
+  - Optimizers
+  - Metrics / loss
 
-### Model architectures
-
-### Dataset
-
-### Other features
-
-#### Optimizers
-
-#### Metrics / loss
-
-### Timeline
+## Timeline
 
 - 220508 | Working version of the repository on `Image Classification`.
 - 220504 | Create repository! Start of `awesome-modular-pytorch-lightning`.
+
+### Tracking progress
+
+- Project Dashboard: [\[Trello\]](https://trello.com/b/AnOjqk1F/awesome-modular-pytorch-lightning-development)
 
 ## About me
 
