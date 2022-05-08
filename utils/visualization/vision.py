@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from data.transforms.utils import ComposeTransforms
-from data.transforms.vision import ToPIL, UnNormalize
+from data.transforms.common import ComposeTransforms
+from data.transforms.vision.image import ToPIL, UnNormalize
 
 
 def PlotSamples(

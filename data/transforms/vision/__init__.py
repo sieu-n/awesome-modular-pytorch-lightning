@@ -1,1 +1,1 @@
-from .import (classification, image, util) # noqa F401
+from . import classification, image, util  # noqa F401

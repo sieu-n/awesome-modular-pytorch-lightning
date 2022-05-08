@@ -1,1 +1,1 @@
-from .import (classification) # noqa F401
+from . import classification  # noqa F401

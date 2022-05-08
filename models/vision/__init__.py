@@ -1,1 +1,1 @@
-from .import (backbone, heads, classification) # noqa F401
+from . import backbone, classification, heads  # noqa F401

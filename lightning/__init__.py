@@ -1,1 +1,1 @@
-from .import (vision, common, trainers) # noqa F401
+from . import common, trainers, vision  # noqa F401

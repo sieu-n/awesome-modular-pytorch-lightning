@@ -1,1 +1,1 @@
-from .import (common) # noqa F401
+from . import common  # noqa F401

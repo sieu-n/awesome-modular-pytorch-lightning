@@ -1,6 +1,6 @@
 import torch
 import torchvision.transforms.functional as TF
-from data.transforms.vision.utils import _BaseTransform
+from data.transforms.common import _BaseTransform
 
 
 class Normalize(_BaseTransform):

@@ -1,1 +1,9 @@
-from .import (optimizers, visualization, callbacks, configs, experiment, models, verbose) # noqa F401
+from . import (  # noqa F401
+    callbacks,
+    configs,
+    experiment,
+    models,
+    optimizers,
+    verbose,
+    visualization,
+)
