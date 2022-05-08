@@ -24,6 +24,17 @@ Notes(rules) for development
 
 ## Progress
 
+### Training procedure -- `LightningModule`
+
+### Model architectures
+
+### Dataset
+
+### Other features
+
+#### Optimizers
+
+#### Metrics / loss
 
 ### Timeline
 
