@@ -13,7 +13,7 @@ Please delete options that are not relevant.
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
-# How Has This Been Tested?
+## How Has This Been Tested?
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
 
@@ -21,12 +21,12 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] Test B
 ...
 
-## For Implementation of Research Papers...
+## For Implementation of Research Papers
 
 Please provide the following:
 - link to paper and very breif overview of the concept.
 - Expected outcome(i.e. results demonstrated in the paper)
-- 
+-
 
 **Test Configuration**:
 * Firmware version:
@@ -34,7 +34,7 @@ Please provide the following:
 * Toolchain:
 * SDK:
 
-# Checklist:
+## Checklist
 
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my own code

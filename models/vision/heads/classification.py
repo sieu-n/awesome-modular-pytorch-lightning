@@ -1,12 +1,18 @@
-
 import torch.nn as nn
 
 
 class ClassificationHead(nn.Module):
-    def __init__(self, input_c, num_classes, reduction="flatten", dropout=None, return_logits=True):
+    def __init__(
+        self,
+        input_c,
+        num_classes,
+        reduction="flatten",
+        dropout=None,
+        return_logits=True,
+    ):
         """
         Basic classification head for various tasks.
-        
+
         Parameters
         ----------
         input_c: int

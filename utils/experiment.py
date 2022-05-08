@@ -1,16 +1,14 @@
-import os
-
-from datetime import datetime
 import json
-import yaml
+import os
+from datetime import datetime
 
-from pytorch_lightning.loggers import WandbLogger
-
-import models.model as LightModel
-from models.utils import torchvision_feature_extractor, timm_feature_extractor
-from data.dataset.utils import torchvision_dataset
-from data.transforms.utils import (ApplyDataTransformations, ComposeTransforms)
 import data.transforms.vision as DT_V
+import models.model as TorchModel
+import yaml
+from data.dataset.util import torchvision_dataset
+from data.transforms.common import ApplyDataTransformations, ComposeTransforms
+from models.util import timm_feature_extractor, torchvision_feature_extractor
+from pytorch_lightning.loggers import WandbLogger
 
 from .verbose import set_verbose
 
@@ -20,7 +18,7 @@ from .verbose import set_verbose
 
 def build_network(model_cfg):
     if model_cfg["TYPE"] == "custom":
-        model = getattr(LightModel, model_cfg["ID"])(model_cfg)
+        model = getattr(TorchModel, model_cfg["ID"])(model_cfg)
     elif model_cfg["TYPE"] == "pretrained":
         raise NotImplementedError()
     else:
@@ -31,11 +29,17 @@ def build_network(model_cfg):
 
 def build_backbone(backbone_cfg):
     if backbone_cfg["TYPE"] == "torchvision":
-        backbone = torchvision_feature_extractor(backbone_cfg["ID"], drop_after=backbone_cfg["drop_after"],
-                                                 **backbone_cfg["cfg"])
+        backbone = torchvision_feature_extractor(
+            backbone_cfg["ID"],
+            drop_after=backbone_cfg["drop_after"],
+            **backbone_cfg["cfg"],
+        )
     elif backbone_cfg["TYPE"] == "timm":
-        backbone = timm_feature_extractor(backbone_cfg["ID"], drop_after=backbone_cfg["drop_after"],
-                                          **backbone_cfg["cfg"])
+        backbone = timm_feature_extractor(
+            backbone_cfg["ID"],
+            drop_after=backbone_cfg["drop_after"],
+            **backbone_cfg["cfg"],
+        )
     elif backbone_cfg["TYPE"] == "custom":
         raise NotImplementedError()
     else:
@@ -68,7 +72,9 @@ def build_dataset(dataset_cfg, transform_cfg):
             # find transform name that matches `name` from TRANSFORM_DECLARATIONS
             TRANSFORM_DECLARATIONS = [DT_V]
             is_name_in = [hasattr(file, name) for file in TRANSFORM_DECLARATIONS]
-            assert sum(is_name_in) == 1, f"Transform `{name}` was found in `{sum(is_name_in)} files."
+            assert (
+                sum(is_name_in) == 1
+            ), f"Transform `{name}` was found in `{sum(is_name_in)} files."
             file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
             transform_f = getattr(file, name)
             print(f"[*] Transform {name} --> {transform_f}: found in {file.__name__}")
@@ -80,9 +86,15 @@ def build_dataset(dataset_cfg, transform_cfg):
             transforms[subset] += t
 
     # 3. apply transformations and return datasets that will actually be used.
-    transforms = {subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()}
-    return {subset: ApplyDataTransformations(base_dataset=datasets[subset], transforms=transforms[subset])
-            for subset in datasets.keys()}
+    transforms = {
+        subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
+    }
+    return {
+        subset: ApplyDataTransformations(
+            base_dataset=datasets[subset], transforms=transforms[subset]
+        )
+        for subset in datasets.keys()
+    }
 
 
 def setup_env(cfg):
@@ -103,11 +115,11 @@ def setup_env(cfg):
 
     filename = f"configs/logs/{os.environ['CYCLE_NAME']}"
     print(f"Saving config to: {filename}.yaml")
-    with open(filename + ".yaml", 'w') as file:
+    with open(filename + ".yaml", "w") as file:
         yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
 
     print(f"Saving config to: {filename}.json")
-    with open(filename + ".json", 'w') as file:
+    with open(filename + ".json", "w") as file:
         json.dump(cfg, file)
 
     print_to_end("=")
@@ -116,11 +128,11 @@ def setup_env(cfg):
 
 
 def set_timestamp():
-    os.environ["CYCLE_NAME"] = datetime.now().strftime('%b%d_%H-%M-%S')
+    os.environ["CYCLE_NAME"] = datetime.now().strftime("%b%d_%H-%M-%S")
 
 
 def print_to_end(char="#"):
-    rows, columns = os.popen('stty size', 'r').read().split()
+    rows, columns = os.popen("stty size", "r").read().split()
     columns = max(int(columns), 40)
     spaces = char * (columns // len(char))
     print(spaces)

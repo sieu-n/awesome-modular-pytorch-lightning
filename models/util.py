@@ -1,8 +1,4 @@
-import timm
-
-import torch
 import torchvision.models as TM
-
 from utils.models import drop_layers_after
 
 

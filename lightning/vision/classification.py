@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
-from torchmetrics.functional import accuracy
-
 from lightning.common import _BaseLightningTrainer
+from torchmetrics.functional import accuracy
 
 
 class ClassificationTrainer(_BaseLightningTrainer):

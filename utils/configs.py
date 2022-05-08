@@ -2,7 +2,7 @@ import yaml
 
 
 def read_yaml(yaml_path):
-    """Load configs from yaml file and return dictionary. """
+    """Load configs from yaml file and return dictionary."""
     with open(yaml_path, "r") as yamlfile:
         cfg = yaml.load(yamlfile, Loader=yaml.FullLoader)
     return cfg
@@ -47,6 +47,7 @@ def merge_config(cfg_base, cfg_from):
     dict
         Dictionary combining the 2 configs.
     """
+
     def recursively_write(base, f):
         for k in f.keys():
             if isinstance(f[k], dict):
@@ -58,6 +59,7 @@ def merge_config(cfg_base, cfg_from):
             else:
                 base[k] = f[k]
         return base
+
     return recursively_write(cfg_base, cfg_from)
 
 

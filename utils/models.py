@@ -4,7 +4,7 @@ import os
 def drop_layers_after(base_model, key):
     """
     Use cases:
-        - get feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads 
+        - get feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads
           from classification network.
 
     Parameters
@@ -44,8 +44,11 @@ def drop_layers_after(base_model, key):
             return []
         child_blocks = list(block.children())
         to_trim_idx = child_blocks.index(getattr(block, key[depth]))
-        new_block = child_blocks[:to_trim_idx] + trim_block(child_blocks[to_trim_idx], depth + 1)
+        new_block = child_blocks[:to_trim_idx] + trim_block(
+            child_blocks[to_trim_idx], depth + 1
+        )
         return new_block
+
     base_model = trim_block(base_model, 0)
 
     if os.environ["DEBUG_MODE"]:

@@ -1,8 +1,7 @@
-
 model:
   backbone:
     TYPE: "torchvision"
     ID: "resnet50"
-    cfg: 
+    cfg:
       pretrained: False
     drop_after: "avgpool"

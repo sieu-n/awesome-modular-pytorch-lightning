@@ -2,7 +2,7 @@ dataset:
   MODE: "torchvision"
   NAME: "CIFAR10"
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
-  dataset_base_cfg: 
+  dataset_base_cfg:
     root: "./cifar10"
     download: True
   dataset_subset_cfg:
@@ -13,20 +13,24 @@ dataset:
   trn_size: 50000
   val_size: 10000
 # default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
-transform: [
-  ["trn",
-   [
-    "TorchTransforms": {"NAME": "RandomCrop", "size": 32, "padding": 4},
-    "TorchTransforms": {"NAME": "RandomHorizontalFlip"},
-   ]
-  ],
-  ["trn,val",
-   [
-    "ToTensor": {},
-    "Normalize": {"mean": [0.4914, 0.4822, 0.4465], "std": [0.2023, 0.1994, 0.2010]},
-   ]
-  ],
-]
+transform:
+  [
+    [
+      "trn",
+      [
+        "TorchTransforms": { "NAME": "RandomCrop", "size": 32, "padding": 4 },
+        "TorchTransforms": { "NAME": "RandomHorizontalFlip" },
+      ],
+    ],
+    [
+      "trn,val",
+      [
+        "ToTensor": {},
+        "Normalize":
+          { "mean": [0.4914, 0.4822, 0.4465], "std": [0.2023, 0.1994, 0.2010] },
+      ],
+    ],
+  ]
 # other useful configs.
 const:
   normalization_mean: [0.4914, 0.4822, 0.4465]

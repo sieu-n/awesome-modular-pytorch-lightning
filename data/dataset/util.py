@@ -1,12 +1,13 @@
 import torchvision.datasets as TD
-
 from utils.configs import merge_config
 
 
 def torchvision_dataset(name, cfg):
-    """ Load dataset from torchvision."""
+    """Load dataset from torchvision."""
     subset_types = list(cfg["dataset_subset_cfg"].keys())
-    print(f"[*] Attempting to load {subset_types} subsets of `{name}` dataset using `torchvision`.")
+    print(
+        f"[*] Attempting to load {subset_types} subsets of `{name}` dataset using `torchvision`."
+    )
     ds_builder = getattr(TD, name)
 
     datasets = {}

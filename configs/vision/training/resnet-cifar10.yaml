@@ -6,7 +6,7 @@ training:
   batch_size: 64
 
   optimizer: "sgd"
-  optimizer_cfg:  
+  optimizer_cfg:
     momentum: 0.9
     weight_decay: 5e-4
   lr_scheduler: "cosine"
@@ -15,16 +15,16 @@ training:
 
 validation:
   batch_size: 64
-  metrics: 
+  metrics:
 
 model:
   TYPE: "custom"
   ID: "ClassificationModel"
   heads:
-    classifier: 
+    classifier:
       ID: ClassificationHead
       input: "output"
-      cfg: 
+      cfg:
         reduction: "gap"
         dropout: 0.2
         num_classes: 10

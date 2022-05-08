@@ -1,6 +1,6 @@
-import torch.optim as optim
-import torch.optim.lr_scheduler as lr_scheduler
 import pytorch_lightning as pl
+from torch import optim
+from torch.optim import lr_scheduler
 
 
 class _BaseLightningTrainer(pl.LightningModule):
@@ -9,9 +9,9 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.cfg = cfg
         self.model = model
 
-    def training_epoch_end(self, train_step_outputs):
-        total_loss = sum([x['loss'] for x in train_step_outputs])
-        total_loss = total_loss / len(train_step_outputs)
+    def training_epoch_end(self, outputs):
+        total_loss = sum([x["loss"] for x in outputs])
+        total_loss = total_loss / len(outputs)
         self.log("trn_loss", float(total_loss.cpu()))
 
     def validation_epoch_end(self, validation_step_outputs):
@@ -49,7 +49,9 @@ class _BaseLightningTrainer(pl.LightningModule):
             optimizer_builder = optim.Adam
         else:
             raise ValueError(f"Invalid value for optimizer: {optimizer_name}")
-        optimizer = optimizer_builder(self.parameters(), lr=self.cfg["training"]["lr"], **optimizer_kwargs)
+        optimizer = optimizer_builder(
+            self.parameters(), lr=self.cfg["training"]["lr"], **optimizer_kwargs
+        )
         config = {"optimizer": optimizer}
         # lr schedule
         if "lr_scheduler" in self.cfg["training"]:

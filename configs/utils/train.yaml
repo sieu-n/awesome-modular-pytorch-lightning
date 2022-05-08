@@ -9,7 +9,7 @@ debug:
     imsize: 3
 
 trainer:
-  gpus: [0]  # [0] for training in Google COLAB.
+  gpus: [0] # [0] for training in Google COLAB.
   accelerator: "dp"
   accumulate_grad_batches: 1
   sync_batchnorm: True

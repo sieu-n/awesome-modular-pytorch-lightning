@@ -1,15 +1,18 @@
 from argparse import ArgumentParser
 
-from torch.utils.data import DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint, LearningRateMonitor
-
 import lightning.trainers as trainers
-
-from utils.configs import read_configs, merge_config
-from utils.experiment import (setup_env, build_dataset, print_to_end, build_network, create_logger)
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from torch.utils.data import DataLoader
+from utils.configs import merge_config, read_configs
+from utils.experiment import (
+    build_dataset,
+    build_network,
+    create_logger,
+    print_to_end,
+    setup_env,
+)
 from utils.visualization.vision import PlotSamples
-
 
 if __name__ == "__main__":
     # read config yaml paths
@@ -29,26 +32,39 @@ if __name__ == "__main__":
 
     # plot samples after data augmentation
     if "debug" in cfg and "view_train_augmentation" in cfg["debug"]:
-        print(f"[*] Visualizing training samples under `{cfg['debug']['view_train_augmentation']['save_to']}")
+        print(
+            f"[*] Visualizing training samples under `{cfg['debug']['view_train_augmentation']['save_to']}"
+        )
 
         reverse_normalization = {}
         reverse_normalization["normalization_mean"] = cfg["const"]["normalization_mean"]
         reverse_normalization["normalization_std"] = cfg["const"]["normalization_std"]
 
-        PlotSamples(trn_dataset, **reverse_normalization, **cfg["debug"]["view_train_augmentation"])
+        PlotSamples(
+            trn_dataset,
+            **reverse_normalization,
+            **cfg["debug"]["view_train_augmentation"],
+        )
 
     # dataloader - train
     print("[*] Creating PyTorch `DataLoader`.")
-    trn_dataloader_cfg = merge_config(cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["trn"])
-    val_dataloader_cfg = merge_config(cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"])
+    trn_dataloader_cfg = merge_config(
+        cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["trn"]
+    )
+    val_dataloader_cfg = merge_config(
+        cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
+    )
     trn_dataloader = DataLoader(
         trn_dataset,
         batch_size=cfg["training"]["batch_size"],
         **trn_dataloader_cfg,
     )
     # dataloader - val
-    val_batch_size = cfg["validation"]["batch_size"] if "batch_size" in cfg["validation"] \
+    val_batch_size = (
+        cfg["validation"]["batch_size"]
+        if "batch_size" in cfg["validation"]
         else cfg["training"]["batch_size"]
+    )
     val_dataloader = DataLoader(
         val_dataset,
         batch_size=val_batch_size,
@@ -58,11 +74,10 @@ if __name__ == "__main__":
     # callbacks
     print_to_end("-")
     logger = create_logger(cfg, experiment_name=experiment_name)
-    checkpoint_callback = ModelCheckpoint(monitor="val_performance",
-                                          save_last=True,
-                                          save_top_k=1,
-                                          mode='max')
-    lr_callback = LearningRateMonitor(logging_interval='epoch')
+    checkpoint_callback = ModelCheckpoint(
+        monitor="val_performance", save_last=True, save_top_k=1, mode="max"
+    )
+    lr_callback = LearningRateMonitor(logging_interval="epoch")
 
     # model
     net = build_network(cfg["model"])

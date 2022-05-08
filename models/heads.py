@@ -1,1 +1,1 @@
-from .vision.heads.classification import ClassificationHead # noqa E403
+from .vision.heads.classification import ClassificationHead  # noqa E403

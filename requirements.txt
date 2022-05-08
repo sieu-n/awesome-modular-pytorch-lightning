@@ -1,10 +1,10 @@
+datetime
+matplotlib
 
 # utils
 pre-commit
-PyYAML == 6.0
 pytorch-lightning
-datetime
-matplotlib
+PyYAML == 6.0
 timm
 # for ML
 torch

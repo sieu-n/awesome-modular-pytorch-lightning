@@ -1,1 +1,1 @@
-from .vision.classification import ClassificationModel # noqa E403
+from .vision.classification import ClassificationModel  # noqa E403
