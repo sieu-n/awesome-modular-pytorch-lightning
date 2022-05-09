@@ -3,13 +3,13 @@ import lightning.trainers as trainers
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
-from utils.configs import merge_config, read_configs
+from utils.configs import merge_config
 from utils.experiment import (
     build_dataset,
     build_network,
     create_logger,
+    initialize_environment,
     print_to_end,
-    setup_env,
 )
 from utils.visualization.vision import PlotSamples
 
@@ -19,29 +19,35 @@ class Experiment():
         self.cfg_const = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
-    def setup_experiment_from_cfg(self, cfg):
+    def setup_experiment_from_cfg(self, cfg, setup_env=True, setup_dataset=True, setup_dataloader=True,
+                                  setup_model=True, setup_callbacks=True):
         self.cfg_const = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
-        self.experiment_name = setup_env(cfg)
+        if setup_env:
+            self.experiment_name = initialize_environment(cfg)
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
-        self._setup_dataset(cfg["dataset"], cfg["transform"])
+        if setup_dataset:
+            self._setup_dataset(cfg["dataset"], cfg["transform"])
 
-        val_batch_size = (
-            cfg["validation"]["batch_size"]
-            if "batch_size" in cfg["validation"]
-            else cfg["training"]["batch_size"]
-        )
-        self._setup_dataloader(
-            self.trn_dataset,
-            self.val_dataset,
-            cfg["dataloader"],
-            trn_batch_size=cfg["training"]["batch_size"],
-            val_batch_size=val_batch_size,
-        )
-        self._setup_callbacks(experiment_name=self.experiment_name)
-        self._setup_model(cfg["model"], cfg["training"])
+        if setup_dataloader:
+            val_batch_size = (
+                cfg["validation"]["batch_size"]
+                if "batch_size" in cfg["validation"]
+                else cfg["training"]["batch_size"]
+            )
+            self._setup_dataloader(
+                self.trn_dataset,
+                self.val_dataset,
+                cfg["dataloader"],
+                trn_batch_size=cfg["training"]["batch_size"],
+                val_batch_size=val_batch_size,
+            )
+        if setup_callbacks:
+            self._setup_callbacks(experiment_name=self.experiment_name)
+        if setup_model:
+            self._setup_model(cfg["model"], cfg["training"])
 
         if "logger" in self.logger_and_callbacks:
             self.logger_and_callbacks["logger"].log_hyperparams(cfg)

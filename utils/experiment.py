@@ -75,33 +75,36 @@ def build_dataset(dataset_cfg, transform_cfg):
     }
 
 
-def setup_env(cfg):
-    verbose = cfg.get("VERBOSE", "DEFAULT")
+def initialize_environment(cfg=None, base_name="default-experiment", verbose="DEFAULT", debug_mode=False):
+    if cfg:
+        base_name = cfg["name"]
+        verbose = cfg.get("VERBOSE", "DEFAULT")
+        debug_mode = "TRUE" if ("DEBUG_MODE" in cfg and cfg["DEBUG_MODE"]) else "FALSE"
+
     # set os.environ
     set_verbose(verbose)
     timestamp = get_timestamp()
-    experiment_name = f"{cfg['name']}-{timestamp}"
-    os.environ["DEBUG_MODE"] = (
-        "TRUE" if ("DEBUG_MODE" in cfg and cfg["DEBUG_MODE"]) else "FALSE"
-    )
+    experiment_name = f"{base_name}-{timestamp}"
+    os.environ["DEBUG_MODE"] = debug_mode
 
-    # print final config.
-    pretty_cfg = json.dumps(cfg, indent=2, sort_keys=True)
-    print_to_end("=")
+    if cfg:
+        # print final config.
+        pretty_cfg = json.dumps(cfg, indent=2, sort_keys=True)
+        print_to_end("=")
 
-    print("modular-PyTorch-lightning")
-    print("[*] Env setup is completed, start_time:", timestamp)
-    print("")
-    print("Final config after merging:", pretty_cfg)
+        print("modular-PyTorch-lightning")
+        print("[*] Env setup is completed, start_time:", timestamp)
+        print("")
+        print("Final config after merging:", pretty_cfg)
 
-    filename = f"configs/logs/{experiment_name}"
-    print(f"Saving config to: {filename}.yaml")
-    with open(filename + ".yaml", "w") as file:
-        yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
+        filename = f"configs/logs/{experiment_name}"
+        print(f"Saving config to: {filename}.yaml")
+        with open(filename + ".yaml", "w") as file:
+            yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
 
-    print(f"Saving config to: {filename}.json")
-    with open(filename + ".json", "w") as file:
-        json.dump(cfg, file)
+        print(f"Saving config to: {filename}.json")
+        with open(filename + ".json", "w") as file:
+            json.dump(cfg, file)
 
     print_to_end("=")
     return experiment_name

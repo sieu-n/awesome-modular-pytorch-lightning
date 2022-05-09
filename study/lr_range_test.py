@@ -1,3 +1,4 @@
+# https://arxiv.org/pdf/1506.01186.pdf
 from argparse import ArgumentParser
 from utils.experiment import read_configs
 from main import Experiment

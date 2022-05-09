@@ -1,4 +1,4 @@
-name: "CIFAR10-ResNet"
+name: "CIFAR100-ResNet"
 training:
   ID: "ClassificationTrainer"
 
@@ -32,5 +32,5 @@ model:
       cfg:
         reduction: "gap"
         dropout: 0.2
-        num_classes: 10
+        num_classes: 100
         return_logits: True # return logits instead of softmax probability.

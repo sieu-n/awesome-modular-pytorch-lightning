@@ -8,7 +8,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
     def __init__(self, training_cfg, model):
         super().__init__(training_cfg, model)
         # define loss function.
-        self.loss_fn = nn.NLLLoss()
+        self.loss_fn = nn.CrossEntropyLoss()
         self.model = model
 
     def training_step(self, batch, batch_idx):
