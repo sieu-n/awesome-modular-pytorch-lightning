@@ -118,19 +118,22 @@ def print_to_end(char="#"):
     print(spaces)
 
 
-def create_logger(cfg, experiment_name="default-run"):
-    if "wandb" in cfg:
+def create_logger(wandb_cfg=None, tensorboard_cfg=None, entire_cfg=None, experiment_name="default-run"):
+    assert ((wandb_cfg is None) + (tensorboard_cfg is None)) == 1, "Only one config should be specified."
+    if wandb_cfg:
         print(f"wandb name: {experiment_name}")
-        if "project" not in cfg["wandb"]:
-            cfg["wandb"]["project"] = "modular-pytorch-lightning-extensions"
+        if "project" not in wandb_cfg:
+            wandb_cfg["project"] = "modular-pytorch-lightning-extensions"
         logger = WandbLogger(
             name=experiment_name,
-            **cfg["wandb"],
+            **wandb_cfg,
         )
-    elif "tensorboard" in cfg:
+    elif tensorboard_cfg:
         raise NotImplementedError()
     else:
         print("[*] No logger is specified, returning `None`.")
         return None
-    logger.log_hyperparams(cfg)
+    # log hparams.
+    if entire_cfg:
+        logger.log_hyperparams(entire_cfg)
     return logger

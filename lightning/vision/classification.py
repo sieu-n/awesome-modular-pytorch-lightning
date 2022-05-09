@@ -5,8 +5,8 @@ from torchmetrics.functional import accuracy
 
 
 class ClassificationTrainer(_BaseLightningTrainer):
-    def __init__(self, cfg, model):
-        super().__init__(cfg, model)
+    def __init__(self, training_cfg, model):
+        super().__init__(training_cfg, model)
         # define loss function.
         self.loss_fn = nn.NLLLoss()
         self.model = model

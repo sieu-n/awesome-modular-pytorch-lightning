@@ -4,9 +4,9 @@ from torch.optim import lr_scheduler
 
 
 class _BaseLightningTrainer(pl.LightningModule):
-    def __init__(self, cfg, model, *args, **kwargs) -> None:
+    def __init__(self, training_cfg, model, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.cfg = cfg
+        self.training_cfg = training_cfg
         self.model = model
 
     def training_epoch_end(self, outputs):
@@ -16,10 +16,10 @@ class _BaseLightningTrainer(pl.LightningModule):
 
     def validation_epoch_end(self, validation_step_outputs):
         # TODO: make it flexible for more output formats.
-        total_acc, total_loss = map(sum, zip(*validation_step_outputs))
-        total_acc = total_acc / len(validation_step_outputs)
+        total_loss, total_performance = map(sum, zip(*validation_step_outputs))
+        total_performance = total_performance / len(validation_step_outputs)
         total_loss = total_loss / len(validation_step_outputs)
-        self.log("epoch/val_performance", total_acc)
+        self.log("epoch/val_performance", total_performance)
         self.log("epoch/val_loss", total_loss)
 
     def test_epoch_end(self, test_step_outputs):
@@ -41,8 +41,8 @@ class _BaseLightningTrainer(pl.LightningModule):
 
     def configure_optimizers(self):
         # optimizer
-        optimizer_name = self.cfg["training"]["optimizer"]
-        optimizer_kwargs = self.cfg["training"]["optimizer_cfg"]
+        optimizer_name = self.training_cfg["optimizer"]
+        optimizer_kwargs = self.training_cfg["optimizer_cfg"]
         if optimizer_name == "sgd":
             optimizer_builder = optim.SGD
         elif optimizer_name == "adam":
@@ -50,19 +50,19 @@ class _BaseLightningTrainer(pl.LightningModule):
         else:
             raise ValueError(f"Invalid value for optimizer: {optimizer_name}")
         optimizer = optimizer_builder(
-            self.parameters(), lr=self.cfg["training"]["lr"], **optimizer_kwargs
+            self.parameters(), lr=self.training_cfg["lr"], **optimizer_kwargs
         )
         config = {"optimizer": optimizer}
         # lr schedule
-        if "lr_scheduler" in self.cfg["training"]:
-            schedule_name = self.cfg["training"]["lr_scheduler"]
-            schedule_kwargs = self.cfg["training"]["lr_scheduler_cfg"]
+        if "lr_scheduler" in self.training_cfg:
+            schedule_name = self.training_cfg["lr_scheduler"]
+            schedule_kwargs = self.training_cfg["lr_scheduler_cfg"]
             if schedule_name == "const":
                 schedule_builder = lr_scheduler.LambdaLR
                 schedule_kwargs["lr_lambda"] = lambda epoch: 1
             elif schedule_name == "cosine":
                 schedule_builder = lr_scheduler.CosineAnnealingLR
-                schedule_kwargs["T_max"] = self.cfg["training"]["epochs"]
+                schedule_kwargs["T_max"] = self.training_cfg["epochs"]
             elif schedule_name == "exponential":
                 schedule_builder = lr_scheduler.ExponentialLR
             elif schedule_name == "step":
