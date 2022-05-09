@@ -75,7 +75,7 @@ if __name__ == "__main__":
     print_to_end("-")
     logger = create_logger(cfg, experiment_name=experiment_name)
     checkpoint_callback = ModelCheckpoint(
-        monitor="val_performance", save_last=True, save_top_k=1, mode="max"
+        monitor="epoch/val_performance", save_last=True, save_top_k=1, mode="max"
     )
     lr_callback = LearningRateMonitor(logging_interval="epoch")
 
