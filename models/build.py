@@ -1,5 +1,8 @@
+import timm
+
 import models.vision.backbone as CustomModels
 import torchvision.models as TorchvisionModels
+
 from utils.models import drop_layers_after
 
 
@@ -25,9 +28,29 @@ def build_backbone(backbone_cfg):
     return backbone
 
 
-def timm_feature_extractor():
-    # TODO: Load model from `timm`.
-    raise NotImplementedError("TODO")
+def timm_feature_extractor(model_id, kwargs={}):
+    """
+    Load model(and pretrained-weights) implemented in `timm`.
+
+    Model catalog can be found in: https://rwightman.github.io/pytorch-image-models/models
+
+    Parameters
+    ----------
+    model_id: str
+        Exact name of model to use. We look for `torchvision.models.{model_id}`.
+    kwargs: dict
+        kwargs for building model.
+    Returns
+    -------
+    nn.Module
+        feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads.
+    """
+    # detach final classification head(make it feature extractor)
+    kwargs["num_classes"] = 0
+    kwargs["global_pool"] = ""
+    # find model with same id & create model
+    model = timm.create_model(model_id, **kwargs)
+    return model
 
 
 def torchvision_feature_extractor(model_id, drop_after=None, kwargs={}):
@@ -56,7 +79,7 @@ def torchvision_feature_extractor(model_id, drop_after=None, kwargs={}):
             (fc): Linear(in_features=512, out_features=1000, bias=True)
         )
         ```
-    **kwargs: **kwargs
+    kwargs: dict
         kwargs for building model.
     Returns
     -------

@@ -1,0 +1,7 @@
+model:
+  backbone:
+    TYPE: "timm"
+    ID: "resnet50"
+    cfg:
+      pretrained: False
+    out_features: 2048

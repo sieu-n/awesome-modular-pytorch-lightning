@@ -16,7 +16,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
         pred = self.model(x)
 
         loss = self.loss_fn(pred, y)
-        self.log("train_loss", loss)
+        self.log("step/train_loss", loss)
         return loss
 
     def evaluate(self, batch, stage=None):
@@ -25,8 +25,4 @@ class ClassificationTrainer(_BaseLightningTrainer):
         loss = self.loss_fn(pred, y)
         class_pred = torch.argmax(pred, dim=1)
         acc = accuracy(class_pred, y)
-
-        if stage:
-            self.log(f"{stage}_loss", loss, prog_bar=True)
-            self.log(f"{stage}_acc", acc, prog_bar=True)
         return loss, acc

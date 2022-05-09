@@ -9,3 +9,4 @@ timm
 # for ML
 torch
 wandb
+timm

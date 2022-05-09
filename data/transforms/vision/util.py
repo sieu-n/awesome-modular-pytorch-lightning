@@ -1,4 +1,5 @@
 import torchvision.transforms as TT
+from torchvision.transforms.functional import InterpolationMode
 from data.transforms.common import _BaseTransform
 
 
@@ -9,3 +10,28 @@ class TorchTransforms(_BaseTransform):
 
     def input_transform(self, image):
         return self.transform_f(image)
+
+
+def str2interpolation(s):
+    assert s in ["nearest", "bilinear", "bicubic", "box", "hamming", "lancoz"]
+    conversion_d = {
+        "nearest": InterpolationMode.NEAREST,
+        "bilinear": InterpolationMode.BILINEAR,
+        "bicubic": InterpolationMode.BICUBIC,
+        "box": InterpolationMode.BOX,
+        "hamming": InterpolationMode.HAMMING,
+        "lancoz": InterpolationMode.LANCZOS,
+    }
+    return conversion_d[s]
+
+
+def interpolation2str(i):
+    conversion_d = {
+        InterpolationMode.NEAREST: "nearest",
+        InterpolationMode.BILINEAR: "bilinear",
+        InterpolationMode.BICUBIC: "bicubic",
+        InterpolationMode.BOX: "box",
+        InterpolationMode.HAMMING: "hamming",
+        InterpolationMode.LANCZOS: "lancoz",
+    }
+    return conversion_d[i]

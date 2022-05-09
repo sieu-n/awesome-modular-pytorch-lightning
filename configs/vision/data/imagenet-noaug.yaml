@@ -1,0 +1,31 @@
+dataset:
+  MODE: "torchvision"
+  NAME: "ImageNet"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./imagenet"
+    download: True
+  dataset_subset_cfg:
+    trn:
+      train: True
+    val:
+      train: False
+  trn_size: -1
+  val_size: -1 # TODO: fill `trn_size` and `val_size`.
+transform:
+  [
+    [
+      "trn,val",
+      [
+        "Resize": {"img_size": 224, "interpolation": "bilinear"},
+        "TorchTransforms": { "NAME": "CenterCrop", "size": 224 },
+        "ToTensor": {},
+        "Normalize":
+          { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] },
+      ],
+    ],
+  ]
+# other useful configs.
+const:
+  normalization_mean: [0.485, 0.456, 0.406]
+  normalization_std: [0.229, 0.224, 0.225]
