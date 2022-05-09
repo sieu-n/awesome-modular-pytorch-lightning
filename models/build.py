@@ -1,8 +1,6 @@
-import timm
-
 import models.vision.backbone as CustomModels
+import timm
 import torchvision.models as TorchvisionModels
-
 from utils.models import drop_layers_after
 
 

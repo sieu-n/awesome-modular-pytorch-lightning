@@ -12,23 +12,33 @@ dataset:
       train: False
   trn_size: -1
   val_size: -1 # TODO: fill `trn_size` and `val_size`.
-transform:
-  [
+transform: [
     [
       "trn",
       [
-        "RandomResizedCropAndInterpolation": { "scale": [0.08, 1.0], "ratio": [0.75., 1.3333], "interpolation": "random"},
+        "RandomResizedCropAndInterpolation":
+          {
+            "scale": [0.08, 1.0],
+            "ratio": [0.75., 1.3333],
+            "interpolation": "random",
+          },
         "TorchTransforms": { "NAME": "RandomHorizontalFlip" },
         # DATA AUGMENTATION(rand augment, auto augment, ...)
-        "TorchTransforms": { "NAME": "ColorJitter", "brightness": 0.4, "contrast": 0.4, "saturation": 0.4 },
+        "TorchTransforms":
+          {
+            "NAME": "ColorJitter",
+            "brightness": 0.4,
+            "contrast": 0.4,
+            "saturation": 0.4,
+          },
       ],
     ],
     [
       "val",
       [
-        "Resize": {"img_size": 224, "interpolation": "bilinear"},
+        "Resize": { "img_size": 224, "interpolation": "bilinear" },
         "TorchTransforms": { "NAME": "CenterCrop", "size": 224 },
-      ]
+      ],
     ],
     [
       "trn,val",

@@ -4,9 +4,8 @@ import warnings
 
 import torch
 import torchvision.transforms.functional as TF
-
 from data.transforms.common import _BaseTransform
-from data.transforms.vision.util import str2interpolation, interpolation2str
+from data.transforms.vision.util import str2interpolation
 
 
 class Normalize(_BaseTransform):
@@ -71,7 +70,7 @@ class ToPIL(_BaseTransform):
         return TF.to_pil_image(image)
 
 
-_RANDOM_INTERPOLATION = (str2interpolation('bilinear'), str2interpolation('bicubic'))
+_RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicubic"))
 
 
 class RandomResizedCropAndInterpolation(_BaseTransform):
@@ -90,8 +89,13 @@ class RandomResizedCropAndInterpolation(_BaseTransform):
         interpolation: Default: PIL.Image.BILINEAR
     """
 
-    def __init__(self, size, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.),
-                 interpolation='bilinear'):
+    def __init__(
+        self,
+        size,
+        scale=(0.08, 1.0),
+        ratio=(3.0 / 4.0, 4.0 / 3.0),
+        interpolation="bilinear",
+    ):
         if isinstance(size, (list, tuple)):
             self.size = tuple(size)
         else:
@@ -99,7 +103,7 @@ class RandomResizedCropAndInterpolation(_BaseTransform):
         if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
             warnings.warn("range should be of kind (min, max)")
 
-        if interpolation == 'random':
+        if interpolation == "random":
             self.interpolation = _RANDOM_INTERPOLATION
         else:
             self.interpolation = str2interpolation(interpolation)
@@ -163,13 +167,15 @@ class RandomResizedCropAndInterpolation(_BaseTransform):
 
     def __repr__(self):
         if isinstance(self.interpolation, (tuple, list)):
-            interpolate_str = ' '.join([str2interpolation(x) for x in self.interpolation])
+            interpolate_str = " ".join(
+                [str2interpolation(x) for x in self.interpolation]
+            )
         else:
             interpolate_str = str2interpolation(self.interpolation)
-        format_string = self.__class__.__name__ + '(size={0}'.format(self.size)
-        format_string += ', scale={0}'.format(tuple(round(s, 4) for s in self.scale))
-        format_string += ', ratio={0}'.format(tuple(round(r, 4) for r in self.ratio))
-        format_string += ', interpolation={0})'.format(interpolate_str)
+        format_string = self.__class__.__name__ + "(size={0}".format(self.size)
+        format_string += ", scale={0}".format(tuple(round(s, 4) for s in self.scale))
+        format_string += ", ratio={0}".format(tuple(round(r, 4) for r in self.ratio))
+        format_string += ", interpolation={0})".format(interpolate_str)
         return format_string
 
 
@@ -182,4 +188,6 @@ class Resize(_BaseTransform):
         self.antialias = antialias
 
     def input_transform(self, image):
-        return TF.resize(image, self.size, self.interpolation, self.max_size, self.antialias) 
+        return TF.resize(
+            image, self.size, self.interpolation, self.max_size, self.antialias
+        )

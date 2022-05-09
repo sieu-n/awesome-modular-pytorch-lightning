@@ -1,6 +1,6 @@
 import torchvision.transforms as TT
-from torchvision.transforms.functional import InterpolationMode
 from data.transforms.common import _BaseTransform
+from torchvision.transforms.functional import InterpolationMode
 
 
 class TorchTransforms(_BaseTransform):

@@ -17,7 +17,7 @@ transform:
     [
       "trn,val",
       [
-        "Resize": {"img_size": 224, "interpolation": "bilinear"},
+        "Resize": { "img_size": 224, "interpolation": "bilinear" },
         "TorchTransforms": { "NAME": "CenterCrop", "size": 224 },
         "ToTensor": {},
         "Normalize":
