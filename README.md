@@ -20,7 +20,7 @@ Notes(rules) for development
 
 - CIFAR10 classification
 ```
-!python main.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml configs/utils/train.yaml configs/utils/debug.yaml 
+!python main.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml
 ```
 
 ## Progress
