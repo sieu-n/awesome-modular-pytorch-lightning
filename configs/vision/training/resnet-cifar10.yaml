@@ -1,3 +1,4 @@
+name: "CIFAR10-ResNet"
 training:
   ID: "ClassificationTrainer"
 

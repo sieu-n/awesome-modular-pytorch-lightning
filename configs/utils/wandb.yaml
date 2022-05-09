@@ -1,2 +1,3 @@
 wandb:
   project: "modular-pytorch-lightning-extensions"
+  name: "default-experiment"

@@ -1,4 +1,5 @@
 # base config for training.
+name: "default-experiment"
 VERBOSE: "DEFAULT"
 DEBUG_MODE: False
 

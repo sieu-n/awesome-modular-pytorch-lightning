@@ -79,7 +79,8 @@ def setup_env(cfg):
     verbose = cfg.get("VERBOSE", "DEFAULT")
     # set os.environ
     set_verbose(verbose)
-    set_timestamp()
+    timestamp = get_timestamp()
+    experiment_name = f"{cfg['name']}-{timestamp}"
     os.environ["DEBUG_MODE"] = (
         "TRUE" if ("DEBUG_MODE" in cfg and cfg["DEBUG_MODE"]) else "FALSE"
     )
@@ -89,11 +90,11 @@ def setup_env(cfg):
     print_to_end("=")
 
     print("modular-PyTorch-lightning")
-    print("[*] Env setup is completed, start_time:", os.environ["CYCLE_NAME"])
+    print("[*] Env setup is completed, start_time:", timestamp)
     print("")
     print("Final config after merging:", pretty_cfg)
 
-    filename = f"configs/logs/{os.environ['CYCLE_NAME']}"
+    filename = f"configs/logs/{experiment_name}"
     print(f"Saving config to: {filename}.yaml")
     with open(filename + ".yaml", "w") as file:
         yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
@@ -103,12 +104,11 @@ def setup_env(cfg):
         json.dump(cfg, file)
 
     print_to_end("=")
-    experiment_name = f"run-{os.environ['CYCLE_NAME']}"
     return experiment_name
 
 
-def set_timestamp():
-    os.environ["CYCLE_NAME"] = datetime.now().strftime("%b%d_%H-%M-%S")
+def get_timestamp():
+    return datetime.now().strftime("%b%d_%H-%M-%S")
 
 
 def print_to_end(char="#"):
@@ -118,7 +118,7 @@ def print_to_end(char="#"):
     print(spaces)
 
 
-def create_logger(wandb_cfg=None, tensorboard_cfg=None, entire_cfg=None, experiment_name="default-run"):
+def create_logger(experiment_name, wandb_cfg=None, tensorboard_cfg=None, entire_cfg=None):
     assert ((wandb_cfg is None) + (tensorboard_cfg is None)) == 1, "Only one config should be specified."
     if wandb_cfg:
         print(f"wandb name: {experiment_name}")

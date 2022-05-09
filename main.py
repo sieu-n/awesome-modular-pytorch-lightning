@@ -1,3 +1,4 @@
+import os
 import lightning.trainers as trainers
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
@@ -23,6 +24,8 @@ class Experiment():
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
         self.experiment_name = setup_env(cfg)
+        # set `experiment_name` as os.environ
+        os.environ["EXPERIMENT_NAME"] = self.experiment_name
         self._setup_dataset(cfg["dataset"], cfg["transform"])
 
         val_batch_size = (
@@ -37,7 +40,7 @@ class Experiment():
             trn_batch_size=cfg["training"]["batch_size"],
             val_batch_size=val_batch_size,
         )
-        self._setup_callbacks()
+        self._setup_callbacks(experiment_name=self.experiment_name)
         self._setup_model(cfg["model"], cfg["training"])
 
         if "logger" in self.logger_and_callbacks:
@@ -94,7 +97,10 @@ class Experiment():
 
         self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
 
-    def _setup_callbacks(self, wandb_cfg=None, tensorboard_cfg=None):
+    def _setup_callbacks(self, experiment_name=None, wandb_cfg=None, tensorboard_cfg=None):
+        if not experiment_name:
+            assert hasattr(self, "experiment_name")
+            experiment_name = self.experiment_name
         # callbacks
         print_to_end("-")
         logger_cfg = {
@@ -116,9 +122,10 @@ class Experiment():
 
         self.network, self.model = net, model
 
-    def train(self, use_existing=False, trainer_cfg={}, epochs=None, root_dir=None, test=True):
-        if use_existing:
+    def train(self, use_existing_trainer=False, trainer_cfg={}, epochs=None, root_dir=None, test=True):
+        if use_existing_trainer:
             train_trainer = self.trainers["train"]
+            raise NotImplementedError()
         else:
             if not root_dir:
                 root_dir = f"results/checkpoints/{self.experiment_name}"
