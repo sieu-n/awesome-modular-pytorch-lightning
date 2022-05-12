@@ -23,11 +23,17 @@ Notes(rules) for development
 !python main.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml
 ```
 
-## Progress
+## Overview
 
-- Training procedure (`LightningModule`)
-- Model architectures
+- If not implemented yet, you may take an instance of `main.py: Experiment` and override any part of it. 
+- Training procedure (`LightningModule`): List of available training procedures are listed in `lightning/trainers.py`
+- Model architectures: 
+  - Backbone models implemented in `torchvision.models` can be used.
+  - Backbone models implemented in `timm` can be used.
+  - Although we highly recommend using `timm`, as it is throughly evaluated and managed, custom implementations of some architectures are listed in `models/backbone/__init__.py`.
 - Dataset
+  - Dataset: currently only `torchvision` datasets are supported by `Experiment`, however you could use `torchvision.datasets.ImageFolder` to load from custom dataset.
+  - Transformations(data augmentation): Transforms must be listed in one in [`data/transforms/vision/__init__.py`]
 - Other features
   - Optimizers
   - Metrics / loss

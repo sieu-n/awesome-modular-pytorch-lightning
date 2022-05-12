@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-from utils.experiment import read_configs
+from utils.configs import read_configs
 from main import Experiment
 
 
@@ -14,5 +14,5 @@ if __name__ == "__main__":
     # train
     experiment = Experiment(cfg)
     experiment.setup_experiment_from_cfg(cfg)
-    result = experiment.train()
+    result = experiment.train(trainer_cfg=cfg["trainer"])
     print("Result:", result)

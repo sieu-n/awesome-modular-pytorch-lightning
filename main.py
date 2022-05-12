@@ -45,7 +45,11 @@ class Experiment():
                 val_batch_size=val_batch_size,
             )
         if setup_callbacks:
-            self._setup_callbacks(experiment_name=self.experiment_name)
+            self._setup_callbacks(
+                experiment_name=self.experiment_name,
+                wandb_cfg=cfg.get("wandb", None),
+                tensorboard_cfg=cfg.get("tensorboard", None),
+            )
         if setup_model:
             self._setup_model(cfg["model"], cfg["training"])
 

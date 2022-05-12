@@ -1,10 +1,12 @@
 import json
 import os
 from datetime import datetime
+import pickle
 
 import data.transforms.vision as DT_V
 import models.model as TorchModel
 import yaml
+from copy import deepcopy
 from data.dataset.util import torchvision_dataset
 from data.transforms.common import ApplyDataTransformations, ComposeTransforms
 from pytorch_lightning.loggers import WandbLogger
@@ -37,42 +39,82 @@ def build_dataset(dataset_cfg, transform_cfg):
         raise ValueError(f"Invalid dataset type: `{dataset_mode}`")
     # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
 
-    # 2. build list of transformations using `transform` defined in config.
+    # 2.1. build list of transformations using `transform` defined in config.
     # transforms: dict{subset_key: [t1, t2, ...], ...}
+    TRANSFORM_DECLARATIONS = [DT_V]
     transforms = {subset: [] for subset in datasets.keys()}
     for subsets, t_configs in transform_cfg:
         t = []
         # for each element of transforms,
         for t_config in t_configs:
-            # parse `name``: str and `kwargs`: str
-            for x in t_config.items():
-                name, kwargs = x
-            # find transform name that matches `name` from TRANSFORM_DECLARATIONS
-            TRANSFORM_DECLARATIONS = [DT_V]
-            is_name_in = [hasattr(file, name) for file in TRANSFORM_DECLARATIONS]
-            assert (
-                sum(is_name_in) == 1
-            ), f"Transform `{name}` was found in `{sum(is_name_in)} files."
-            file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
-            transform_f = getattr(file, name)
-            print(f"[*] Transform {name} --> {transform_f}: found in {file.__name__}")
+            name, kwargs = t_config["name"], t_config["args"]
+            if type(name) == str:
+                # find transform name that matches `name` from TRANSFORM_DECLARATIONS
+                is_name_in = [hasattr(file, name) for file in TRANSFORM_DECLARATIONS]
+                assert (
+                    sum(is_name_in) == 1
+                ), f"Transform `{name}` was found in `{sum(is_name_in)} files."
+                file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
+                print(f"[*] Transform {name} --> {getattr(file, name)}: found in {file.__name__}")
+                name = getattr(file, name)
 
             # build transform using arguments.
-            t.append(transform_f(**kwargs))
+            t.append(name(**kwargs))
 
         for subset in subsets.split(","):
             transforms[subset] += t
 
-    # 3. apply transformations and return datasets that will actually be used.
+    # 2.2. actually apply transformations.
     transforms = {
         subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
     }
-    return {
+    datasets = {
         subset: ApplyDataTransformations(
             base_dataset=datasets[subset], transforms=transforms[subset]
         )
         for subset in datasets.keys()
     }
+    # 3. apply datasets.
+    DATASET_DECLARATIONS = []
+    apply_dataset_cfg = dataset_cfg["datasets"]
+    for subsets, d_configs in apply_dataset_cfg:
+        d_operations = []
+        # for each element of transforms,
+        for d_config in d_configs:
+            name, kwargs = d_config["name"], d_config["args"]
+            if type(name) == str:
+                # find transform name that matches `name` from TRANSFORM_DECLARATIONS
+                is_name_in = [hasattr(file, name) for file in DATASET_DECLARATIONS]
+                assert (
+                    sum(is_name_in) == 1
+                ), f"Dataset `{name}` was found in `{sum(is_name_in)} files."
+                file = DATASET_DECLARATIONS[is_name_in.index(True)]
+                print(f"[*] Dataset {name} --> {getattr(file, name)}: found in {file.__name__}")
+                name = getattr(file, name)
+
+            # build transform using arguments.
+            d_operations.append(name(**kwargs))
+
+        for subset in subsets.split(","):
+            for d_operation in d_operations:
+                datasets[subset] = d_operation(datasets[subset])
+    return datasets
+
+
+def replace_non_json_serializable(cfg):
+    def is_jsonable(x):
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+    if type(cfg) == dict:
+        for key, value in cfg.items():
+            if not is_jsonable(value):
+                cfg[key] = replace_non_json_serializable(cfg[key])
+        return cfg
+    else:
+        return cfg if is_jsonable(cfg) else f"instance of {cfg.__class__.__name__}, pls check pkl."
 
 
 def initialize_environment(cfg=None, base_name="default-experiment", verbose="DEFAULT", debug_mode=False):
@@ -89,7 +131,8 @@ def initialize_environment(cfg=None, base_name="default-experiment", verbose="DE
 
     if cfg:
         # print final config.
-        pretty_cfg = json.dumps(cfg, indent=2, sort_keys=True)
+        pretty_cfg = replace_non_json_serializable(deepcopy(cfg))
+        pretty_cfg = json.dumps(pretty_cfg, indent=2, sort_keys=True)
         print_to_end("=")
 
         print("modular-PyTorch-lightning")
@@ -98,13 +141,19 @@ def initialize_environment(cfg=None, base_name="default-experiment", verbose="DE
         print("Final config after merging:", pretty_cfg)
 
         filename = f"configs/logs/{experiment_name}"
+
+        # pkl should be guaranteed to work.
+        print(f"Saving config to: {filename}.pkl")
+        with open(filename + ".pkl", "wb") as file:
+            pickle.dump(cfg, file)
+
         print(f"Saving config to: {filename}.yaml")
         with open(filename + ".yaml", "w") as file:
-            yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
+            yaml.dump(pretty_cfg, file, allow_unicode=True, default_flow_style=False)
 
         print(f"Saving config to: {filename}.json")
         with open(filename + ".json", "w") as file:
-            json.dump(cfg, file)
+            json.dump(pretty_cfg, file)
 
     print_to_end("=")
     return experiment_name

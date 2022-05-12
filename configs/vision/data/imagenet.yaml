@@ -16,36 +16,35 @@ transform: [
     [
       "trn",
       [
-        "RandomResizedCropAndInterpolation":
+        { "name" "RandomResizedCropAndInterpolation", "args":
           {
             "scale": [0.08, 1.0],
             "ratio": [0.75., 1.3333],
             "interpolation": "random",
-          },
-        "TorchTransforms": { "NAME": "RandomHorizontalFlip" },
+          }},
+        { "name" "TorchTransforms", "args": { "NAME": "RandomHorizontalFlip" }},
         # DATA AUGMENTATION(rand augment, auto augment, ...)
-        "TorchTransforms":
+        { "name" "TorchTransforms", "args":
           {
             "NAME": "ColorJitter",
             "brightness": 0.4,
             "contrast": 0.4,
             "saturation": 0.4,
-          },
+          }},
       ],
     ],
     [
       "val",
       [
-        "Resize": { "img_size": 224, "interpolation": "bilinear" },
-        "TorchTransforms": { "NAME": "CenterCrop", "size": 224 },
+        { "name" "Resize", "args": { "img_size": 224, "interpolation": "bilinear" }},
+        { "name" "TorchTransforms", "args": { "NAME": "CenterCrop", "size": 224 }},
       ],
     ],
     [
       "trn,val",
       [
-        "ToTensor": {},
-        "Normalize":
-          { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] },
+        { "name" "ToTensor", "args": {}},
+        { "name" "Normalize", "args": { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] }},
       ],
     ],
   ]

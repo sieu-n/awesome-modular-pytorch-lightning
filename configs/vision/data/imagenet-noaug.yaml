@@ -17,11 +17,10 @@ transform:
     [
       "trn,val",
       [
-        "Resize": { "img_size": 224, "interpolation": "bilinear" },
-        "TorchTransforms": { "NAME": "CenterCrop", "size": 224 },
-        "ToTensor": {},
-        "Normalize":
-          { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] },
+        { "name": "Resize", "args": { "img_size": 224, "interpolation": "bilinear" }},
+        { "name": "TorchTransforms", "args": { "NAME": "CenterCrop", "size": 224 }},
+        { "name": "ToTensor", "args": {}},
+        { "name": "Normalize", "args": { "mean": [0.485, 0.456, 0.406], "std": [0.229, 0.224, 0.225] }},
       ],
     ],
   ]

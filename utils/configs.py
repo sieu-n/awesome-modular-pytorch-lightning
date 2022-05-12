@@ -1,4 +1,5 @@
 import yaml
+from copy import deepcopy
 
 
 def read_yaml(yaml_path):
@@ -52,7 +53,7 @@ def merge_config(cfg_base, cfg_from):
         for k in f.keys():
             if isinstance(f[k], dict):
                 if k in base:
-                    base[k] = recursively_write(base[k], f[k])
+                    base[k] = recursively_write(deepcopy(base[k]), f[k])
                 else:
                     base[k] = f[k]
             # overwrite, like the case of "optimizer/lr" and "d" in the example.
@@ -60,7 +61,7 @@ def merge_config(cfg_base, cfg_from):
                 base[k] = f[k]
         return base
 
-    return recursively_write(cfg_base, cfg_from)
+    return recursively_write(deepcopy(cfg_base), cfg_from)
 
 
 def read_configs(yaml_paths):
