@@ -16,12 +16,19 @@ Notes(rules) for development
 - The development of this repository should stick towards the [PEP](https://peps.python.org/)(Python Enhancement Proposals) conventions and `flake8` linting.
 - Function or class docstrings must follow Numpy [style guidelines](https://numpydoc.readthedocs.io/en/latest/format.html).
 - The performance of every implementation has to be validated before being merged into `main`. The results and config used to reproduce the results should be presented in the relevant `README.MD` file.
-## How to run experiments
 
-- CIFAR10 classification
+
+## How to run experiments
+1. Run experiments using `train.py`
+
+- CIFAR10 image classification with `ResNet18`.
 ```
-!python main.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml
+!python train.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml
 ```
+
+2. Use the `Experiment` class to run complex experiments for research, hyperparameter sweep, ...:
+
+For example, please have a look at the `study/dataset_size_experiment.py`.
 
 ## Overview
 
