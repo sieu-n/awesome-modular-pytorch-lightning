@@ -1,15 +1,14 @@
 import json
 import os
-from datetime import datetime
 import pickle
+from copy import deepcopy
+from datetime import datetime
 
 import data.transforms.vision as DT_V
 import models.model as TorchModel
 import yaml
-from copy import deepcopy
 from data.dataset.util import torchvision_dataset
 from data.transforms.common import ApplyDataTransformations, ComposeTransforms
-from pytorch_lightning.loggers import WandbLogger
 
 from .verbose import set_verbose
 
@@ -55,7 +54,9 @@ def build_dataset(dataset_cfg, transform_cfg):
                     sum(is_name_in) == 1
                 ), f"Transform `{name}` was found in `{sum(is_name_in)} files."
                 file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
-                print(f"[*] Transform {name} --> {getattr(file, name)}: found in {file.__name__}")
+                print(
+                    f"[*] Transform {name} --> {getattr(file, name)}: found in {file.__name__}"
+                )
                 name = getattr(file, name)
 
             # build transform using arguments.
@@ -76,7 +77,7 @@ def build_dataset(dataset_cfg, transform_cfg):
     }
     # 3. apply datasets.
     DATASET_DECLARATIONS = []
-    apply_dataset_cfg = dataset_cfg["datasets"]
+    apply_dataset_cfg = dataset_cfg["transformations"]
     for subsets, d_configs in apply_dataset_cfg:
         d_operations = []
         # for each element of transforms,
@@ -89,11 +90,13 @@ def build_dataset(dataset_cfg, transform_cfg):
                     sum(is_name_in) == 1
                 ), f"Dataset `{name}` was found in `{sum(is_name_in)} files."
                 file = DATASET_DECLARATIONS[is_name_in.index(True)]
-                print(f"[*] Dataset {name} --> {getattr(file, name)}: found in {file.__name__}")
+                print(
+                    f"[*] Dataset {name} --> {getattr(file, name)}: found in {file.__name__}"
+                )
                 name = getattr(file, name)
 
-            # build transform using arguments.
-            d_operations.append(name(**kwargs))
+            # build dataset operation using arguments.
+            d_operations.append(lambda base_dataset: name(base_dataset, **kwargs))
 
         for subset in subsets.split(","):
             for d_operation in d_operations:
@@ -108,16 +111,23 @@ def replace_non_json_serializable(cfg):
             return True
         except (TypeError, OverflowError):
             return False
+
     if type(cfg) == dict:
         for key, value in cfg.items():
             if not is_jsonable(value):
                 cfg[key] = replace_non_json_serializable(cfg[key])
         return cfg
     else:
-        return cfg if is_jsonable(cfg) else f"instance of {cfg.__class__.__name__}, pls check pkl."
+        return (
+            cfg
+            if is_jsonable(cfg)
+            else f"instance of {cfg.__class__.__name__}, pls check pkl."
+        )
 
 
-def initialize_environment(cfg=None, base_name="default-experiment", verbose="DEFAULT", debug_mode=False):
+def initialize_environment(
+    cfg=None, base_name="default-experiment", verbose="DEFAULT", debug_mode=False
+):
     if cfg:
         base_name = cfg["name"]
         verbose = cfg.get("VERBOSE", "DEFAULT")
@@ -168,24 +178,3 @@ def print_to_end(char="#"):
     columns = max(int(columns), 40)
     spaces = char * (columns // len(char))
     print(spaces)
-
-
-def create_logger(experiment_name, wandb_cfg=None, tensorboard_cfg=None, entire_cfg=None):
-    assert ((wandb_cfg is None) + (tensorboard_cfg is None)) == 1, "Only one config should be specified."
-    if wandb_cfg:
-        print(f"wandb name: {experiment_name}")
-        if "project" not in wandb_cfg:
-            wandb_cfg["project"] = "modular-pytorch-lightning-extensions"
-        logger = WandbLogger(
-            name=experiment_name,
-            **wandb_cfg,
-        )
-    elif tensorboard_cfg:
-        raise NotImplementedError()
-    else:
-        print("[*] No logger is specified, returning `None`.")
-        return None
-    # log hparams.
-    if entire_cfg:
-        logger.log_hyperparams(entire_cfg)
-    return logger

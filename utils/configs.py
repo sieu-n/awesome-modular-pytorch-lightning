@@ -1,5 +1,6 @@
-import yaml
 from copy import deepcopy
+
+import yaml
 
 
 def read_yaml(yaml_path):

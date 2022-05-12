@@ -76,7 +76,7 @@ _RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicub
 class RandomResizedCropAndInterpolation(_BaseTransform):
     """
     Common procedure for affine data augmentation in ImageNet implemented in `timm`.
-    Reference: https://github.com/rwightman/pytorch-image-models/blob/6d4665bb52390974e0cf9674c60c41946d2f4ee2/timm/data/transforms.py#L85
+    Reference: https://bit.ly/3swswNE
     Crop the given PIL Image to random size and aspect ratio with random interpolation.
     A crop of random size (default: of 0.08 to 1.0) of the original size and a random
     aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio is made. This crop

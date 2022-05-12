@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
-from utils.configs import read_configs
-from main import Experiment
 
+from main import Experiment
+from utils.configs import read_configs
 
 if __name__ == "__main__":
     # read config yaml paths
@@ -14,5 +14,7 @@ if __name__ == "__main__":
     # train
     experiment = Experiment(cfg)
     experiment.setup_experiment_from_cfg(cfg)
-    result = experiment.train(trainer_cfg=cfg["trainer"])
+    result = experiment.train(
+        trainer_cfg=cfg["trainer"], epochs=cfg["training"]["epochs"]
+    )
     print("Result:", result)

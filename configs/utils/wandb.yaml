@@ -1,4 +1,4 @@
 wandb:
   project: "modular-pytorch-lightning-extensions"
   # name of run is set as `cfg["name"]`.
-  #name: "default-experiment" 
+  #name: "default-experiment"

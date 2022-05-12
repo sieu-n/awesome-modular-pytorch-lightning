@@ -5,7 +5,7 @@ DEBUG_MODE: False
 
 debug:
   view_train_augmentation:
-    save_to: "results/training_samples.png"
+    save_to: "vis/training_samples.png"
     subplot_dim: [5, 5]
     imsize: 3
 

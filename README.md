@@ -25,9 +25,9 @@ Notes(rules) for development
 
 ## Overview
 
-- If not implemented yet, you may take an instance of `main.py: Experiment` and override any part of it. 
+- If not implemented yet, you may take an instance of `main.py: Experiment` and override any part of it.
 - Training procedure (`LightningModule`): List of available training procedures are listed in `lightning/trainers.py`
-- Model architectures: 
+- Model architectures:
   - Backbone models implemented in `torchvision.models` can be used.
   - Backbone models implemented in `timm` can be used.
   - Although we highly recommend using `timm`, as it is throughly evaluated and managed, custom implementations of some architectures are listed in `models/backbone/__init__.py`.

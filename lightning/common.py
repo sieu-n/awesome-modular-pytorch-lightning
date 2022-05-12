@@ -23,9 +23,11 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.log("epoch/val_loss", total_loss)
 
     def test_epoch_end(self, test_step_outputs):
-        total_acc = sum([x for x in test_step_outputs])
-        total_acc = total_acc / len(test_step_outputs)
-        self.log("epoch/test_performance", total_acc)
+        total_loss, total_performance = map(sum, zip(*test_step_outputs))
+        total_performance = total_performance / len(test_step_outputs)
+        total_loss = total_loss / len(test_step_outputs)
+        self.log("epoch/test_performance", total_performance)
+        self.log("epoch/test_loss", total_loss)
 
     def training_step(self, batch, batch_idx):
         raise NotImplementedError()

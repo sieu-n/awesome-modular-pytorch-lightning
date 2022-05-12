@@ -1,4 +1,5 @@
 import os
+
 import lightning.trainers as trainers
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
@@ -7,25 +8,33 @@ from utils.configs import merge_config
 from utils.experiment import (
     build_dataset,
     build_network,
-    create_logger,
     initialize_environment,
     print_to_end,
 )
+from utils.logging import create_logger
 from utils.visualization.vision import PlotSamples
 
 
-class Experiment():
+class Experiment:
     def __init__(self, cfg={}):
         self.cfg_const = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
-    def setup_experiment_from_cfg(self, cfg, setup_env=True, setup_dataset=True, setup_dataloader=True,
-                                  setup_model=True, setup_callbacks=True):
+    def setup_experiment_from_cfg(
+        self,
+        cfg,
+        setup_env=True,
+        setup_dataset=True,
+        setup_dataloader=True,
+        setup_model=True,
+        setup_callbacks=True,
+    ):
         self.cfg_const = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
         if setup_env:
             self.experiment_name = initialize_environment(cfg)
+        self.exp_dir = f"results/{self.experiment_name}"
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
         if setup_dataset:
@@ -65,23 +74,29 @@ class Experiment():
 
         # plot samples after data augmentation
         if self.cfg_debug and "view_train_augmentation" in self.cfg_debug:
-            print(
-                f"[*] Visualizing training samples under `{self.cfg_debug['view_train_augmentation']['save_to']}"
+            save_to = (
+                f"{self.exp_dir}/{self.cfg_debug['view_train_augmentation']['save_to']}"
             )
-
-            reverse_normalization = {}
-            reverse_normalization["normalization_mean"] = self.cfg_const["normalization_mean"]
-            reverse_normalization["normalization_std"] = self.cfg_const["normalization_std"]
+            print(f"[*] Visualizing training samples under `{save_to}")
 
             PlotSamples(
                 trn_dataset,
-                **reverse_normalization,
+                normalization_mean=self.cfg_const["normalization_mean"],
+                normalization_std=self.cfg_const["normalization_std"],
+                root_dir=self.exp_dir,
                 **self.cfg_debug["view_train_augmentation"],
             )
 
         self.trn_dataset, self.val_dataset = trn_dataset, val_dataset
 
-    def _setup_dataloader(self, trn_dataset, val_dataset, dataloader_cfg, trn_batch_size, val_batch_size=None):
+    def _setup_dataloader(
+        self,
+        trn_dataset,
+        val_dataset,
+        dataloader_cfg,
+        trn_batch_size,
+        val_batch_size=None,
+    ):
         # dataloader - train
         print("[*] Creating PyTorch `DataLoader`.")
         trn_dataloader_cfg = merge_config(
@@ -107,7 +122,9 @@ class Experiment():
 
         self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
 
-    def _setup_callbacks(self, experiment_name=None, wandb_cfg=None, tensorboard_cfg=None):
+    def _setup_callbacks(
+        self, experiment_name=None, wandb_cfg=None, tensorboard_cfg=None
+    ):
         if not experiment_name:
             assert hasattr(self, "experiment_name")
             experiment_name = self.experiment_name
@@ -123,7 +140,10 @@ class Experiment():
         )
         lr_callback = LearningRateMonitor(logging_interval="epoch")
 
-        self.logger_and_callbacks = {"logger": logger, "callbacks": [checkpoint_callback, lr_callback]}
+        self.logger_and_callbacks = {
+            "logger": logger,
+            "callbacks": [checkpoint_callback, lr_callback],
+        }
 
     def _setup_model(self, model_cfg, training_cfg):
         # model
@@ -132,17 +152,28 @@ class Experiment():
 
         self.network, self.model = net, model
 
-    def train(self, use_existing_trainer=False, trainer_cfg={}, epochs=None, root_dir=None, test=True):
+    def train(
+        self,
+        use_existing_trainer=False,
+        trainer_cfg={},
+        epochs=None,
+        root_dir=None,
+        test_after=True,
+    ):
         if use_existing_trainer:
             train_trainer = self.trainers["train"]
             raise NotImplementedError()
         else:
             if not root_dir:
-                root_dir = f"results/checkpoints/{self.experiment_name}"
+                root_dir = f"{self.exp_dir}/checkpoints"
             train_trainer = pl.Trainer(
                 max_epochs=epochs,
-                default_root_dir=f"results/checkpoints/{self.experiment_name}",
-                **(self.logger_and_callbacks if hasattr(self, "logger_and_callbacks") else {}),
+                default_root_dir=f"{self.exp_dir}/checkpoints",
+                **(
+                    self.logger_and_callbacks
+                    if hasattr(self, "logger_and_callbacks")
+                    else {}
+                ),
                 **trainer_cfg,
             )
         # keep track of trainer
@@ -151,6 +182,13 @@ class Experiment():
         self.trainers["train"] = train_trainer
 
         train_trainer.fit(self.model, self.trn_dataloader, self.val_dataloader)
-        if test:
-            res = self.trainer.test(self.model, self.val_dataloader)
-            return res
+        if test_after:
+            res = train_trainer.test(self.model, self.val_dataloader)
+        else:
+            res = {}
+        if (
+            hasattr(self, "logger_and_callbacks")
+            and "logger" in self.logger_and_callbacks
+        ):
+            self.logger_and_callbacks["logger"].experiment.finish()
+        return res
