@@ -23,12 +23,30 @@ Notes(rules) for development
 
 - CIFAR10 image classification with `ResNet18`.
 ```
-!python train.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml
+!python train.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml configs/utils/train.yaml
 ```
 
 2. Use the `Experiment` class to run complex experiments for research, hyperparameter sweep, ...:
 
 For example, please have a look at the `study/dataset_size_experiment.py`.
+
+### How does config files work?
+
+Training involves many configs. `LightCollections` implements a cascading config system where we use multiple layers of config 
+files to define differnt parts of the experiment. For example, in the CIFAR10 example above, we use 5 config files.
+```
+configs/vision/training/resnet-cifar10.yaml
+configs/vision/models/resnet/resnet18-custom.yaml
+configs/vision/data/cifar10.yaml
+configs/utils/wandb.yaml
+configs/utils/train.yaml
+```
+here, if we want to log to `TensorBoard` instead of `wandb`, you may replace 
+```
+configs/utils/wandb.yaml
+-> configs/utils/tensorboard.yaml
+```
+these cascading config files are complied at the start of `train.py`, where configs are overriden in inverse order.
 
 ## Overview
 
