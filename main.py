@@ -12,7 +12,7 @@ from utils.experiment import (
     print_to_end,
 )
 from utils.logging import create_logger
-from utils.visualization.vision import PlotSamples
+from utils.visualization.utils import plot_samples_from_dataset
 
 
 class Experiment:
@@ -79,8 +79,11 @@ class Experiment:
             )
             print(f"[*] Visualizing training samples under `{save_to}")
 
-            PlotSamples(
+            plot_samples_from_dataset(
                 trn_dataset,
+                task=self.cfg_const["task"],
+                image_tensor_to_numpy=True,
+                unnormalize=True,
                 normalization_mean=self.cfg_const["normalization_mean"],
                 normalization_std=self.cfg_const["normalization_std"],
                 root_dir=self.exp_dir,

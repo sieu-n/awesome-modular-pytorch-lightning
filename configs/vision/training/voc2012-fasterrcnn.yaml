@@ -1,0 +1,93 @@
+name: "VOC2012-FasterRCNN-ResNet"
+
+transform:
+  [
+    [
+      "trn",
+      [
+        {
+          "name": "DetectionCenterCrop",
+          "args": { "NAME": "RandomCrop", "size": 32, "padding": 4 },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+      ],
+    ],
+    [
+      "trn,val",
+      [
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": [0.4038, 0.4546, 0.4814],
+              "std": [1,1,1],
+            },
+        },
+      ],
+    ],
+    [
+      "trn",
+      [
+        {
+          "name": "FasterRCNNROILoader",
+          "args": {
+            "ratio_large": 2,
+            "ratio_small": 0.5,
+            "ensure_one_positive": True,
+            "positive_roi_threshold": 0.7,
+            "negative_roi_threshold": 0.3,
+            "positive_roi_count": 128,
+            "negative_roi_count": 128,
+          }
+        }
+      ]
+    ]
+  ]
+
+training:
+  ID: "FasterRCNNTrainer"
+
+  epochs: 200
+  lr: 0.1
+  batch_size: 1 # bs = 1 to sample 1 image at a time, but loads 256 rois.
+
+  optimizer: "sgd"
+  optimizer_cfg:
+    momentum: 0.9
+    weight_decay: 0.0005
+  lr_scheduler: "cosine"
+  lr_scheduler_cfg: {}
+
+  rpn:
+    lambda_reg: 10.0  # approx. (# anchor locations // batch_size)
+  losses:
+    n_
+
+validation:
+  batch_size: 1
+  metrics:
+
+model:
+  TYPE: "custom"
+  ID: "FasterRCNNModel"
+
+  backbone:
+    cfg:
+      low_res: True
+  heads:
+    rpn:
+      ID: "FasterRCNNRPNHead"
+      cfg: 
+        anchor_k: 9
+    classifier:
+      ID: ClassificationHead
+      input: "output"
+      cfg:
+        reduction: "gap"
+        dropout: 0.2
+        num_classes: 10
+        return_logits: True # return logits instead of softmax probability.

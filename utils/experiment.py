@@ -3,6 +3,7 @@ import os
 import pickle
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 
 import data.transforms.vision as DT_V
 import models.model as TorchModel
@@ -167,6 +168,14 @@ def initialize_environment(
 
     print_to_end("=")
     return experiment_name
+
+
+def makedir(path):
+    # check if `path` is file and remove last component.
+    if Path(path).stem != path.split("/")[-1]:
+        path = Path(path).parent
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def get_timestamp():

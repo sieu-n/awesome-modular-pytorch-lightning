@@ -64,11 +64,11 @@ if __name__ == "__main__":
 
     if args.range:
         init_samples, step = int(args.range[0]), int(args.range[1])
-        data_size_cycle = range(init_samples, num_train_samples + 1, step)
+        data_size_cycle = list(range(init_samples, num_train_samples + 1, step))
     elif args.range_percent:
         init_samples = int(float(args.range_percent[0]) * num_train_samples)
         step = int(float(args.range_percent[1]) * num_train_samples)
-        data_size_cycle = range(init_samples, num_train_samples + 1, step)
+        data_size_cycle = list(range(init_samples, num_train_samples + 1, step))
     elif args.size_at_cycle:
         data_size_cycle = [int(n) for n in args.size_at_cycle]
     elif args.size_at_cycle_percent:

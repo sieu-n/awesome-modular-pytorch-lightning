@@ -1,34 +1,25 @@
+name: "VOC2012-FasterRCNN-ResNet"
+task: "object detection"
+
 dataset:
   MODE: "torchvision"
-  NAME: "CIFAR10"
-  trn_size: 50000
-  val_size: 10000
+  NAME: "VOCDetection"
+  trn_size: 11540
+  val_size: 100
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    root: "./cifar10"
+    root: "./voc2012"
+    year: "2012"
     download: True
   dataset_subset_cfg:
     trn:
-      train: True
+      image_set: "trainval"
     val:
-      train: False
+      image_set: "val"
   transformations: [] # same format with `transform`.
 # default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
 transform:
   [
-    [
-      "trn",
-      [
-        {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomCrop", "size": 32, "padding": 4 },
-        },
-        {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
-        },
-      ],
-    ],
     [
       "trn,val",
       [
@@ -37,8 +28,8 @@ transform:
           "name": "Normalize",
           "args":
             {
-              "mean": [0.4914, 0.4822, 0.4465],
-              "std": [0.2023, 0.1994, 0.2010],
+              "mean": [0.4038, 0.4546, 0.4814],
+              "std": [1, 1, 1],
             },
         },
       ],
@@ -46,6 +37,6 @@ transform:
   ]
 # other useful configs.
 const:
-  task: "image classification"
-  normalization_mean: [0.4914, 0.4822, 0.4465]
-  normalization_std: [0.2023, 0.1994, 0.2010]
+  task: "object detection"
+  normalization_mean: [0.4038, 0.4546, 0.4814]
+  normalization_std: [1, 1, 1]
