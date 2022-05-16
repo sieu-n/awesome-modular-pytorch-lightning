@@ -3,10 +3,11 @@ matplotlib
 
 # utils
 pre-commit
-pytorch-lightning
 PyYAML == 6.0
-timm
-timm
-# for ML
-torch
 wandb
+
+# torch
+torch
+torchsummary
+timm
+pytorch-lightning

@@ -16,7 +16,7 @@ function_for_plotting = {
 
 def plot_sample(task, x, y=None, mode="save", savedir="results/example.png"):
     get_image = function_for_plotting[task]
-    image = get_image(x, y)
+    image = get_image(x, y=y)
 
     assert mode in ["save", "return"]
     if mode == "save":
@@ -58,13 +58,13 @@ def plot_samples_from_dataset(
         if preprocess_f:
             x, y = preprocess_f(x, y)
         if unnormalize:
-            x = UnNormalize(normalization_mean, normalization_std)(x)
+            x, _ = UnNormalize(normalization_mean, normalization_std)(x, None)
         if image_tensor_to_numpy:
-            x = ToPIL()(x)
-            np.asarray(x)
+            x, _ = ToPIL()(x, None)
+            x = np.asarray(x)
 
         plt.subplot(w, h, i)
-        plot_image = plot_sample(task, x, y, mode="return")
+        plot_image = plot_sample(task, x, y=y, mode="return")
         plt.imshow(plot_image)
         plt.axis("off")
 
