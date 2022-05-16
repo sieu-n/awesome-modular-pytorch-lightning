@@ -17,8 +17,8 @@ from torchinfo import summary as print_model_summary
 
 
 class Experiment:
-    def __init__(self, cfg={}):
-        self.cfg_const = cfg["const"] if "const" in cfg else None
+    def __init__(self, cfg=None, const_cfg=None, debug_cfg=None):
+        self.const_cfg = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
     def setup_experiment_from_cfg(
@@ -30,7 +30,7 @@ class Experiment:
         setup_model=True,
         setup_callbacks=True,
     ):
-        self.cfg_const = cfg["const"] if "const" in cfg else None
+        self.const_cfg = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
         if setup_env:
@@ -39,7 +39,7 @@ class Experiment:
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
         if setup_dataset:
-            self._setup_dataset(cfg["dataset"], cfg["transform"])
+            self._setup_dataset(cfg["dataset"], cfg["transform"], const_cfg=const_cfg)
 
         if setup_dataloader:
             val_batch_size = (
@@ -66,11 +66,11 @@ class Experiment:
         if "logger" in self.logger_and_callbacks:
             self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
-    def _setup_dataset(self, dataset_cfg, transform_cfg):
+    def _setup_dataset(self, dataset_cfg, transform_cfg, const_cfg):
         # load data
         print_to_end("-")
         print("[*] Start loading dataset")
-        datasets = build_dataset(dataset_cfg, transform_cfg)
+        datasets = build_dataset(dataset_cfg, transform_cfg, const_cfg)
         trn_dataset, val_dataset = datasets["trn"], datasets["val"]
 
         # plot samples after data augmentation
@@ -82,11 +82,11 @@ class Experiment:
 
             plot_samples_from_dataset(
                 trn_dataset,
-                task=self.cfg_const["task"],
+                task=self.const_cfg["task"],
                 image_tensor_to_numpy=True,
                 unnormalize=True,
-                normalization_mean=self.cfg_const["normalization_mean"],
-                normalization_std=self.cfg_const["normalization_std"],
+                normalization_mean=self.const_cfg["normalization_mean"],
+                normalization_std=self.const_cfg["normalization_std"],
                 root_dir=self.exp_dir,
                 **self.cfg_debug["view_train_augmentation"],
             )

@@ -10,6 +10,8 @@ class _BaseTransform:
     If you wish to apply transforms to only one of image or label, you may override one of `image_transform` or
     `label_transform` instead of overriding `__call__`.
     """
+    def __init__(self, const_cfg):
+        self.const_cfg = const_cfg
 
     def __call__(self, x, y):
         x, y = self.input_transform(x), self.label_transform(y)

@@ -28,7 +28,7 @@ def build_network(model_cfg):
     return model
 
 
-def build_dataset(dataset_cfg, transform_cfg):
+def build_dataset(dataset_cfg, transform_cfg, const_cfg):
     # 1. build initial dataset to read data.
     dataset_mode = dataset_cfg["MODE"]
     if dataset_mode == "torchvision":
@@ -61,6 +61,7 @@ def build_dataset(dataset_cfg, transform_cfg):
                 name = getattr(file, name)
 
             # build transform using arguments.
+            kwargs["const_cfg"] = const_cfg     # feed const data such as label map.
             t.append(name(**kwargs))
 
         for subset in subsets.split(","):

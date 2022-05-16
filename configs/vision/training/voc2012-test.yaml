@@ -24,6 +24,7 @@ transform:
       "trn,val",
       [
         { "name": "ToTensor", "args": {} },
+        { "name": "DetectionVOCLabelTransform", "args": {} },
         {
           "name": "Normalize",
           "args":
@@ -40,3 +41,26 @@ const:
   task: "object detection"
   normalization_mean: [0.4038, 0.4546, 0.4814]
   normalization_std: [1, 1, 1]
+
+  label_map:
+    - "background"
+    - "aeroplane"
+    - "bicycle"
+    - "bird"
+    - "boat"
+    - "bottle"
+    - "bus"
+    - "car"
+    - "cat"
+    - "chair"
+    - "cow"
+    - "diningtable"
+    - "dog"
+    - "horse"
+    - "motorbike"
+    - "person"
+    - "pottedplant"
+    - "sheep"
+    - "sofa"
+    - "train"
+    - "tvmonitor"

@@ -5,7 +5,7 @@ import random
 
 
 class DetectionVOCLabelTransform(_BaseTransform):
-    def __init__(self, label_map):
+    def __init__(self, **kwargs):
         """
         Recieves the naive `VOC2012` torchvision dataset, which contains the annotations from the `.xml` file.
         Processes and returns the class and bbox in the following format:
@@ -16,7 +16,8 @@ class DetectionVOCLabelTransform(_BaseTransform):
         Each bbox coordinates are given in (x, y, w, h) format. The numbers are normalized to (0, 1) range by dividing
         them with the width and height of the image.
         """
-        self.label_map = label_map
+        super(DetectionCropToRatio, self).__init__(**kwargs)
+        self.label2code = {name: idx for name, idx in enumerate(self.const_cfg["label_map"])}
 
     def joint_transform(self, image, label):
         img_w, img_h = image.size(2), image.size(1)
@@ -28,7 +29,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
             bbox_xywh = x1y1x2y2_to_xywh([bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]])
             targets.append({
                 "bbox": pixel_bbox_to_relative(bbox_xywh, img_w, img_h),
-                "class": self.label_map[obj_label["name"]],
+                "class": self.label2code[obj_label["name"]],
             })
         return image, targets
 
