@@ -141,7 +141,7 @@ class Bottleneck(nn.Module):
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv1x1(inplanes, width)
         self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation) # ResNet-A is already implemented.
+        self.conv2 = conv3x3(width, width, stride, groups, dilation)    # ResNet-B is already implemented.
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
@@ -171,7 +171,39 @@ class Bottleneck(nn.Module):
         return out
 
 
-class PreActBasicBlock(BasicBlock):
+class PreActBasicBlock(nn.Module):
+    expansion: int = 1
+    def __init__(
+        self,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample=None,
+        groups: int = 1,
+        base_width: int = 64,
+        dilation: int = 1,
+        norm_layer=None,
+    ) -> None:
+        super().__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        if groups != 1 or base_width != 64:
+            raise ValueError("BasicBlock only supports groups=1 and base_width=64")
+        if dilation > 1:
+            raise NotImplementedError("Dilation > 1 not supported in BasicBlock")
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv3x3(inplanes, planes, stride)
+        self.bn1 = norm_layer(inplanes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = conv3x3(planes, planes)
+        self.bn2 = norm_layer(planes)
+        self.stride = stride
+
+        if stride != 1 or inplanes != self.expansion * planes:
+            self.downsample = nn.Conv2d(inplanes, self.expansion * planes, kernel_size=1, stride=stride, bias=False)
+        else:
+            self.downsample = None
+
     def forward(self, x):
         identity = x
 
@@ -179,7 +211,7 @@ class PreActBasicBlock(BasicBlock):
         out = self.relu(out)
 
         if self.downsample is not None:
-            identity = self.downsample(out)
+            identity = self.downsample(x)
 
         out = self.conv1(x)
 
@@ -193,6 +225,38 @@ class PreActBasicBlock(BasicBlock):
 
 
 class PreActBottleneck(Bottleneck):
+    expansion: int = 4
+
+    def __init__(
+        self,
+        inplanes: int,
+        planes: int,
+        stride: int = 1,
+        downsample=None,
+        groups: int = 1,
+        base_width: int = 64,
+        dilation: int = 1,
+        norm_layer=None,
+    ) -> None:
+        super().__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm2d
+        width = int(planes * (base_width / 64.0)) * groups
+        # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        self.conv1 = conv1x1(inplanes, width)
+        self.bn1 = norm_layer(inplanes)
+        self.conv2 = conv3x3(width, width, stride, groups, dilation)    # ResNet-B is already implemented.
+        self.bn2 = norm_layer(width)
+        self.conv3 = conv1x1(width, planes * self.expansion)
+        self.bn3 = norm_layer(planes * self.expansion)
+        self.relu = nn.ReLU(inplace=True)
+        self.stride = stride
+
+        if stride != 1 or inplanes != self.expansion * planes:
+            self.downsample = nn.Conv2d(inplanes, self.expansion * planes, kernel_size=1, stride=stride, bias=False)
+        else:
+            self.downsample = None
+
     def forward(self, x):
         identity = x
 
@@ -200,7 +264,7 @@ class PreActBottleneck(Bottleneck):
         out = self.relu(out)
 
         if self.downsample is not None:
-            identity = self.downsample(out)
+            identity = self.downsample(x)
 
         out = self.conv1(x)
 
@@ -259,7 +323,8 @@ class ResNet(_ResNet):
         # x = self.fc(x)
         return x
 
-
+'''
+TODO: fix bug in resnet-d
 class ResNetD(_ResNet):
     def __init__(self, low_res=False, **kwargs):
         """
@@ -280,11 +345,15 @@ class ResNetD(_ResNet):
         """
         super(ResNetD, self).__init__(**kwargs)
         # ResNet-C
-        self.conv1 = nn.Sequential([
+        self.conv1 = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, stride=2, padding=1, bias=False),
+            self._norm_layer(64),
+            nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False),
+            self._norm_layer(64),
+            nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        ])
+        )
         if low_res:
             self.conv1 = nn.Conv2d(
                 3, 64, kernel_size=3, stride=1, padding=1, bias=False
@@ -309,6 +378,7 @@ class ResNetD(_ResNet):
             downsample = nn.Sequential(
                 # conv1x1(self.inplanes, planes * block.expansion, stride), -> replace to AvgPool2d.
                 nn.AvgPool2d(2, stride=2),
+                conv1x1(self.inplanes, planes * block.expansion, stride=1),
                 norm_layer(planes * block.expansion),
             )
 
@@ -332,3 +402,5 @@ class ResNetD(_ResNet):
             )
 
         return nn.Sequential(*layers)
+'''
+
