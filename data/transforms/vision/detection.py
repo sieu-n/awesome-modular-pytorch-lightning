@@ -52,4 +52,20 @@ class DetectionCropToRatio(_BaseTransform):
         return label
 
 
+class FasterRCNNDataset(_BaseTransform):
+    # todo: inp - x, y / output - x, [ {"iou overlap", "gt bbox", "anchor roi", "classs"}, ... x 256]
+    pass
+
+
 class DetectionPadToRatio(_BaseTransform):
+    # todo
+    pass
+
+class DetectionHFlip(_BaseTransform):
+    # todo
+    pass
+
+class DetectionVFlip(_BaseTransform):
+    # todo
+    pass
+

@@ -29,6 +29,7 @@ def plot_image_classification(x, pred=None, y=None, label_map=None):
 
 
 def plot_object_detection(x, pred=None, y=None, label_map=None):
+    # todo: fix bug where bbox is not displayed.
     """
     x: np.array(W, H, C)
         rgb image
