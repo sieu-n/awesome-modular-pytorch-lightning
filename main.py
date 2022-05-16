@@ -39,7 +39,7 @@ class Experiment:
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
         if setup_dataset:
-            self._setup_dataset(cfg["dataset"], cfg["transform"], const_cfg=const_cfg)
+            self._setup_dataset(cfg["dataset"], cfg["transform"])
 
         if setup_dataloader:
             val_batch_size = (
@@ -66,11 +66,11 @@ class Experiment:
         if "logger" in self.logger_and_callbacks:
             self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
-    def _setup_dataset(self, dataset_cfg, transform_cfg, const_cfg):
+    def _setup_dataset(self, dataset_cfg, transform_cfg):
         # load data
         print_to_end("-")
         print("[*] Start loading dataset")
-        datasets = build_dataset(dataset_cfg, transform_cfg, const_cfg)
+        datasets = build_dataset(dataset_cfg, transform_cfg, self.const_cfg)
         trn_dataset, val_dataset = datasets["trn"], datasets["val"]
 
         # plot samples after data augmentation

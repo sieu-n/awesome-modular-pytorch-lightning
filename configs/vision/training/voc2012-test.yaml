@@ -24,7 +24,7 @@ transform:
       "trn,val",
       [
         { "name": "ToTensor", "args": {} },
-        { "name": "DetectionVOCLabelTransform", "args": {} },
+        { "name": "DetectionVOCLabelTransform" },
         {
           "name": "Normalize",
           "args":

@@ -5,7 +5,7 @@ from data.transforms.vision.util import str2interpolation
 
 
 class Normalize(_BaseTransform):
-    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)):
+    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), **kwargs):
         """
         Normalize input image with predefined mean/std.
 
@@ -16,6 +16,7 @@ class Normalize(_BaseTransform):
         std: list, len=3
             stddev values of (r, g, b) channels to use for normalizing.
         """
+        super().__init__(**kwargs)
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
 
@@ -26,7 +27,7 @@ class Normalize(_BaseTransform):
 
 
 class UnNormalize(_BaseTransform):
-    def __init__(self, mean, std):
+    def __init__(self, mean, std, **kwargs):
         """
         Inverse normalization given predefined mean/std values.
         reference: https://discuss.pytorch.org/t/simple-way-to-inverse-transform-normalization/4821/2
@@ -38,6 +39,7 @@ class UnNormalize(_BaseTransform):
         std: list, len=3
             stddev values of (r, g, b) channels to use for normalizing.
         """
+        super().__init__(**kwargs)
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
 
@@ -67,8 +69,9 @@ class ToPIL(_BaseTransform):
 
 
 class Resize(_BaseTransform):
-    def __init__(self, size, interpolation="bilinear", max_size=None, antialias=None):
+    def __init__(self, size, interpolation="bilinear", max_size=None, antialias=None, **kwargs):
         """Resize image to `size`, `image` should be torch.Tensor of [c, W, H]."""
+        super().__init__(**kwargs)
         self.size = size
         self.interpolation = interpolation
         if type(self.interpolation) == str:

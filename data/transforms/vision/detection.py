@@ -16,7 +16,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
         Each bbox coordinates are given in (x, y, w, h) format. The numbers are normalized to (0, 1) range by dividing
         them with the width and height of the image.
         """
-        super(DetectionCropToRatio, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.label2code = {name: idx for name, idx in enumerate(self.const_cfg["label_map"])}
 
     def joint_transform(self, image, label):
@@ -35,7 +35,8 @@ class DetectionVOCLabelTransform(_BaseTransform):
 
 
 class DetectionCropToRatio(_BaseTransform):
-    def __init__(self, max_ratio=1, min_ratio=1, mode="center"):
+    def __init__(self, max_ratio=1, min_ratio=1, mode="center", **kwargs):
+        super().__init__(**kwargs)
         assert mode in ("center", "random")
         self.min_ratio = min_ratio
         self.max_ratio = max_ratio
