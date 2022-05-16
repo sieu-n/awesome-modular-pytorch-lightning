@@ -212,7 +212,7 @@ class PreActBasicBlock(nn.Module):
         out = self.relu(out)
 
         if self.downsample is not None:
-            identity = self.downsample(x)
+            identity = self.downsample(out)
 
         out = self.conv1(x)
 

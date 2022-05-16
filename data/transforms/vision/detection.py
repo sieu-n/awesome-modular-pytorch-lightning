@@ -25,7 +25,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
         # returns [{"bbox": [x1, y1, x2, y2], "cls": str}, ...]
         targets = []
         for obj_label in label:
-            bbox = obj_label["bbox"]
+            bbox = obj_label["bndbox"]
             bbox_xywh = x1y1x2y2_to_xywh([bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]])
             targets.append({
                 "bbox": pixel_bbox_to_relative(bbox_xywh, img_w, img_h),

@@ -47,7 +47,7 @@ def build_dataset(dataset_cfg, transform_cfg, const_cfg):
         t = []
         # for each element of transforms,
         for t_config in t_configs:
-            name, kwargs = t_config["name"], t_config["args"]
+            name, kwargs = t_config["name"], t_config.get("args", {})
             if type(name) == str:
                 # find transform name that matches `name` from TRANSFORM_DECLARATIONS
                 is_name_in = [hasattr(file, name) for file in TRANSFORM_DECLARATIONS]
