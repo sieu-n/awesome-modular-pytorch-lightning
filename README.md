@@ -66,6 +66,8 @@ these cascading config files are baked at the start of `train.py`, where configs
 
 ## Timeline
 
+- 220517 | Create object detection dataset.
+- 220517 | Implementation of ResNet-D and PreAct-ResNet.
 - 220508 | Working version of the repository on `Image Classification`.
 - 220504 | Create repository! Start of `awesome-modular-pytorch-lightning`.
 

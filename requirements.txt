@@ -8,6 +8,6 @@ wandb
 
 # torch
 torch
-torchsummary
+torchinfo
 timm
 pytorch-lightning

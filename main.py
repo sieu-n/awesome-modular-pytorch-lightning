@@ -13,7 +13,7 @@ from utils.experiment import (
 )
 from utils.logging import create_logger
 from utils.visualization.utils import plot_samples_from_dataset
-from torchsummary import summary as print_model_summary
+from torchinfo import summary as print_model_summary
 
 
 class Experiment:
@@ -155,8 +155,12 @@ class Experiment:
         model = getattr(trainers, training_cfg["ID"])(training_cfg, net)
 
         if self.cfg_debug and "network_summary" in self.cfg_debug:
-            print("[*] Model backbone summary:")
-            print_model_summary(net, self.cfg_debug["network_summary"]["input_shape"])
+            batch_size = 16     # any num:)
+            print(f"[*] Model backbone summary(when bs={batch_size}):")
+            
+            input_shape = [batch_size] + self.cfg_debug["network_summary"]["input_shape"]
+
+            print_model_summary(net, input_size=input_shape)
 
         self.network, self.model = net, model
 
