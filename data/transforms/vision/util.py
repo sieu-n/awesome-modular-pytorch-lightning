@@ -6,7 +6,7 @@ from torchvision.transforms.functional import InterpolationMode
 class TorchTransforms(_BaseTransform):
     def __init__(self, NAME, **kwargs):
         self.transform_f = getattr(TT, NAME)(**kwargs)
-        print(f"[*] Found name `{NAME} from `torchvision.transforms`.")
+        print(f"Found name `{NAME} from `torchvision.transforms`.")
 
     def input_transform(self, image):
         return self.transform_f(image)

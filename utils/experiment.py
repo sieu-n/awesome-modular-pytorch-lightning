@@ -56,7 +56,7 @@ def build_dataset(dataset_cfg, transform_cfg):
                 ), f"Transform `{name}` was found in `{sum(is_name_in)} files."
                 file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
                 print(
-                    f"[*] Transform {name} --> {getattr(file, name)}: found in {file.__name__}"
+                    f"Transform {name} --> {getattr(file, name)}: found in {file.__name__}"
                 )
                 name = getattr(file, name)
 
@@ -92,7 +92,7 @@ def build_dataset(dataset_cfg, transform_cfg):
                 ), f"Dataset `{name}` was found in `{sum(is_name_in)} files."
                 file = DATASET_DECLARATIONS[is_name_in.index(True)]
                 print(
-                    f"[*] Dataset {name} --> {getattr(file, name)}: found in {file.__name__}"
+                    f"Dataset {name} --> {getattr(file, name)}: found in {file.__name__}"
                 )
                 name = getattr(file, name)
 
@@ -147,7 +147,7 @@ def initialize_environment(
         print_to_end("=")
 
         print("modular-PyTorch-lightning")
-        print("[*] Env setup is completed, start_time:", timestamp)
+        print("Env setup is completed, start_time:", timestamp)
         print("")
         print("Final config after merging:", pretty_cfg)
 

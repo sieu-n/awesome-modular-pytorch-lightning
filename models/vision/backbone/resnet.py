@@ -173,6 +173,7 @@ class Bottleneck(nn.Module):
 
 class PreActBasicBlock(nn.Module):
     expansion: int = 1
+
     def __init__(
         self,
         inplanes: int,

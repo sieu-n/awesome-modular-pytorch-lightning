@@ -12,11 +12,11 @@ class _BaseTransform:
     """
 
     def __call__(self, x, y):
-        input_kwargs, label_kwargs = self.set_transform(x, y)
-        return self.input_transform(x, **input_kwargs), self.label_transform(y, **label_kwargs)
+        x, y = self.input_transform(x), self.label_transform(y)
+        return self.joint_transform(x, y)
 
-    def set_transform(self, image, label):
-        return {}, {}
+    def joint_transform(self, image, label):
+        return image, label
 
     def input_transform(self, image):
         return image

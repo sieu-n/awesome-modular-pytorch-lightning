@@ -5,7 +5,6 @@ DEBUG_MODE: False
 
 debug:
   network_summary:
-    input_shape: (3, 224, 224)
   view_train_augmentation:
     save_to: "vis/training_samples.png"
     subplot_dim: [5, 5]

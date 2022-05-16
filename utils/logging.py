@@ -20,7 +20,7 @@ def create_logger(
     elif tensorboard_cfg:
         raise NotImplementedError()
     else:
-        print("[*] No logger is specified, returning `None`.")
+        print("No logger is specified, returning `None`.")
         return None
     # log hparams.
     if entire_cfg:
