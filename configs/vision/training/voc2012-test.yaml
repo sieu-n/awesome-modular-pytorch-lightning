@@ -19,7 +19,9 @@ dataset:
     val:
       image_set: "val"
   transformations: [] # same format with `transform`.
-# default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
+# Data augmentation for FasterRCNN is adopted from:
+# https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/build.py
+# https://github.com/jwyang/faster-rcnn.pytorch/blob/master/lib/roi_data_layer/roibatchLoader.py
 transform:
   [
     [
@@ -27,6 +29,19 @@ transform:
       [
         { "name": "ToTensor", "args": {} },
         { "name": "DetectionVOCLabelTransform" },
+      ],
+      "trn",
+      [
+        { "name": "DetectionCropToRatio", "args": {"max_ratio": 2, "min_ratio": 0.5} },
+        { "name": "DetectionConstrainImageSize", "args": {"min_size": 600, "max_size": 1000} },
+        { "name": "DetectionHFlip", "args": {"prob": 0.5} },
+      ],
+      "val",
+      [
+        { "name": "DetectionConstrainImageSize", "args": {"min_size": 800, "max_size": 1000} },
+      ]
+      "trn,val",
+      [
         {
           "name": "Normalize",
           "args": { "mean": [0.4038, 0.4546, 0.4814], "std": [1, 1, 1] },

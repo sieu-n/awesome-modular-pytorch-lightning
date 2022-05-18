@@ -2,7 +2,7 @@ import random
 
 import torchvision.transforms.functional as TF
 from data.transforms.common import _BaseTransform
-from utils.bbox import pixel_bbox_to_relative, x1y1x2y2_to_xywh
+from utils.bbox import pixel_bbox_to_relative, x1y1x2y2_to_xywh, xywh_to_x1y1x2y2
 
 
 class DetectionVOCLabelTransform(_BaseTransform):
@@ -23,9 +23,12 @@ class DetectionVOCLabelTransform(_BaseTransform):
         }
 
     def joint_transform(self, image, label):
+        """
+        image: torch.Tensor (C, H, W)
+        label: dict - output of VOC-style .xml annotation
+        """
         img_w, img_h = image.size(2), image.size(1)
         label = label["annotation"]["object"]
-        # returns [{"bbox": [x1, y1, x2, y2], "cls": str}, ...]
         targets = []
         for obj_label in label:
             bbox = obj_label["bndbox"]
@@ -42,6 +45,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
                     "class": self.label2code[obj_label["name"]],
                 }
             )
+        # returns [{"bbox": [x, y, w, h], "cls": str}, ...]
         return image, targets
 
 
@@ -54,6 +58,10 @@ class DetectionCropToRatio(_BaseTransform):
         self.mode = mode
 
     def joint_transform(self, image, label):
+        """
+        image: torch.Tensor (C, H, W)
+        label: list[dict] - [{"bbox": [x, y, w, h], "cls": str}, ...]
+        """
         h, w = image.size(1), image.size(2)
         ratio = h / w
         w_min, w_max = 0, w
@@ -78,21 +86,99 @@ class DetectionCropToRatio(_BaseTransform):
                 pad_w = random.randint(w - target_w)
                 w_min, w_max = pad_w, pad_w + target_w
 
-        return {"w_min": w_min, "w_max": w_max, "h_min": h_min, "h_max": h_max}, {
-            "w_translate"
-        }
+        # crop image
+        cropped_image = image[:, h_min:h_max, w_min:w_max]
+        # move bbox(given in relative [x, y, w, h] coordinates)
+        shifted_label = []
+        for idx in range(len(label)):
+            x1, y1, x2, y2 = xywh_to_x1y1x2y2(label[idx]["bbox"])
+            # check if bbox is inside cropped image
+
+            label[idx]["bbox"][0] += w_min / w
+            label[idx]["bbox"][1] += h_min / h
+
+        return cropped_image, shifted_label
+
+
+class DetectionConstrainImageSize(object):
+    # https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/transforms.py
+    def __init__(self, min_size, max_size):    
+        if not isinstance(min_size, (list, tuple)):
+            min_size = (min_size,)
+        self.min_size = min_size
+        self.max_size = max_size
+
+    # modified from torchvision to add support for max size
+    def get_size(self, image_size):
+        w, h = image_size
+        size = random.choice(self.min_size)
+        max_size = self.max_size
+        if max_size is not None:
+            min_original_size = float(min((w, h)))
+            max_original_size = float(max((w, h)))
+            if max_original_size / min_original_size * size > max_size:
+                size = int(round(max_size * min_original_size / max_original_size))
+
+        if (w <= h and w == size) or (h <= w and h == size):
+            return (h, w)
+
+        if w < h:
+            ow = size
+            oh = int(size * h / w)
+        else:
+            oh = size
+            ow = int(size * w / h)
+
+        return (oh, ow)
+
+    def joint_transform(self, image, label):
+        size = self.get_size(image.size)
+        image = TF.resize(image, size)
+        # target = target.resize(image.size)
+        return image, label
 
 
 class DetectionPadToRatio(_BaseTransform):
     # todo
-    pass
+    def joint_transform(self, image, label):
+        """
+        image: torch.Tensor (C, H, W)
+        label: list[dict] - [{"bbox": [x, y, w, h], "cls": str}, ...]
+        """
+        pass
 
 
 class DetectionHFlip(_BaseTransform):
-    # todo
-    pass
+    def __init__(self, prob=0.5):
+        self.prob = prob
+
+    def joint_transform(self, image, label):
+        """
+        image: torch.Tensor (C, H, W)
+        label: list[dict] - [{"bbox": [x, y, w, h], "cls": str}, ...]
+        """
+
+    def __call__(self, image, target):
+        if random.random() < self.prob:
+            image = TF.hflip(image)
+            for idx in range(len(target)):
+                target[idx]["bbox"][0] = 1. - target[idx]["bbox"][0]
+        return image, target
 
 
 class DetectionVFlip(_BaseTransform):
-    # todo
-    pass
+    def __init__(self, prob=0.5):
+        self.prob = prob
+
+    def joint_transform(self, image, label):
+        """
+        image: torch.Tensor (C, H, W)
+        label: list[dict] - [{"bbox": [x, y, w, h], "cls": str}, ...]
+        """
+
+    def __call__(self, image, target):
+        if random.random() < self.prob:
+            image = TF.vflip(image)
+            for idx in range(len(target)):
+                target[idx]["bbox"][1] = 1. - target[idx]["bbox"][1]
+        return image, target

@@ -46,11 +46,22 @@ def plot_object_detection(x, pred=None, y=None, label_map=None):
     img = cv2.cvtColor(x, cv2.COLOR_RGB2BGR)
     # x is cv2-style bgr image
     gtColor = (0, 0, 255)
-    predColor = (0, 255, 0)
+    # predColor = (0, 255, 0)
     fontScale = 0.5
-    fontThickness = 2
+    fontThickness = 1
     bboxThickness = 1
     if y:
+        img = cv2.putText(
+            img,
+            "- gt bbox",
+            (0, 0),
+            fontFont,
+            fontScale,
+            gtColor,
+            fontThickness,
+            fontLineType,
+        )
+
         # plot gt bbox in red
         for obj in y:
             obj_class, obj_bbox = obj["class"], obj["bbox"]
