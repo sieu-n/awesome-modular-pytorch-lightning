@@ -24,7 +24,8 @@ transform:
       [
         {
           "name": "TorchTransforms",
-          "args": { "NAME": "RandomCrop", "ARGS": {"size": 32, "padding": 4} },
+          "args":
+            { "NAME": "RandomCrop", "ARGS": { "size": 32, "padding": 4 } },
         },
         {
           "name": "TorchTransforms",
@@ -52,3 +53,14 @@ const:
   task: "image classification"
   normalization_mean: [0.4914, 0.4822, 0.4465]
   normalization_std: [0.2023, 0.1994, 0.2010]
+  label_map:
+    - "airplane"
+    - "automobile"
+    - "bird"
+    - "cat"
+    - "deer"
+    - "dog"
+    - "frog"
+    - "horse"
+    - "ship"
+    - "truck"

@@ -61,7 +61,7 @@ def build_dataset(dataset_cfg, transform_cfg, const_cfg):
                 name = getattr(file, name)
 
             # build transform using arguments.
-            kwargs["const_cfg"] = const_cfg     # feed const data such as label map.
+            kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
             t.append(name(**kwargs))
 
         for subset in subsets.split(","):

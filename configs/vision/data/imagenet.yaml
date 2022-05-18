@@ -38,11 +38,7 @@ transform: [
           "args":
             {
               "NAME": "ColorJitter",
-              "ARGS": {
-                "brightness": 0.4,
-                "contrast": 0.4,
-                "saturation": 0.4,
-              }
+              "ARGS": { "brightness": 0.4, "contrast": 0.4, "saturation": 0.4 },
             },
         },
       ],
@@ -56,7 +52,7 @@ transform: [
         },
         {
           "name": "TorchTransforms",
-          "args": { "NAME": "CenterCrop", "ARGS": {"size": 224} },
+          "args": { "NAME": "CenterCrop", "ARGS": { "size": 224 } },
         },
       ],
     ],

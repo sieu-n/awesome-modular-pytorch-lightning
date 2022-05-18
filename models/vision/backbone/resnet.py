@@ -1,6 +1,6 @@
 """ResNet in PyTorch. Support `low_res` argument for CIFAR10.
 
-Reference: 
+Reference:
     - https://github.com/kuangliu/pytorch-cifar
     - https://pytorch.org/vision/0.12/_modules/torchvision/models/resnet.html
 """
@@ -46,7 +46,9 @@ ResNetD:
 """
 
 
-def conv3x3(in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1) -> nn.Conv2d:
+def conv3x3(
+    in_planes: int, out_planes: int, stride: int = 1, groups: int = 1, dilation: int = 1
+) -> nn.Conv2d:
     """3x3 convolution with padding"""
     return nn.Conv2d(
         in_planes,
@@ -141,7 +143,9 @@ class Bottleneck(nn.Module):
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv1x1(inplanes, width)
         self.bn1 = norm_layer(width)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation)    # ResNet-B is already implemented.
+        self.conv2 = conv3x3(
+            width, width, stride, groups, dilation
+        )  # ResNet-B is already implemented.
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
@@ -201,7 +205,13 @@ class PreActBasicBlock(nn.Module):
         self.stride = stride
 
         if stride != 1 or inplanes != self.expansion * planes:
-            self.downsample = nn.Conv2d(inplanes, self.expansion * planes, kernel_size=1, stride=stride, bias=False)
+            self.downsample = nn.Conv2d(
+                inplanes,
+                self.expansion * planes,
+                kernel_size=1,
+                stride=stride,
+                bias=False,
+            )
         else:
             self.downsample = None
 
@@ -246,7 +256,9 @@ class PreActBottleneck(Bottleneck):
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
         self.conv1 = conv1x1(inplanes, width)
         self.bn1 = norm_layer(inplanes)
-        self.conv2 = conv3x3(width, width, stride, groups, dilation)    # ResNet-B is already implemented.
+        self.conv2 = conv3x3(
+            width, width, stride, groups, dilation
+        )  # ResNet-B is already implemented.
         self.bn2 = norm_layer(width)
         self.conv3 = conv1x1(width, planes * self.expansion)
         self.bn3 = norm_layer(planes * self.expansion)
@@ -254,7 +266,13 @@ class PreActBottleneck(Bottleneck):
         self.stride = stride
 
         if stride != 1 or inplanes != self.expansion * planes:
-            self.downsample = nn.Conv2d(inplanes, self.expansion * planes, kernel_size=1, stride=stride, bias=False)
+            self.downsample = nn.Conv2d(
+                inplanes,
+                self.expansion * planes,
+                kernel_size=1,
+                stride=stride,
+                bias=False,
+            )
         else:
             self.downsample = None
 
@@ -323,6 +341,7 @@ class ResNet(_ResNet):
         # x = torch.flatten(x, 1)
         # x = self.fc(x)
         return x
+
 
 '''
 TODO: fix bug in resnet-d
@@ -404,4 +423,3 @@ class ResNetD(_ResNet):
 
         return nn.Sequential(*layers)
 '''
-

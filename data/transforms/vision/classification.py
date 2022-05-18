@@ -2,8 +2,8 @@ import math
 import random
 import warnings
 
-from data.transforms.vision.util import str2interpolation
 from data.transforms.common import _BaseTransform
+from data.transforms.vision.util import str2interpolation
 
 _RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicubic"))
 

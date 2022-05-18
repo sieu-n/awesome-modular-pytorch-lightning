@@ -26,7 +26,7 @@ transform:
         },
         {
           "name": "TorchTransforms",
-          "args": { "NAME": "CenterCrop", "ARGS": {"size": 224} },
+          "args": { "NAME": "CenterCrop", "ARGS": { "size": 224 } },
         },
         { "name": "ToTensor", "args": {} },
         {

@@ -1,7 +1,8 @@
+import random
+
 import torchvision.transforms.functional as TF
 from data.transforms.common import _BaseTransform
 from utils.bbox import pixel_bbox_to_relative, x1y1x2y2_to_xywh
-import random
 
 
 class DetectionVOCLabelTransform(_BaseTransform):
@@ -17,7 +18,9 @@ class DetectionVOCLabelTransform(_BaseTransform):
         them with the width and height of the image.
         """
         super().__init__(**kwargs)
-        self.label2code = {name: idx for name, idx in enumerate(self.const_cfg["label_map"])}
+        self.label2code = {
+            name: idx for idx, name in enumerate(self.const_cfg["label_map"])
+        }
 
     def joint_transform(self, image, label):
         img_w, img_h = image.size(2), image.size(1)
@@ -26,11 +29,19 @@ class DetectionVOCLabelTransform(_BaseTransform):
         targets = []
         for obj_label in label:
             bbox = obj_label["bndbox"]
-            bbox_xywh = x1y1x2y2_to_xywh([bbox["xmin"], bbox["ymin"], bbox["xmax"], bbox["ymax"]])
-            targets.append({
-                "bbox": pixel_bbox_to_relative(bbox_xywh, img_w, img_h),
-                "class": self.label2code[obj_label["name"]],
-            })
+            x1, y1, x2, y2 = (
+                int(bbox["xmin"]),
+                int(bbox["ymin"]),
+                int(bbox["xmax"]),
+                int(bbox["ymax"]),
+            )
+            bbox_xywh = x1y1x2y2_to_xywh([x1, y1, x2, y2])
+            targets.append(
+                {
+                    "bbox": pixel_bbox_to_relative(bbox_xywh, img_w, img_h),
+                    "class": self.label2code[obj_label["name"]],
+                }
+            )
         return image, targets
 
 
@@ -67,18 +78,21 @@ class DetectionCropToRatio(_BaseTransform):
                 pad_w = random.randint(w - target_w)
                 w_min, w_max = pad_w, pad_w + target_w
 
-        return {"w_min": w_min, "w_max": w_max, "h_min": h_min, "h_max": h_max}, {"w_translate"}
+        return {"w_min": w_min, "w_max": w_max, "h_min": h_min, "h_max": h_max}, {
+            "w_translate"
+        }
 
 
 class DetectionPadToRatio(_BaseTransform):
     # todo
     pass
 
+
 class DetectionHFlip(_BaseTransform):
     # todo
     pass
 
+
 class DetectionVFlip(_BaseTransform):
     # todo
     pass
-

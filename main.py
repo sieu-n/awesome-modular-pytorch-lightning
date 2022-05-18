@@ -4,6 +4,7 @@ import lightning.trainers as trainers
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
+from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
 from utils.experiment import (
     build_dataset,
@@ -13,7 +14,6 @@ from utils.experiment import (
 )
 from utils.logging import create_logger
 from utils.visualization.utils import plot_samples_from_dataset
-from torchinfo import summary as print_model_summary
 
 
 class Experiment:
@@ -44,7 +44,7 @@ class Experiment:
         if setup_dataloader:
             val_batch_size = (
                 cfg["validation"]["batch_size"]
-                if "batch_size" in cfg["validation"]
+                if ("validation" in cfg and "batch_size" in cfg["validation"])
                 else cfg["training"]["batch_size"]
             )
             self._setup_dataloader(
@@ -88,6 +88,9 @@ class Experiment:
                 normalization_mean=self.const_cfg["normalization_mean"],
                 normalization_std=self.const_cfg["normalization_std"],
                 root_dir=self.exp_dir,
+                label_map=self.const_cfg["label_map"]
+                if "label_map" in self.const_cfg
+                else None,
                 **self.cfg_debug["view_train_augmentation"],
             )
 
@@ -155,10 +158,12 @@ class Experiment:
         model = getattr(trainers, training_cfg["ID"])(training_cfg, net)
 
         if self.cfg_debug and "network_summary" in self.cfg_debug:
-            batch_size = 16     # any num:)
+            batch_size = 16  # any num:)
             print(f"[*] Model backbone summary(when bs={batch_size}):")
-            
-            input_shape = [batch_size] + self.cfg_debug["network_summary"]["input_shape"]
+
+            input_shape = [batch_size] + self.cfg_debug["network_summary"][
+                "input_shape"
+            ]
 
             print_model_summary(net, input_size=input_shape)
 

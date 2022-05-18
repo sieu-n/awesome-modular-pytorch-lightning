@@ -21,11 +21,7 @@ transform:
         { "name": "ToTensor", "args": {} },
         {
           "name": "Normalize",
-          "args":
-            {
-              "mean": [0.4038, 0.4546, 0.4814],
-              "std": [1,1,1],
-            },
+          "args": { "mean": [0.4038, 0.4546, 0.4814], "std": [1, 1, 1] },
         },
       ],
     ],
@@ -34,18 +30,19 @@ transform:
       [
         {
           "name": "FasterRCNNROILoader",
-          "args": {
-            "ratio_large": 2,
-            "ratio_small": 0.5,
-            "ensure_one_positive": True,
-            "positive_roi_threshold": 0.7,
-            "negative_roi_threshold": 0.3,
-            "positive_roi_count": 128,
-            "negative_roi_count": 128,
-          }
-        }
-      ]
-    ]
+          "args":
+            {
+              "ratio_large": 2,
+              "ratio_small": 0.5,
+              "ensure_one_positive": True,
+              "positive_roi_threshold": 0.7,
+              "negative_roi_threshold": 0.3,
+              "positive_roi_count": 128,
+              "negative_roi_count": 128,
+            },
+        },
+      ],
+    ],
   ]
 
 training:
@@ -63,9 +60,8 @@ training:
   lr_scheduler_cfg: {}
 
   rpn:
-    lambda_reg: 10.0  # approx. (# anchor locations // batch_size)
-  losses:
-    n_
+    lambda_reg: 10.0 # approx. (# anchor locations // batch_size)
+  losses: n_
 
 validation:
   batch_size: 1
@@ -81,7 +77,7 @@ model:
   heads:
     rpn:
       ID: "FasterRCNNRPNHead"
-      cfg: 
+      cfg:
         anchor_k: 9
     classifier:
       ID: ClassificationHead

@@ -23,7 +23,8 @@ transform:
       [
         {
           "name": "TorchTransforms",
-          "args": { "NAME": "RandomCrop", "ARGS": {"size": 32, "padding": 4} },
+          "args":
+            { "NAME": "RandomCrop", "ARGS": { "size": 32, "padding": 4 } },
         },
         {
           "name": "TorchTransforms",

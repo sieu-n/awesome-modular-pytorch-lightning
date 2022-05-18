@@ -1,12 +1,11 @@
 import os
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from data.transforms.vision import ToPIL, UnNormalize
 from utils.experiment import makedir
 
-from data.transforms.vision import ToPIL, UnNormalize
 from .vision import plot_image_classification, plot_object_detection
-
 
 function_for_plotting = {
     "image classification": plot_image_classification,
@@ -14,15 +13,17 @@ function_for_plotting = {
 }
 
 
-def plot_sample(task, x, y=None, mode="save", savedir="results/example.png"):
+def plot_sample(
+    task, x, y=None, mode="save", savedir="results/example.png", label_map=None
+):
     get_image = function_for_plotting[task]
-    image = get_image(x, y=y)
+    image = get_image(x, y=y, label_map=label_map)
 
     assert mode in ["save", "return"]
     if mode == "save":
         plt.imshow(image)
         plt.axis("off")
-        plt.savefig()
+        plt.savefig(savedir)
     elif mode == "return":
         return image
     else:
@@ -41,6 +42,7 @@ def plot_samples_from_dataset(
     normalization_std=(0.5, 0.5, 0.5),
     imsize=3,
     preprocess_f=None,
+    label_map=None,
 ):
     """
     Plot multiple samples using matplotlib.
@@ -64,7 +66,7 @@ def plot_samples_from_dataset(
             x = np.asarray(x)
 
         plt.subplot(w, h, i)
-        plot_image = plot_sample(task, x, y=y, mode="return")
+        plot_image = plot_sample(task, x, y=y, mode="return", label_map=label_map)
         plt.imshow(plot_image)
         plt.axis("off")
 

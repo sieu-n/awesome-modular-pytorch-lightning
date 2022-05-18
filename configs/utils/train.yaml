@@ -8,8 +8,8 @@ debug:
     input_shape: [3, 224, 224]
   view_train_augmentation:
     save_to: "vis/training_samples.png"
-    subplot_dim: [5, 5]
-    imsize: 3
+    subplot_dim: [4, 4]
+    imsize: 5
 
 trainer:
   gpus: [0] # [0] for training in Google COLAB.

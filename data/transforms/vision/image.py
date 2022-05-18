@@ -69,7 +69,9 @@ class ToPIL(_BaseTransform):
 
 
 class Resize(_BaseTransform):
-    def __init__(self, size, interpolation="bilinear", max_size=None, antialias=None, **kwargs):
+    def __init__(
+        self, size, interpolation="bilinear", max_size=None, antialias=None, **kwargs
+    ):
         """Resize image to `size`, `image` should be torch.Tensor of [c, W, H]."""
         super().__init__(**kwargs)
         self.size = size

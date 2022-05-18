@@ -1,6 +1,8 @@
 name: "VOC2012-FasterRCNN-ResNet"
 task: "object detection"
 
+training:
+  batch_size: 1
 dataset:
   MODE: "torchvision"
   NAME: "VOCDetection"
@@ -27,11 +29,7 @@ transform:
         { "name": "DetectionVOCLabelTransform" },
         {
           "name": "Normalize",
-          "args":
-            {
-              "mean": [0.4038, 0.4546, 0.4814],
-              "std": [1, 1, 1],
-            },
+          "args": { "mean": [0.4038, 0.4546, 0.4814], "std": [1, 1, 1] },
         },
       ],
     ],
