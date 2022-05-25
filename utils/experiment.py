@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 
 import data.transforms.vision as DT_V
-import models.model as TorchModel
 import yaml
 from data.dataset.util import torchvision_dataset
 from data.transforms.common import ApplyDataTransformations, ComposeTransforms
@@ -15,17 +14,6 @@ from .verbose import set_verbose
 
 """ Implement utilities used in `main.py`.
 """
-
-
-def build_network(model_cfg):
-    if model_cfg["TYPE"] == "custom":
-        model = getattr(TorchModel, model_cfg["ID"])(model_cfg)
-    elif model_cfg["TYPE"] == "pretrained":
-        raise NotImplementedError()
-    else:
-        raise ValueError(f"Invalid `model.TYPE`: `{model_cfg['TYPE']}")
-
-    return model
 
 
 def build_dataset(dataset_cfg, transform_cfg, const_cfg):

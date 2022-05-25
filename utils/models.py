@@ -1,13 +1,30 @@
 import os
-
+from copy import deepcopy
 import torch.nn as nn
+
+
+def get_layer(model, key):
+    """
+    Find and return a layer from a `nn.Module` object. The layer is specified using a specific string format, which
+    heirachically defines some layer.
+    Parameters
+    ----------
+    model: nn.Module
+        Base model object.
+    key: str
+        specifies what layer to get. for example, "layer4.1.conv2".
+    """
+    key = key.split(".")
+    block = deepcopy(model)
+    for k in key:
+        block = getattr(block, k)
+    return block
 
 
 def drop_layers_after(base_model, key):
     """
-    Use cases:
-        - get feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads
-          from classification network.
+    get feature_extractor network that can be used in multiple subtasks by plugging in different downstream heads
+    from classification network.
 
     Parameters
     ----------
@@ -17,7 +34,7 @@ def drop_layers_after(base_model, key):
         Remove all the layers including and after `drop_after` layer. For example, in the example below of `resnet50`,
         we want can set `drop_after` = "avgpool" to drop the final 2 layers and output feature map.
         To define layers inside block, such as the Conv2D layer shown in the example below, use the slash(/) symbol:
-            - `drop_after` = "layer4/1/conv2"
+            - `drop_after` = "layer4.1.conv2"
         ```
             (layer4): Sequential(
               ...
@@ -39,7 +56,7 @@ def drop_layers_after(base_model, key):
     print(f"Trimming layers of model after {key}.")
     if os.environ["DEBUG_MODE"] == "TRUE":
         print("[*] Base model:", base_model)
-    key = key.split("/")
+    key = key.split(".")
 
     def trim_block(block, depth):
         child_blocks = list(block.children())

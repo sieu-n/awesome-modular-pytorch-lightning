@@ -19,9 +19,6 @@ validation:
   metrics:
 
 model:
-  TYPE: "custom"
-  ID: "ClassificationModel"
-
   backbone:
     cfg:
       low_res: True

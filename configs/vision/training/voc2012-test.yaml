@@ -1,8 +1,5 @@
 name: "VOC2012-FasterRCNN-ResNet"
-task: "object detection"
 
-training:
-  batch_size: 1
 dataset:
   MODE: "torchvision"
   NAME: "VOCDetection"
@@ -29,27 +26,85 @@ transform:
       [
         { "name": "ToTensor", "args": {} },
         { "name": "DetectionVOCLabelTransform" },
-      ],
-      "trn",
-      [
-        { "name": "DetectionCropToRatio", "args": {"max_ratio": 2, "min_ratio": 0.5} },
-        { "name": "DetectionConstrainImageSize", "args": {"min_size": 600, "max_size": 1000} },
-        { "name": "DetectionHFlip", "args": {"prob": 0.5} },
-      ],
-      "val",
-      [
-        { "name": "DetectionConstrainImageSize", "args": {"min_size": 800, "max_size": 1000} },
-      ]
-      "trn,val",
-      [
         {
           "name": "Normalize",
           "args": { "mean": [0.4038, 0.4546, 0.4814], "std": [1, 1, 1] },
         },
       ],
     ],
+    [
+      "trn",
+      [
+        { "name": "DetectionCropToRatio", "args": {"max_ratio": 2, "min_ratio": 0.5} },
+        { "name": "DetectionConstrainImageSize", "args": {"min_size": 250, "max_size": 500} },
+        { "name": "DetectionHFlip", "args": {"prob": 0.5} },
+      ],
+    ],
+    [
+      "val",
+      [
+        { "name": "DetectionConstrainImageSize", "args": {"min_size": 800, "max_size": 1000} },
+      ],
+    ],
   ]
+
+model:
+  backbone:
+    TYPE: "torchvision"
+    ID: "resnet50"
+    cfg:
+      pretrained: False
+    drop_after: "avgpool"
+    out_features: 2048
+  reduction:
+    ID: "roipool"
+  hooks:
+    rpn:
+      mode: "output"
+      idx: null
+      layer_name: "layer3"
+  heads:
+    rpn:
+      ID: FasterRCNNBaserpn
+      cfg:
+        d: 256
+        n: 3
+        k: 9
+        in_channels: 1024
+
+    roi_pooler:
+      ID: ROIPooler
+      cfg:
+        output_size: [7, 7]
+
+    classifier:
+      ID: ClassificationHead
+      cfg:
+        reduction: "none"
+        dropout: 0.2
+        num_classes: 21
+        return_logits: True # return logits instead of softmax probability.
+      
+training:
+  batch_size: 1
+
+  lambda_reg: 10.0
+  roi:
+    # k = len(anchor_size) * len(aspect_ratio)
+    anchor_size: [128, 256, 512]
+    aspect_ratio: [0.5, 1.0, 2.0]
+    ensure_one_positive: True
+    positive_roi_threshold: 0.7
+    negative_roi_threshold: 0.3
+    positive_roi_count: 128
+    negative_roi_count: 128
+
+validation:
+  batch_size: 1
+
 # other useful configs.
+wandb:
+  project: "FasterRCNN"
 const:
   task: "object detection"
   normalization_mean: [0.4038, 0.4546, 0.4814]

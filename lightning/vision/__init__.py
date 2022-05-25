@@ -1,1 +1,1 @@
-from . import base, classification, detection  # noqa F401
+from . import base, classification, rcnn  # noqa F401

@@ -8,7 +8,6 @@ from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
 from utils.experiment import (
     build_dataset,
-    build_network,
     initialize_environment,
     print_to_end,
 )
@@ -154,8 +153,7 @@ class Experiment:
 
     def _setup_model(self, model_cfg, training_cfg):
         # model
-        net = build_network(model_cfg)
-        model = getattr(trainers, training_cfg["ID"])(training_cfg, net)
+        model = getattr(trainers, training_cfg["ID"])(model_cfg, training_cfg)
 
         if self.cfg_debug and "network_summary" in self.cfg_debug:
             batch_size = 16  # any num:)
@@ -165,9 +163,9 @@ class Experiment:
                 "input_shape"
             ]
 
-            print_model_summary(net, input_size=input_shape)
+            print_model_summary(model, input_size=input_shape)
 
-        self.network, self.model = net, model
+        self.model = model
 
     def train(
         self,

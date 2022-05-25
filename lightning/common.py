@@ -1,13 +1,14 @@
 import pytorch_lightning as pl
 from torch import optim
 from torch.optim import lr_scheduler
+from utils.models import get_layer
 
 
 class _BaseLightningTrainer(pl.LightningModule):
-    def __init__(self, training_cfg, model, *args, **kwargs) -> None:
+    def __init__(self, training_cfg, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.training_cfg = training_cfg
-        self.model = model
+        self._hook_cache = {}
 
     def training_epoch_end(self, outputs):
         total_loss = sum([x["loss"] for x in outputs])
@@ -77,5 +78,31 @@ class _BaseLightningTrainer(pl.LightningModule):
             config["lr_scheduler"] = scheduler
         return config
 
-    def attach_hook(self, model, layer):
-        raise NotImplementedError()
+    def setup_hook(self, network, key, layer_name, mode="output", idx=None):
+        if not hasattr(self, "_hook_cache"):
+            self._hook_cache = {}
+
+        def save_to(key, mode="output", idx=None):
+            def hook(m, i, output):
+                # initialize array for device
+                self._hook_cache[output.device.index] = self._hook_cache.get(output.device.index, [])
+
+                assert mode in ("output", "input")
+                if mode == "output":
+                    f = output.detach()
+                elif mode == "input":
+                    f = i.detach()
+
+                if idx is not None:
+                    f = f[idx]
+                f = f.detach()
+
+                self._hook_cache[output.device.index][key] = f
+            return hook
+
+        layer = get_layer(network, layer_name)
+        layer.register_forward_hook(save_to(key, mode=mode, idx=idx))
+
+    def get_hook(self, key, device=None):
+        device_index = device.index
+        return self._hook_cache[device_index][key]

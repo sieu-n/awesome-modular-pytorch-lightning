@@ -39,6 +39,7 @@ transform:
               "negative_roi_threshold": 0.3,
               "positive_roi_count": 128,
               "negative_roi_count": 128,
+              "n": 3
             },
         },
       ],

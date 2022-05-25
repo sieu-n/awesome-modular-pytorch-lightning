@@ -1,5 +1,5 @@
 import cv2
-from utils.bbox import pixel_bbox_to_absolute, xywh_to_x1y1x2y2
+from utils.bbox import unnormalize_bbox, xywh_to_x1y1x2y2
 
 fontFont = cv2.FONT_HERSHEY_SIMPLEX
 fontLineType = cv2.LINE_AA
@@ -37,7 +37,6 @@ def plot_image_classification(x, pred=None, y=None, label_map=None):
 
 
 def plot_object_detection(x, pred=None, y=None, label_map=None):
-    # todo: fix bug where bbox is not displayed.
     """
     x: np.array(W, H, C)
         rgb image
@@ -70,7 +69,7 @@ def plot_object_detection(x, pred=None, y=None, label_map=None):
                 obj_class = label_map[obj_class]
             if type(obj_bbox[0]) == float:
                 w, h = img.shape[1], img.shape[0]
-                y_bbox = pixel_bbox_to_absolute(obj_bbox, w, h)
+                y_bbox = unnormalize_bbox(obj_bbox, w, h)
             # plot bbox
 
             x1, y1, x2, y2 = xywh_to_x1y1x2y2(y_bbox)
