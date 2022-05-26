@@ -35,15 +35,24 @@ transform:
     [
       "trn",
       [
-        { "name": "DetectionCropToRatio", "args": {"max_ratio": 2, "min_ratio": 0.5} },
-        { "name": "DetectionConstrainImageSize", "args": {"min_size": 250, "max_size": 500} },
-        { "name": "DetectionHFlip", "args": {"prob": 0.5} },
+        {
+          "name": "DetectionCropToRatio",
+          "args": { "max_ratio": 3, "min_ratio": 0.3333 },
+        },
+        {
+          "name": "DetectionConstrainImageSize",
+          "args": { "min_size": 600, "max_size": 1000 },
+        },
+        { "name": "DetectionHFlip", "args": { "prob": 0.5 } },
       ],
     ],
     [
       "val",
       [
-        { "name": "DetectionConstrainImageSize", "args": {"min_size": 800, "max_size": 1000} },
+        {
+          "name": "DetectionConstrainImageSize",
+          "args": { "min_size": 800, "max_size": 1000 },
+        },
       ],
     ],
   ]
@@ -61,11 +70,11 @@ model:
   hooks:
     rpn:
       mode: "output"
-      idx: null
+      idx: 0
       layer_name: "layer3"
   heads:
     rpn:
-      ID: FasterRCNNBaserpn
+      ID: "FasterRCNNBaserpn"
       cfg:
         d: 256
         n: 3
@@ -73,7 +82,7 @@ model:
         in_channels: 1024
 
     roi_pooler:
-      ID: ROIPooler
+      ID: "ROIPooler"
       cfg:
         output_size: [7, 7]
 
@@ -84,9 +93,20 @@ model:
         dropout: 0.2
         num_classes: 21
         return_logits: True # return logits instead of softmax probability.
-      
+
 training:
+  ID: "FasterRCNNBaseTrainer"
   batch_size: 1
+  epochs: 100
+  lr: 0.1
+
+  optimizer: "sgd"
+  optimizer_cfg:
+    momentum: 0.9
+    weight_decay: 0.0005
+  lr_scheduler: "cosine"
+  lr_scheduler_cfg: {}
+
 
   lambda_reg: 10.0
   roi:
@@ -104,7 +124,8 @@ validation:
 
 # other useful configs.
 wandb:
-  project: "FasterRCNN"
+  project: "FasterRCNN-detection"
+
 const:
   task: "object detection"
   normalization_mean: [0.4038, 0.4546, 0.4814]

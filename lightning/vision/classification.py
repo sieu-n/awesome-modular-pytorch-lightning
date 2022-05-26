@@ -1,9 +1,9 @@
+import models.heads as TorchHeads
 import torch
 import torch.nn as nn
 from lightning.common import _BaseLightningTrainer
-from torchmetrics.functional import accuracy
-import models.heads as TorchHeads
 from models.vision.backbone import build_backbone
+from torchmetrics.functional import accuracy
 
 
 class ClassificationTrainer(_BaseLightningTrainer):

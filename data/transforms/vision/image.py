@@ -1,6 +1,6 @@
 import torch
-import torchvision.transforms.functional as TF
 import torchvision.transforms as T
+import torchvision.transforms.functional as TF
 from data.transforms.common import _BaseTransform
 from data.transforms.vision.util import str2interpolation
 
@@ -28,12 +28,13 @@ class Normalize(_BaseTransform):
 
 
 class ColorJitter(object):
-    def __init__(self,
-                 brightness=None,
-                 contrast=None,
-                 saturation=None,
-                 hue=None,
-                 ):
+    def __init__(
+        self,
+        brightness=None,
+        contrast=None,
+        saturation=None,
+        hue=None,
+    ):
         self.color_jitter = T.ColorJitter(
             brightness=brightness,
             contrast=contrast,

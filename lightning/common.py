@@ -85,7 +85,9 @@ class _BaseLightningTrainer(pl.LightningModule):
         def save_to(key, mode="output", idx=None):
             def hook(m, i, output):
                 # initialize array for device
-                self._hook_cache[output.device.index] = self._hook_cache.get(output.device.index, [])
+                self._hook_cache[output.device.index] = self._hook_cache.get(
+                    output.device.index, {}
+                )
 
                 assert mode in ("output", "input")
                 if mode == "output":
@@ -98,6 +100,7 @@ class _BaseLightningTrainer(pl.LightningModule):
                 f = f.detach()
 
                 self._hook_cache[output.device.index][key] = f
+
             return hook
 
         layer = get_layer(network, layer_name)

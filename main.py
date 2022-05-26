@@ -6,11 +6,7 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
-from utils.experiment import (
-    build_dataset,
-    initialize_environment,
-    print_to_end,
-)
+from utils.experiment import build_dataset, initialize_environment, print_to_end
 from utils.logging import create_logger
 from utils.visualization.utils import plot_samples_from_dataset
 

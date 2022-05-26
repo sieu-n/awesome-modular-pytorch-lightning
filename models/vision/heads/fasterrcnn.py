@@ -3,7 +3,8 @@ from torchvision.ops import RoIPool
 
 
 class FasterRCNNBaserpn(nn.Module):
-    def __init__(self, n=3, d=256, in_channels=2048, k=9):
+    def __init__(self, n=3, d=256, in_channels=2048, k=9, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.sliding_window = nn.Conv2d(in_channels, d, kernel_size=n, padding=1)
         self.objectness = nn.Conv2d(d, 2 * k, kernel_size=1)
         self.bboxreg = nn.Conv2d(d, 4 * k, kernel_size=1)
@@ -41,10 +42,11 @@ class FasterRCNNBaserpn(nn.Module):
 
 
 class ROIPooler(nn.Module):
-    def __init__(self, output_size=7, spatial_scale=1.0):
-        """ Construct a ROIPooling module.
+    def __init__(self, output_size=7, spatial_scale=1.0, *args, **kwargs):
+        """Construct a ROIPooling module.
         reference: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/poolers.py
         """
+        super().__init__(*args, **kwargs)
         self.pool = RoIPool(output_size, spatial_scale=spatial_scale)
 
     def forward(self, feature, bbox):

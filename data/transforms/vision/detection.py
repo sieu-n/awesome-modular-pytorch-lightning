@@ -1,9 +1,14 @@
-from copy import deepcopy
 import random
+from copy import deepcopy
 
 import torchvision.transforms.functional as TF
 from data.transforms.common import _BaseTransform
-from utils.bbox import normalize_bbox, x1y1x2y2_to_xywh, xywh_to_x1y1x2y2, unnormalize_bbox
+from utils.bbox import (
+    normalize_bbox,
+    unnormalize_bbox,
+    x1y1x2y2_to_xywh,
+    xywh_to_x1y1x2y2,
+)
 
 
 class DetectionVOCLabelTransform(_BaseTransform):
@@ -92,16 +97,25 @@ class DetectionCropToRatio(_BaseTransform):
         # move bbox(given in relative [x, y, w, h] coordinates)
         shifted_label = []
         for idx in range(len(label)):
-            x1, y1, x2, y2 = unnormalize_bbox(xywh_to_x1y1x2y2(label[idx]["bbox"]), w, h)
+            x1, y1, x2, y2 = unnormalize_bbox(
+                xywh_to_x1y1x2y2(label[idx]["bbox"]), w, h
+            )
             # check if bbox is outside cropped image
             if x1 >= w_max or x2 <= w_min or y1 >= h_max or y2 < h_min:
                 continue
             # clip coords inside bbox.
-            x1, y1, x2, y2 = max(x1, w_min), max(y1, h_min), min(x2, w_max), min(y2, h_max)
+            x1, y1, x2, y2 = (
+                max(x1, w_min),
+                max(y1, h_min),
+                min(x2, w_max),
+                min(y2, h_max),
+            )
             # shift bbox
             x1, x2 = x1 - w_min, x2 - w_min
             y1, y2 = y1 - h_min, y2 - h_min
-            new_bbox = normalize_bbox(x1y1x2y2_to_xywh([x1, y1, x2, y2]), w_max - w_min, h_max - h_min)
+            new_bbox = normalize_bbox(
+                x1y1x2y2_to_xywh([x1, y1, x2, y2]), w_max - w_min, h_max - h_min
+            )
 
             new_label = deepcopy(label[idx])
             new_label["bbox"] = new_bbox
@@ -171,7 +185,7 @@ class DetectionHFlip(_BaseTransform):
         if random.random() < self.prob:
             image = TF.hflip(image)
             for idx in range(len(target)):
-                target[idx]["bbox"][0] = 1. - target[idx]["bbox"][0]
+                target[idx]["bbox"][0] = 1.0 - target[idx]["bbox"][0]
         return image, target
 
 
@@ -190,5 +204,5 @@ class DetectionVFlip(_BaseTransform):
         if random.random() < self.prob:
             image = TF.vflip(image)
             for idx in range(len(target)):
-                target[idx]["bbox"][1] = 1. - target[idx]["bbox"][1]
+                target[idx]["bbox"][1] = 1.0 - target[idx]["bbox"][1]
         return image, target

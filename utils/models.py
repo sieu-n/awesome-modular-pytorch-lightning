@@ -1,5 +1,5 @@
 import os
-from copy import deepcopy
+
 import torch.nn as nn
 
 
@@ -15,7 +15,7 @@ def get_layer(model, key):
         specifies what layer to get. for example, "layer4.1.conv2".
     """
     key = key.split(".")
-    block = deepcopy(model)
+    block = model
     for k in key:
         block = getattr(block, k)
     return block

@@ -1,7 +1,7 @@
+import models.heads as TorchHeads
 import torch
 import torch.nn as nn
 from lightning.common import _BaseLightningTrainer
-import models.heads as TorchHeads
 from models.vision.backbone import build_backbone
 from utils.bbox import get_bbox_shapes
 
@@ -14,18 +14,16 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         # setup hooks, TODO move this into `_BaseLightningTrainer`
         if "hooks" in model_cfg:
             for hook_name in model_cfg["hooks"]:
-                self.setup_hooks(
-                    self.backbone,
-                    key=hook_name,
-                    **model_cfg["hooks"][hook_name]
+                self.setup_hook(
+                    self.backbone, key=hook_name, **model_cfg["hooks"][hook_name]
                 )
 
         rpn_cfg = model_cfg["heads"]["rpn"]
         self.rpn = getattr(TorchHeads, rpn_cfg["ID"])(**rpn_cfg["cfg"])
 
         roipool_cfg = model_cfg["heads"]["roi_pooler"]
-        self.pooler = getattr(TorchHeads, rpn_cfg[""])(
-            **roipool_cfg,
+        self.pooler = getattr(TorchHeads, roipool_cfg["ID"])(
+            **roipool_cfg["cfg"],
         )
 
         classifier_cfg = model_cfg["heads"]["classifier"]
@@ -36,7 +34,9 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         # training mode and hyperparameters.
         self.mode = "rpn"
         self.lambda_reg = training_cfg["lambda_reg"]
-        self.bbox_dims = get_bbox_shapes(training_cfg["roi"]["anchor_size"], training_cfg["roi"]["aspect_ratio"])
+        self.bbox_dims = get_bbox_shapes(
+            training_cfg["roi"]["anchor_size"], training_cfg["roi"]["aspect_ratio"]
+        )
 
     def get_anchor_list(self, feature_shape, image_shape):
         """
@@ -59,7 +59,9 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
             for y in range(feature_h):
                 xPos, yPos = (x + 0.5) / feature_w, (y + 0.5) / feature_h
                 for bbox_shape in self.bbox_dims:
-                    anchors.append([xPos, yPos, bbox_shape[0] / image_w, bbox_shape[1] / image_h])
+                    anchors.append(
+                        [xPos, yPos, bbox_shape[0] / image_w, bbox_shape[1] / image_h]
+                    )
         return anchors
 
     def _get_roibatch(gt_bbox, anchors):
@@ -75,6 +77,8 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
     def training_step(self, batch, batch_idx):
         x, y = batch
         device = x.device
+        image_w, image_h = x.size(3), x.size(2)
+        assert x.size(0) == 1, "batch size must be 1 for fasterrcnn training."
 
         loss = 0
 
@@ -88,12 +92,15 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         if self.mode == "rpn":
             # train using objectness classification and bounding box regression loss.
             # anchors: list[ list[x, y, w, h] ], len: w * h * len(self.bbox_dims)
-            anchors = self.propose_anchor(self.model)
+            anchors = self.get_anchor_list((rois.size(3), rois.size(2)), (image_w, image_h))
             is_selected, cls_label, gt_bbox = self._get_roibatch(y, anchors)
 
             # compute rpn classification loss
             objectness, bbox_pred = rpn_pred["objectness"], rpn_pred["bbox_refinement"]
-            rpn_loss_cls = self._objectness_classification_loss(objectness, cls_label) * is_selected 
+            rpn_loss_cls = (
+                self._objectness_classification_loss(objectness, cls_label)
+                * is_selected
+            )
 
             # compute bounding box regression loss
             rpn_loss_reg = self._bbox_regression_loss(anchors, bbox_pred, gt_bbox)

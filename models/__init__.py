@@ -1,1 +1,1 @@
-from . import heads, layers, model, vision  # noqa F401
+from . import heads, vision  # noqa F401

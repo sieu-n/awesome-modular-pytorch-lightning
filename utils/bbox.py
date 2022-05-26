@@ -25,8 +25,7 @@ def x1y1x2y2_to_xywh(x1y1x2y2):
 
 
 def get_bbox_shape(anchor_size, aspect_ratio):
-    num_pixels = anchor_size * anchor_size
-    return (num_pixels / aspect_ratio, num_pixels * aspect_ratio)
+    return (anchor_size / aspect_ratio, anchor_size * aspect_ratio)
 
 
 def get_bbox_shapes(anchor_sizes=[128, 256, 512], aspect_ratios=[0.5, 1.0, 2.0]):
@@ -34,12 +33,14 @@ def get_bbox_shapes(anchor_sizes=[128, 256, 512], aspect_ratios=[0.5, 1.0, 2.0])
     for anchor_size in anchor_sizes:
         for aspect_ratio in aspect_ratios:
             bbox_shapes.append(get_bbox_shape(anchor_size, aspect_ratio))
-
+    return bbox_shapes
 
 # TODO,
 # script the module to avoid hardcoded device type
 @torch.jit.script_if_tracing
-def _convert_boxes_to_pooler_format(boxes: torch.Tensor, sizes: torch.Tensor) -> torch.Tensor:
+def _convert_boxes_to_pooler_format(
+    boxes: torch.Tensor, sizes: torch.Tensor
+) -> torch.Tensor:
     sizes = sizes.to(device=boxes.device)
     indices = torch.repeat_interleave(
         torch.arange(len(sizes), dtype=boxes.dtype, device=boxes.device), sizes
