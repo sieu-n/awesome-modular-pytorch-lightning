@@ -28,6 +28,7 @@ model:
       input: "output"
       cfg:
         reduction: "gap"
+        in_features: 512
         dropout: 0.2
         num_classes: 10
         return_logits: True # return logits instead of softmax probability.

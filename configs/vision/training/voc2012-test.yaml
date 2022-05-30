@@ -69,8 +69,7 @@ model:
     ID: "roipool"
   hooks:
     rpn:
-      mode: "output"
-      idx: 0
+      model: "backbone"
       layer_name: "layer3"
   heads:
     rpn:
@@ -118,6 +117,8 @@ training:
     negative_roi_threshold: 0.3
     positive_roi_count: 128
     negative_roi_count: 128
+  detector:
+
 
 validation:
   batch_size: 1

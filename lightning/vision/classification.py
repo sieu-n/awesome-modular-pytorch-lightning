@@ -1,23 +1,12 @@
-import models.heads as TorchHeads
 import torch
 import torch.nn as nn
 from lightning.common import _BaseLightningTrainer
-from models.vision.backbone import build_backbone
 from torchmetrics.functional import accuracy
 
 
 class ClassificationTrainer(_BaseLightningTrainer):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs):
-        super().__init__(training_cfg, *args, **kwargs)
-        # define model
-        self.backbone = build_backbone(model_cfg["backbone"])
-        # TODO: adaptively attach every element in model_cfg["heads"]
-        classifier_cfg = model_cfg["heads"]["classifier"]
-        self.classifier = getattr(TorchHeads, classifier_cfg["ID"])(
-            in_features=model_cfg["backbone"]["out_features"],
-            **classifier_cfg["cfg"],
-        )
-
+        super().__init__(model_cfg, training_cfg, *args, **kwargs)
         # define loss function.
         self.loss_fn = nn.CrossEntropyLoss()
 
