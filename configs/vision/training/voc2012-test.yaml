@@ -9,9 +9,9 @@ dataset:
   dataset_base_cfg:
     root: "./voc2012"
     year: "2012"
-    download: True
   dataset_subset_cfg:
     trn:
+      download: True
       image_set: "trainval"
     val:
       image_set: "val"
@@ -90,6 +90,7 @@ model:
       cfg:
         reduction: "none"
         dropout: 0.2
+        in_features: 128
         num_classes: 21
         return_logits: True # return logits instead of softmax probability.
 

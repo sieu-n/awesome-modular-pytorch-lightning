@@ -14,20 +14,21 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.training_cfg = training_cfg
         # build backbone
         if "backbone" in model_cfg:
-            self.build_backbone(
-                name=model_cfg["ID"],
-                model_type=model_cfg["TYPE"],
-                drop_after=model_cfg.get("drop_after", None), 
-                **model_cfg.get("cfg", {}),
+            backbone_cfg = model_cfg["backbone"]
+            self.backbone = self.build_backbone(
+                name=backbone_cfg["ID"],
+                model_type=backbone_cfg["TYPE"],
+                drop_after=backbone_cfg.get("drop_after", None),
+                **backbone_cfg.get("cfg", {}),
             )
         # build heads
         heads = model_cfg.get("heads", {})
         for head_name, head_cfg in heads.items():
-            self.build_head(
-                name=head_name,
+            head_module = self.build_head(
                 module_type=head_cfg["ID"],
                 **head_cfg.get("cfg", {})
             )
+            setattr(self, head_name, head_module)
         # setup hooks
         self._hook_cache = {}
         hooks = model_cfg.get("hooks", {})
@@ -39,11 +40,11 @@ class _BaseLightningTrainer(pl.LightningModule):
                 **hook_cfg.get("cfg", {})
             )
 
-    def build_head(self, name, module_type, *args, **kwargs):
+    def build_head(self, module_type, *args, **kwargs):
         if type(module_type) == str:
             module_type = getattr(TorchHeads, module_type)
         head = module_type(*args, **kwargs)
-        setattr(self, name, head)
+        return head
 
     def build_backbone(self, name, model_type="custom", drop_after=None, *args, **kwargs):
         if model_type == "torchvision":

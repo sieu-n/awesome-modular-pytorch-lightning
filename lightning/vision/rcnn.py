@@ -64,10 +64,12 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
             If true, ensure that each object has at least one positive anchor assigned.
         Returns
         -------
-        is_selected
+        list[(k, w, h), ...], anchors_selected
+        torch.Tensor(bs, k, 256), is_selected
         cls_label
         gt_bbox
         """
+        for x 
         return None, None, None
 
     def _objectness_classification_loss(objectness_pred, is_object):
@@ -102,8 +104,8 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         is_selected, cls_label, gt_bbox = self._get_roibatch(y, anchors)
 
         if self.computeProposalLoss:
-            # compute rpn classification loss
             objectness, bbox_pred = rpn_pred["objectness"], rpn_pred["bbox_refinement"]
+            # compute rpn classification loss
             rpn_loss_cls = self._objectness_classification_loss(objectness, cls_label)
 
             # compute bounding box regression loss
@@ -123,7 +125,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
 
     def get_rpn_loss():
         return 0
-    
+
     def get_finetune_loss():
         return 0
 

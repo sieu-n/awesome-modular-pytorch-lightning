@@ -15,6 +15,8 @@ class FasterRCNNBaserpn(nn.Module):
             nn.init.normal_(layer.weight, std=0.01)
             nn.init.constant_(layer.bias, 0)
 
+        self.k = k
+
     def forward(self, feature):
         """
         predict the roi from feature in the form of objectness score and bbox refinement.
@@ -27,15 +29,16 @@ class FasterRCNNBaserpn(nn.Module):
             Intermediate representations of neural network.
         Returns
         -------
-        torch.Tensor(bs, 2 * k, W, H)
-            objectness score.
-        torch.Tensor(bs, 4 * k, W, H)
-            predictions for bbox refinement.
+        torch.Tensor(bs, 2, k, W, H)
+            objectness score. k is the number of anchor boxes.
+        torch.Tensor(bs, 4, k, W, H)
+            predictions for bbox refinement. k is the number of anchor boxes.
         """
+        bs, w, h = feature.size(0), feature.size(-2), feature.size(-1)
         d = self.activation(self.sliding_window(feature))
 
-        objectness = self.objectness(d)
-        bbox_pred = self.bboxreg(d)
+        objectness = self.objectness(d).view((bs, 2, self.k, w, h))
+        bbox_pred = self.bboxreg(d).view((bs, 4, self.k, w, h))
 
         rois = None
         return {"roi": rois, "objectness": objectness, "bbox_refinement": bbox_pred}
