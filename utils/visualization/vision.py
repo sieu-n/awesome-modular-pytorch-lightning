@@ -40,7 +40,7 @@ def plot_object_detection(x, pred=None, y=None, label_map=None):
     """
     x: np.array(W, H, C)
         rgb image
-    y (optional): list[dict {"class", "bbox": [x, y, w, h]}]
+    y (optional): list[dict {"labels", "boxes": [x, y, w, h]}]
     """
     img = cv2.cvtColor(x, cv2.COLOR_RGB2BGR)
     # x is cv2-style bgr image
@@ -62,8 +62,9 @@ def plot_object_detection(x, pred=None, y=None, label_map=None):
         )
 
         # plot gt bbox in red
-        for obj in y:
-            obj_class, obj_bbox = obj["class"], obj["bbox"]
+        obj_classes, obj_bboxes = y["labels"], y["boxes"]
+        for obj_idx in range(len(obj_classes)):
+            obj_bbox, obj_class = obj_classes[obj_idx], obj_bboxes[obj_idx]
             if label_map:
                 # convert label to correct str id if specified.
                 obj_class = label_map[obj_class]

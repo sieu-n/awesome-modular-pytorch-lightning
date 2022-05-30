@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 from lightning.common import _BaseLightningTrainer
 from utils.bbox import get_bbox_shapes
+import torchvision
+from torchvision.models.detection import FasterRCNN
+from torchvision.models.detection.rpn import AnchorGenerator
 
 
 class FasterRCNNBaseTrainer(_BaseLightningTrainer):
@@ -69,6 +72,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         cls_label
         gt_bbox
         """
+        
         for x 
         return None, None, None
 
@@ -128,6 +132,38 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
 
     def get_finetune_loss():
         return 0
+
+    def evaluate(self, batch, stage=None):
+        x, y = batch
+        # todo: mAP
+        return 0, 0
+
+################################################################
+# lightning wrappers for torchvision detection models.
+################################################################
+class TorchVisionFasterRCNN(_BaseLightningTrainer):
+    def __init__(self, model_cfg, training_cfg, *args, **kwargs):
+        # build models and heads defined in `model_cfg`.
+        super().__init__(model_cfg, training_cfg, *args, **kwargs)
+        anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256),),
+                                           aspect_ratios=((0.5, 1.0, 2.0),))
+        #roi_pooler = torchvision.ops.RoIPool(output_size=7, spatial_scale=1.0)
+        roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'],
+                                                output_size=7,
+                                                sampling_ratio=2)
+
+
+        # training mode and hyperparameters.
+        self.backbone.out_channels = 2000
+        self.model = FasterRCNN(self.backbone,
+                   num_classes=21,
+                   rpn_anchor_generator=anchor_generator,
+                   box_roi_pool=roi_pooler)
+    
+    def training_step(self, batch, batch_idx):
+        images, targets = batch
+        loss_dict = self.model(images, targets)
+        losses = sum(loss for loss in loss_dict.values())
 
     def evaluate(self, batch, stage=None):
         x, y = batch
