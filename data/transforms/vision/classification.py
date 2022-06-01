@@ -10,7 +10,7 @@ _RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicub
 
 
 class TupleToClassificationData(_BaseTransform):
-    def __call__(x, y):
+    def __call__(self, x, y):
         return {"images": x, "labels": y}
 
 

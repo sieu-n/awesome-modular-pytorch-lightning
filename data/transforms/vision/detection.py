@@ -105,7 +105,7 @@ class DetectionCropToRatio(_BaseTransform):
         # assert "boxes" in d
         # assert "labels" in d
 
-        cropped_image, shifted_boxes, is_removed = self.transform(d["image"], d["boxes"])
+        cropped_image, shifted_boxes, is_removed = self.transform(d["images"], d["boxes"])
         num_boxes = len(is_removed)
         box_mask = (torch.tensor(is_removed) == False)
 
@@ -194,7 +194,7 @@ class DetectionConstrainImageSize(_BaseTransform):
         self.max_size = max_size
 
     def __call__(self, d):
-        d["image"] = self.transform(d["image"])
+        d["images"] = self.transform(d["images"])
         return d
 
     # modified from torchvision to add support for max size
@@ -242,7 +242,7 @@ class DetectionHFlip(_BaseTransform):
 
     def __call__(self, d):
         if random.random() < self.prob:
-            d["image"] = TF.hflip(d["image"])
+            d["images"] = TF.hflip(d["images"])
             d["boxes"][0] = 1.0 - d["boxes"][0]
         return d
 
@@ -254,6 +254,6 @@ class DetectionVFlip(_BaseTransform):
 
     def __call__(self, d):
         if random.random() < self.prob:
-            d["image"] = TF.vflip(d["image"])
+            d["images"] = TF.vflip(d["images"])
             d["boxes"][1] = 1.0 - d["boxes"][1]
         return d

@@ -9,9 +9,9 @@ dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     root: "./cifar10"
-    download: True
   dataset_subset_cfg:
     trn:
+      download: True
       train: True
     val:
       train: False

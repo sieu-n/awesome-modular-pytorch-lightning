@@ -7,7 +7,7 @@ from data.transforms.vision.util import str2interpolation
 
 class _ImageTransform(_BaseTransform):
     def __call__(self, d):
-        d["image"] = self.transform(d["image"])
+        d["images"] = self.transform(d["images"])
         return d
 
 
@@ -26,10 +26,6 @@ class Normalize(_ImageTransform):
         super().__init__(**kwargs)
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
-
-    def __call__(self, d):
-        d["image"] = self.transform(d["image"])
-        return d
 
     def transform(self, image):
         for t, m, s in zip(image, self.mean, self.std):

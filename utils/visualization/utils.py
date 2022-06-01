@@ -14,10 +14,10 @@ function_for_plotting = {
 
 
 def plot_sample(
-    task, x, y=None, mode="save", savedir="results/example.png", label_map=None, **kwargs
+    task, data, mode="save", savedir="results/example.png", label_map=None, **kwargs
 ):
     get_image = function_for_plotting[task]
-    image = get_image(x, y=y, label_map=label_map, **kwargs)
+    image = get_image(label_map=label_map, **data, **kwargs)
 
     assert mode in ["save", "return"]
     if mode == "save":
@@ -56,18 +56,18 @@ def plot_samples_from_dataset(
     w, h = subplot_dim
     plt.figure(figsize=(w * imsize, h * imsize))
     for i in range(1, w * h + 1):
-        x, y = dataset[i - 1]
+        data = dataset[i - 1]
 
         if preprocess_f:
-            x, y = preprocess_f(x, y)
+            data = preprocess_f(data)
         if unnormalize:
-            x, _ = UnNormalize(normalization_mean, normalization_std)(x, None)
+            data = UnNormalize(normalization_mean, normalization_std)(data)
         if image_tensor_to_numpy:
-            x, _ = ToPIL()(x, None)
-            x = np.asarray(x)
+            data = ToPIL()(data)
+            data["images"] = np.asarray(data["images"])
 
         plt.subplot(w, h, i)
-        plot_image = plot_sample(task, x, y=y, mode="return", label_map=label_map, **kwargs)
+        plot_image = plot_sample(task, data=data, mode="return", label_map=label_map, **kwargs)
         plt.imshow(plot_image)
         plt.axis("off")
     plt.tight_layout()

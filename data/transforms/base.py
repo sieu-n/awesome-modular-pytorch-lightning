@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset
 import random
 
+
 class _BaseTransform:
     """
     To support all tasks and augmentation, we recieve `x`, `y` in `__call__` and apply appropriate transformations to
