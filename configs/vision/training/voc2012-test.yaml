@@ -16,6 +16,9 @@ dataset:
     val:
       image_set: "val"
   transformations: [] # same format with `transform`.
+  initial_transform: 
+    name: "DetectionVOCLabelTransform"
+
 # Data augmentation for FasterRCNN is adopted from:
 # https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/build.py
 # https://github.com/jwyang/faster-rcnn.pytorch/blob/master/lib/roi_data_layer/roibatchLoader.py
@@ -25,7 +28,6 @@ transform:
       "trn,val",
       [
         { "name": "ToTensor", "args": {} },
-        { "name": "DetectionVOCLabelTransform" },
         {
           "name": "Normalize",
           "args": { "mean": [0.4038, 0.4546, 0.4814], "std": [1, 1, 1] },
@@ -55,15 +57,29 @@ transform:
         },
       ],
     ],
+    [
+      "trn,val",
+      [
+        { "name": "YOLObbox2Pytorch" },
+      ],
+    ],
+
   ]
 
+dataloader:
+  collate_fn:
+    images:
+      name: "KeepSequence"
+    boxes:
+      name: "KeepSequence"
+    labels:
+      name: "KeepSequence"
 model:
   backbone:
-    TYPE: "torchvision"
+    TYPE: "timm"
     ID: "resnet50"
     cfg:
       pretrained: False
-    drop_after: "avgpool"
     out_features: 2048
   reduction:
     ID: "roipool"
@@ -73,7 +89,7 @@ model:
       layer_name: "layer3"
   heads:
     rpn:
-      ID: "FasterRCNNBaserpn"
+      ID: "RPNHead"
       cfg:
         d: 256
         n: 3
@@ -85,6 +101,12 @@ model:
       cfg:
         output_size: [7, 7]
 
+    anchor_generator:
+      ID: "AnchorGenerator"
+      cfg:
+        sizes: [128, 256, 512]
+        aspect_ratios: [0.5, 1.0, 2.0]
+
     classifier:
       ID: ClassificationHead
       cfg:
@@ -95,7 +117,7 @@ model:
         return_logits: True # return logits instead of softmax probability.
 
 training:
-  ID: "FasterRCNNBaseTrainer"
+  ID: "TorchVisionFasterRCNN"
   batch_size: 1
   epochs: 100
   lr: 0.1
@@ -109,21 +131,13 @@ training:
 
 
   lambda_reg: 10.0
-  roi:
-    # k = len(anchor_size) * len(aspect_ratio)
-    anchor_size: [128, 256, 512]
-    aspect_ratio: [0.5, 1.0, 2.0]
-    ensure_one_positive: True
-    positive_roi_threshold: 0.7
-    negative_roi_threshold: 0.3
-    positive_roi_count: 128
-    negative_roi_count: 128
-  detector:
-
 
 validation:
   batch_size: 1
 
+debug:
+  view_train_augmentation:
+    is_xywh: False
 # other useful configs.
 wandb:
   project: "FasterRCNN-detection"
