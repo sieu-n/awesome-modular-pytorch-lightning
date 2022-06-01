@@ -5,19 +5,20 @@ fontFont = cv2.FONT_HERSHEY_SIMPLEX
 fontLineType = cv2.LINE_AA
 
 
-def plot_image_classification(image, label=None, label_map=None, **kwargs):
+def plot_image_classification(images, labels=None, label_map=None, **kwargs):
     """
     x: np.array(W, H, C)
         rgb image
     y (optional): int / str
     """
-    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    image = cv2.cvtColor(images, cv2.COLOR_RGB2BGR)
     # x is cv2-style bgr image
     fontLocation = (10, 10)
     fontScale = 1
     fontColor = (255, 0, 0)
     fontThickness = 2
-    if label is not None:
+    if labels is not None:
+        label = labels
         # convert label to correct str id if specified.
         if label_map and label in label_map:
             label = label_map[label]
@@ -36,13 +37,13 @@ def plot_image_classification(image, label=None, label_map=None, **kwargs):
     return image
 
 
-def plot_object_detection(image, boxes=None, labels=None, label_map=None, is_xywh=True, **kwargs):
+def plot_object_detection(images, boxes=None, labels=None, label_map=None, is_xywh=True, **kwargs):
     """
     x: np.array(W, H, C)
         rgb image
     y (optional): list[dict {"labels", "boxes": [x, y, w, h]}]
     """
-    img = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    img = cv2.cvtColor(images, cv2.COLOR_RGB2BGR)
     # x is cv2-style bgr image
     gtColor = (0, 0, 255)
     # predColor = (0, 255, 0)
