@@ -66,6 +66,12 @@ transform:
 
   ]
 
+dataloader:
+  collate_fn:
+    boxes:
+      name: "KeepSequence"
+    labels:
+      name: "KeepSequence"
 model:
   backbone:
     TYPE: "torchvision"

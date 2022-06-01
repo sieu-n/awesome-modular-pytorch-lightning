@@ -139,6 +139,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         # todo: mAP
         return 0, 0
 
+
 ################################################################
 # lightning wrappers for torchvision rcnn models.
 ################################################################
@@ -162,7 +163,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
 
     def training_step(self, batch, batch_idx):
         assert "images" in batch
-        assert "boxes" in batch
+        assert "boxes" in batch and batch["boxes"].shape[2] == 4
         assert "labels" in batch
 
         images, targets = batch["images"], None
@@ -173,6 +174,6 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
         return losses.item()
 
     def evaluate(self, batch, stage=None):
-        x, y = batch
+        # x, y = batch
         # todo: mAP
         return 0, 0
