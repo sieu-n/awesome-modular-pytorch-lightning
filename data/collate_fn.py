@@ -39,6 +39,7 @@ def find_collate_fn_from_name(f_name):
 def KeepSequence():
     def _KeepSequence(batch):
         return batch
+    return _KeepSequence
 
 
 collate_fn_list = {

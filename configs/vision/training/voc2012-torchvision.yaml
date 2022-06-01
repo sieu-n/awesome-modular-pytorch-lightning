@@ -68,17 +68,18 @@ transform:
 
 dataloader:
   collate_fn:
+    images:
+      name: "KeepSequence"
     boxes:
       name: "KeepSequence"
     labels:
       name: "KeepSequence"
 model:
   backbone:
-    TYPE: "torchvision"
+    TYPE: "timm"
     ID: "resnet50"
     cfg:
       pretrained: False
-    drop_after: "avgpool"
     out_features: 2048
   reduction:
     ID: "roipool"

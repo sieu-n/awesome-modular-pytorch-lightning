@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from lightning.common import _BaseLightningTrainer
-from utils.bbox import get_anchor_shapes
+from utils.bbox import get_anchor_shapes, check_isvalid_boxes
 import torchvision
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
@@ -74,7 +74,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         gt_bbox
         """
         
-        #for x 
+        # for x 
         return None, None, None
 
     def _objectness_classification_loss(objectness_pred, is_object):
@@ -163,15 +163,19 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
 
     def training_step(self, batch, batch_idx):
         assert "images" in batch
-        assert "boxes" in batch and batch["boxes"].shape[2] == 4
+        assert "boxes" in batch
         assert "labels" in batch
+        batch_size = len(batch["images"])
+        img_w = [batch["images"][idx].size(3) for idx in range(batch_size)]
+        img_h = [batch["images"][idx].size(2) for idx in range(batch_size)]
+        check_isvalid_boxes(batch["boxes"], xywh=False, img_w=img_w, img_h=img_h)
 
-        images, targets = batch["images"], None
-
-        targets = batch
-        loss_dict = self.model(images, targets)
+        loss_dict = self.model(
+            batch["images"],
+            [{"boxes": batch["boxes"][idx], "labels": batch["labels"][idx]} for idx in range(batch_size)],
+        )
         losses = sum(loss for loss in loss_dict.values())
-        return losses.item()
+        return losses
 
     def evaluate(self, batch, stage=None):
         # x, y = batch

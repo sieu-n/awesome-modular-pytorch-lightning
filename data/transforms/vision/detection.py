@@ -107,7 +107,7 @@ class DetectionCropToRatio(_BaseTransform):
 
         cropped_image, shifted_boxes, is_removed = self.transform(d["images"], d["boxes"])
         num_boxes = len(is_removed)
-        box_mask = (torch.tensor(is_removed) == False)
+        box_mask = (torch.tensor(is_removed) == False) # noqa E712
 
         new_data = {"images": cropped_image, "boxes": shifted_boxes}
         for key in d.keys():
@@ -242,7 +242,7 @@ class DetectionHFlip(_BaseTransform):
     def __call__(self, d):
         if random.random() < self.prob:
             d["images"] = TF.hflip(d["images"])
-            d["boxes"][0] = 1.0 - d["boxes"][0]
+            d["boxes"][..., 0] = 1.0 - d["boxes"][..., 0]
         return d
 
 
@@ -254,5 +254,5 @@ class DetectionVFlip(_BaseTransform):
     def __call__(self, d):
         if random.random() < self.prob:
             d["images"] = TF.vflip(d["images"])
-            d["boxes"][1] = 1.0 - d["boxes"][1]
+            d["boxes"][..., 1] = 1.0 - d["boxes"][..., 1]
         return d

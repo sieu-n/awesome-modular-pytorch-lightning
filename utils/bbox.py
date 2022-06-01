@@ -76,6 +76,49 @@ def x1y1x2y2_to_xywh(x1y1x2y2):
     ], dim=-1))
 
 
+def check_isvalid_boxes(batch_of_boxes, img_w=1.0, img_h=1.0, xywh=True, is_batch=True):
+    """
+    Check if there is invalid boxes. For example, no boxes should have coordinates smaller that 0 or greater than the
+    width / height of the image.
+    Parameters
+    ----------
+    boxes: list[torch.Tensor(num_obj, 4)]
+        bounding boxes. The format should be consistent with the other arguments.
+    w: int, float, or list[int, float]
+    h: int, float, or list[int, float]
+    xywh: bool
+        Whether coordinates of the bbox are given in [x, y, w, h] format(YOLO format). If False, it is consider to be
+        in [x1, y1, x2, y2] format.
+    is_batch: bool
+    """
+    if not is_batch:  # add fake bbox to verify single set of bbox.
+        batch_of_boxes = [batch_of_boxes]
+    is_imsize_list = False
+    w, h = img_w, img_h
+    if hasattr(img_w, '__len__') or hasattr(img_h, '__len__'):
+        assert hasattr(img_w, '__len__') and hasattr(img_h, '__len__')
+        assert len(img_w) == len(img_h) == len(batch_of_boxes)
+        is_imsize_list = True
+
+    for idx, boxes in enumerate(batch_of_boxes):
+        if is_imsize_list:
+            w, h = img_w[idx], img_h[idx]
+        # 1. check dimensions.
+        assert isinstance(boxes, torch.Tensor) and boxes.shape[1] == 4
+        # 2. check obvious things.
+        if xywh:
+            # width and height should all be greater than 0
+            assert torch.min(boxes[..., 2]) >= 0.0 and torch.min(boxes[..., 3]) >= 0.0
+        else:
+            # check if y2 >= y1 and x2 >= x1.
+            assert torch.min(boxes[..., 2] - boxes[..., 0]) >= 0.0 and torch.min(boxes[..., 3] - boxes[..., 1]) >= 0.0
+        # 3. check if some boxes have coordinates outside the image
+        if xywh:
+            boxes = xywh_to_x1y1x2y2(boxes)
+        assert torch.min(boxes[..., 0]) >= 0.0 and torch.min(boxes[..., 1]) >= 0.0
+        assert torch.max(boxes[..., 2]) <= w and torch.max(boxes[..., 3]) <= h
+
+
 def get_anchor_shape(anchor_size, aspect_ratio):
     return (anchor_size / aspect_ratio, anchor_size * aspect_ratio)
 
