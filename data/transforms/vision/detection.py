@@ -122,10 +122,10 @@ class DetectionCropToRatio(_BaseTransform):
         # crop image
         cropped_image = image[:, h_min:h_max, w_min:w_max]
         # move bbox(given in relative [x, y, w, h] coordinates)
-        shifted_label = []
-        for idx in range(len(label)):
+        shifted_label = {}
+        for obj_idx in range(len(label["boxes"])):
             x1, y1, x2, y2 = unnormalize_bbox(
-                xywh_to_x1y1x2y2(label[idx]["boxes"]), w, h
+                xywh_to_x1y1x2y2(label["boxes"][obj_idx]), w, h
             )
             # check if bbox is outside cropped image
             if x1 >= w_max or x2 <= w_min or y1 >= h_max or y2 < h_min:
@@ -144,9 +144,9 @@ class DetectionCropToRatio(_BaseTransform):
                 x1y1x2y2_to_xywh([x1, y1, x2, y2]), w_max - w_min, h_max - h_min
             )
 
-            new_label = deepcopy(label[idx])
-            new_label["boxes"] = new_bbox
-            shifted_label.append(new_label)
+            for key in label.keys():
+                shifted_label.get(key, []).append(label[key][obj_idx])
+            shifted_label["boxes"][-1] = new_bbox
 
         return cropped_image, shifted_label
 

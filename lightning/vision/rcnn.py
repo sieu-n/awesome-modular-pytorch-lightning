@@ -139,7 +139,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         return 0, 0
 
 ################################################################
-# lightning wrappers for torchvision detection models.
+# lightning wrappers for torchvision rcnn models.
 ################################################################
 class TorchVisionFasterRCNN(_BaseLightningTrainer):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs):
@@ -154,7 +154,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
 
 
         # training mode and hyperparameters.
-        self.backbone.out_channels = 2000
+        self.backbone.out_channels = 2048
         self.model = FasterRCNN(self.backbone,
                    num_classes=21,
                    rpn_anchor_generator=anchor_generator,
@@ -164,6 +164,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
         images, targets = batch
         loss_dict = self.model(images, targets)
         losses = sum(loss for loss in loss_dict.values())
+        return losses.item()
 
     def evaluate(self, batch, stage=None):
         x, y = batch
