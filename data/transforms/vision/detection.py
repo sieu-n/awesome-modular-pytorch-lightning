@@ -1,9 +1,8 @@
 import random
 import torch
-from copy import deepcopy
 
 import torchvision.transforms.functional as TF
-from data.transforms.common import _BaseTransform
+from data.transforms.base import _BaseTransform
 from utils.bbox import (
     normalize_bbox,
     unnormalize_bbox,

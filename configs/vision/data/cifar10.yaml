@@ -16,6 +16,9 @@ dataset:
     val:
       train: False
   transformations: [] # same format with `transform`.
+  initial_transform: 
+    name: "TupleToClassificationData"
+
 # default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
 transform:
   [

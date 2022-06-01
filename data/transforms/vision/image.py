@@ -1,7 +1,7 @@
 import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-from data.transforms.common import _BaseTransform
+from data.transforms.base import _BaseTransform
 from data.transforms.vision.util import str2interpolation
 
 

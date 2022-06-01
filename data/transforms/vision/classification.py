@@ -3,13 +3,13 @@ import random
 import warnings
 
 import torchvision.transforms.functional as TF
-from data.transforms.common import _BaseTransform
+from data.transforms.base import _BaseTransform
 from data.transforms.vision.util import str2interpolation
 
 _RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicubic"))
 
 
-class TupleToImageLabel(_BaseTransform):
+class TupleToClassificationData(_BaseTransform):
     def __call__(x, y):
         return {"images": x, "labels": y}
 

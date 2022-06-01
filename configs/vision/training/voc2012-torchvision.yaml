@@ -16,6 +16,9 @@ dataset:
     val:
       image_set: "val"
   transformations: [] # same format with `transform`.
+  initial_transform: 
+    name: "DetectionVOCLabelTransform"
+
 # Data augmentation for FasterRCNN is adopted from:
 # https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/build.py
 # https://github.com/jwyang/faster-rcnn.pytorch/blob/master/lib/roi_data_layer/roibatchLoader.py
@@ -25,7 +28,6 @@ transform:
       "trn,val",
       [
         { "name": "ToTensor", "args": {} },
-        { "name": "DetectionVOCLabelTransform" },
         {
           "name": "Normalize",
           "args": { "mean": [0.4038, 0.4546, 0.4814], "std": [1, 1, 1] },

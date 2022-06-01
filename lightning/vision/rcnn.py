@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from lightning.common import _BaseLightningTrainer
-from utils.bbox import get_bbox_shapes
+from utils.bbox import get_anchor_shapes
 import torchvision
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.rpn import AnchorGenerator
@@ -14,7 +14,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         # training mode and hyperparameters.
         self.lambda_reg = training_cfg["lambda_reg"]
-        self.bbox_dims = get_bbox_shapes(
+        self.bbox_dims = get_anchor_shapes(
             training_cfg["roi"]["anchor_size"], training_cfg["roi"]["aspect_ratio"]
         )
 
