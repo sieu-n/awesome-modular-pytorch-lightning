@@ -18,7 +18,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
         Processes and returns the class and bbox in the following format:
 
         x = PIL.Image
-        y = {"boxes": list[list[x, y, w, h], ...], "labels": list[int]}
+        y = {"boxes": torch.Tensor(4, num_obj), "labels": torch.Tensor(num_obj)}
 
         Each bbox coordinates are given in (x, y, w, h) format. The numbers are normalized to (0, 1) range by dividing
         them with the width and height of the image.
@@ -29,7 +29,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
         }
 
     def __call__(self, x, y):
-        boxes, labels = self.transform(y, x.size(2), x.size(1))
+        boxes, labels = self.transform(y, x.size[0], x.size[1])
         return {"images": x, "boxes": boxes, "labels": labels}
 
     def transform(self, label, img_w, img_h):
@@ -53,7 +53,7 @@ class DetectionVOCLabelTransform(_BaseTransform):
             targets["boxes"].append(normalize_bbox(bbox_xywh, img_w, img_h))
             targets["labels"].append(self.label2code[obj_label["name"]])
 
-        # returns {"boxes": list[list[x, y, w, h], ...], "labels": list[int]}
+        # returns {"boxes": torch.Tensor(4, num_obj), "labels": torch.Tensor(num_obj)}
         return torch.tensor(targets["boxes"]), torch.tensor(targets["labels"])
 
 
@@ -69,7 +69,7 @@ class YOLObbox2Pytorch(_BaseTransform):
         ----------
         img_w: int
         img_h: int
-        boxes: list[list[x, y, w, h]]
+        boxes: torch.Tensor(4, num_obj)
         """
         return unnormalize_bbox(xywh_to_x1y1x2y2(boxes), img_w, img_h)
 
@@ -86,7 +86,7 @@ class Pytorchbbox2YOLO(_BaseTransform):
         ----------
         img_w: int
         img_h: int
-        boxes: list[list[x1, y1, x2, y2]]
+        boxes: torch.Tensor(4, num_obj)
         """
         return normalize_bbox(x1y1x2y2_to_xywh(boxes), img_w, img_h)
 
@@ -123,7 +123,7 @@ class DetectionCropToRatio(_BaseTransform):
     def transform(self, image, boxes):
         """
         image: torch.Tensor (C, H, W)
-        label: list[dict] - [{"boxes": [x, y, w, h], "cls": str}, ...]
+        boxes: torch.Tensor(4, num_obj)
         """
         h, w = image.size(1), image.size(2)
         ratio = h / w
@@ -222,7 +222,6 @@ class DetectionConstrainImageSize(_BaseTransform):
     def transform(self, image):
         """
         image: torch.Tensor (C, H, W)
-        label: list[dict] - [{"boxes": [x, y, w, h], "cls": str}, ...]
         """
         size = self.get_size(image.size(2), image.size(1))
         image = TF.resize(image, size)

@@ -1,8 +1,9 @@
 import os
 
 import matplotlib.pyplot as plt
+import torchvision.transforms.functional as TF
 import numpy as np
-from data.transforms.vision import ToPIL, UnNormalize
+from data.transforms.vision import UnNormalize
 from utils.experiment import makedir
 
 from .vision import plot_image_classification, plot_object_detection
@@ -40,7 +41,8 @@ def plot_samples_from_dataset(
     unnormalize=False,
     normalization_mean=(0.5, 0.5, 0.5),
     normalization_std=(0.5, 0.5, 0.5),
-    imsize=3,
+    resize_to=None,
+    plot_size=3,
     preprocess_f=None,
     label_map=None,
     **kwargs
@@ -54,17 +56,22 @@ def plot_samples_from_dataset(
     makedir(save_to)
 
     w, h = subplot_dim
-    plt.figure(figsize=(w * imsize, h * imsize))
+    plt.figure(figsize=(w * plot_size, h * plot_size))
     for i in range(1, w * h + 1):
         data = dataset[i - 1]
 
         if preprocess_f:
             data = preprocess_f(data)
+        if resize_to:
+            data["images"] = TF.resize(
+                data["images"],
+                resize_to,
+                interpolation=TF.InterpolationMode.NEAREST
+            )
         if unnormalize:
             data = UnNormalize(normalization_mean, normalization_std)(data)
         if image_tensor_to_numpy:
-            data = ToPIL()(data)
-            data["images"] = np.asarray(data["images"])
+            data["images"] = np.asarray(TF.to_pil_image(data["images"]))
 
         plt.subplot(w, h, i)
         plot_image = plot_sample(task, data=data, mode="return", label_map=label_map, **kwargs)
