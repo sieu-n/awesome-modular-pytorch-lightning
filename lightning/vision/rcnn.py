@@ -10,6 +10,7 @@ from torchvision.models.detection.rpn import AnchorGenerator
 class FasterRCNNBaseTrainer(_BaseLightningTrainer):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs):
         # build models and heads defined in `model_cfg`.
+        raise NotImplementedError()
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         # training mode and hyperparameters.
         self.lambda_reg = training_cfg["lambda_reg"]
@@ -73,7 +74,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         gt_bbox
         """
         
-        for x 
+        #for x 
         return None, None, None
 
     def _objectness_classification_loss(objectness_pred, is_object):
@@ -147,21 +148,26 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256),),
                                            aspect_ratios=((0.5, 1.0, 2.0),))
-        #roi_pooler = torchvision.ops.RoIPool(output_size=7, spatial_scale=1.0)
+        # roi_pooler = torchvision.ops.RoIPool(output_size=7, spatial_scale=1.0)
         roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'],
-                                                output_size=7,
-                                                sampling_ratio=2)
-
+                                                        output_size=7,
+                                                        sampling_ratio=2)
 
         # training mode and hyperparameters.
         self.backbone.out_channels = 2048
         self.model = FasterRCNN(self.backbone,
-                   num_classes=21,
-                   rpn_anchor_generator=anchor_generator,
-                   box_roi_pool=roi_pooler)
-    
+                                num_classes=21,
+                                rpn_anchor_generator=anchor_generator,
+                                box_roi_pool=roi_pooler)
+
     def training_step(self, batch, batch_idx):
-        images, targets = batch
+        assert "images" in batch
+        assert "boxes" in batch
+        assert "labels" in batch
+
+        images, targets = batch["images"], None
+
+        targets = batch
         loss_dict = self.model(images, targets)
         losses = sum(loss for loss in loss_dict.values())
         return losses.item()

@@ -15,9 +15,8 @@ class _BaseTransform:
         self.const_cfg = const_cfg
 
     def __call__(self, x, y):
-        x, y = self.input_transform(x), self.label_transform(y)
-        return self.joint_transform(x, y)
-
+        raise NotImplementedError
+    '''
     def joint_transform(self, image, label):
         return image, label
 
@@ -26,6 +25,7 @@ class _BaseTransform:
 
     def label_transform(self, label):
         return label
+    '''
 
 
 class ApplyDataTransformations(Dataset):

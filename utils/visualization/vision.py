@@ -36,7 +36,7 @@ def plot_image_classification(x, pred=None, y=None, label_map=None):
     return x
 
 
-def plot_object_detection(x, pred=None, y=None, label_map=None):
+def plot_object_detection(x, pred=None, y=None, label_map=None, is_xywh=True):
     """
     x: np.array(W, H, C)
         rgb image
@@ -64,17 +64,19 @@ def plot_object_detection(x, pred=None, y=None, label_map=None):
         # plot gt bbox in red
         obj_classes, obj_bboxes = y["labels"], y["boxes"]
         for obj_idx in range(len(obj_classes)):
-            obj_bbox, obj_class = obj_classes[obj_idx], obj_bboxes[obj_idx]
+            obj_class, obj_bbox = obj_classes[obj_idx], obj_bboxes[obj_idx]
             if label_map:
                 # convert label to correct str id if specified.
                 obj_class = label_map[obj_class]
             if type(obj_bbox[0]) == float:
                 w, h = img.shape[1], img.shape[0]
-                y_bbox = unnormalize_bbox(obj_bbox, w, h)
-            # plot bbox
-
-            x1, y1, x2, y2 = xywh_to_x1y1x2y2(y_bbox)
+                obj_bbox = unnormalize_bbox(obj_bbox, w, h)
+            if is_xywh:
+                x1, y1, x2, y2 = xywh_to_x1y1x2y2(obj_bbox)
+            else:
+                x1, y1, x2, y2 = obj_bbox
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            # plot bbox
             img = cv2.rectangle(img, (x1, y1), (x2, y2), gtColor, bboxThickness)
 
             img = cv2.putText(

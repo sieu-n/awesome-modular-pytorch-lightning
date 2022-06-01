@@ -14,10 +14,10 @@ function_for_plotting = {
 
 
 def plot_sample(
-    task, x, y=None, mode="save", savedir="results/example.png", label_map=None
+    task, x, y=None, mode="save", savedir="results/example.png", label_map=None, **kwargs
 ):
     get_image = function_for_plotting[task]
-    image = get_image(x, y=y, label_map=label_map)
+    image = get_image(x, y=y, label_map=label_map, **kwargs)
 
     assert mode in ["save", "return"]
     if mode == "save":
@@ -43,6 +43,7 @@ def plot_samples_from_dataset(
     imsize=3,
     preprocess_f=None,
     label_map=None,
+    **kwargs
 ):
     """
     Plot multiple samples using matplotlib.
@@ -66,9 +67,9 @@ def plot_samples_from_dataset(
             x = np.asarray(x)
 
         plt.subplot(w, h, i)
-        plot_image = plot_sample(task, x, y=y, mode="return", label_map=label_map)
+        plot_image = plot_sample(task, x, y=y, mode="return", label_map=label_map, **kwargs)
         plt.imshow(plot_image)
         plt.axis("off")
-
+    plt.tight_layout()
     plt.savefig(save_to)
     plt.close()

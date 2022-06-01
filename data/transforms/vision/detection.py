@@ -1,4 +1,5 @@
 import random
+import torch
 from copy import deepcopy
 
 import torchvision.transforms.functional as TF
@@ -28,12 +29,17 @@ class DetectionVOCLabelTransform(_BaseTransform):
             name: idx for idx, name in enumerate(self.const_cfg["label_map"])
         }
 
-    def joint_transform(self, image, label):
+    def __call__(self, x, y):
+        boxes, labels = self.transform(y, x.size(2), x.size(1))
+        return {"images": x, "boxes": boxes, "labels": labels}
+
+    def transform(self, label, img_w, img_h):
         """
-        image: torch.Tensor (C, H, W)
-        label: dict - output of VOC-style .xml annotation
+        img_w: int
+        img_h: int
+        label: dict
+            output of VOC-style .xml annotation
         """
-        img_w, img_h = image.size(2), image.size(1)
         label = label["annotation"]["object"]
         targets = {"boxes": [], "labels": []}
         for obj_label in label:
@@ -49,37 +55,41 @@ class DetectionVOCLabelTransform(_BaseTransform):
             targets["labels"].append(self.label2code[obj_label["name"]])
 
         # returns {"boxes": list[list[x, y, w, h], ...], "labels": list[int]}
-        return image, targets
+        return torch.tensor(targets["boxes"]), torch.tensor(targets["labels"])
 
 
 class YOLObbox2Pytorch(_BaseTransform):
-    def joint_transform(self, image, label):
+    def __call__(self, d):
+        d["boxes"] = self.transform(d["boxes"], d["images"].size(2), d["images"].size(1))
+        return d
+
+    def transform(self, boxes, img_w, img_h):
         """
         Convert YOLO-format relative (x, y, w, h) bbox to PyTorch-style absolute (x1, y1, x2, y2) coordinates.
+        Parameters
+        ----------
+        img_w: int
+        img_h: int
+        boxes: list[list[x, y, w, h]]
         """
-        img_w, img_h = image.size(2), image.size(1)
-        for idx in range(len(label["boxes"])):
-            label["boxes"][idx] = unnormalize_bbox(
-                xywh_to_x1y1x2y2(label["boxes"][idx]),
-                img_w,
-                img_h
-            )
-        return image, label
+        return unnormalize_bbox(xywh_to_x1y1x2y2(boxes), img_w, img_h)
 
 
 class Pytorchbbox2YOLO(_BaseTransform):
-    def joint_transform(self, image, label):
+    def __call__(self, d):
+        d["boxes"] = self.transform(d["boxes"], d["images"].size(2), d["images"].size(1))
+        return d
+
+    def transform(self, boxes, img_w, img_h):
         """
         Convert PyTorch-style absolute (x1, y1, x2, y2) bbox to YOLO-format relative (x, y, w, h) coordinates.
+        Parameters
+        ----------
+        img_w: int
+        img_h: int
+        boxes: list[list[x1, y1, x2, y2]]
         """
-        img_w, img_h = image.size(2), image.size(1)
-        for idx in range(len(label["boxes"])):
-            label["boxes"][idx] = normalize_bbox(
-                x1y1x2y2_to_xywh(label["boxes"][idx]),
-                img_w,
-                img_h
-            )
-        return image, label
+        return normalize_bbox(x1y1x2y2_to_xywh(boxes), img_w, img_h)
 
 
 class DetectionCropToRatio(_BaseTransform):
@@ -90,7 +100,28 @@ class DetectionCropToRatio(_BaseTransform):
         self.max_ratio = max_ratio
         self.mode = mode
 
-    def joint_transform(self, image, label):
+    def __call__(self, d):
+        # assert type(d) == dict and len(d.keys()) == 3
+        # assert "images" in d
+        # assert "boxes" in d
+        # assert "labels" in d
+
+        cropped_image, shifted_boxes, is_removed = self.transform(d["image"], d["boxes"])
+        num_boxes = len(is_removed)
+        box_mask = (torch.tensor(is_removed) == False)
+
+        new_data = {"images": cropped_image, "boxes": shifted_boxes}
+        for key in d.keys():
+            if key == "images" or key == "boxes":
+                continue
+            if hasattr(d[key], '__len__') and len(d[key]) == num_boxes:
+                # if some attribute is assigned per-box such as `label`, remove some of them.
+                new_data[key] = d[key][box_mask]
+            else:
+                new_data[key] = d[key]
+        return new_data
+
+    def transform(self, image, boxes):
         """
         image: torch.Tensor (C, H, W)
         label: list[dict] - [{"boxes": [x, y, w, h], "cls": str}, ...]
@@ -122,13 +153,16 @@ class DetectionCropToRatio(_BaseTransform):
         # crop image
         cropped_image = image[:, h_min:h_max, w_min:w_max]
         # move bbox(given in relative [x, y, w, h] coordinates)
-        shifted_label = {}
-        for obj_idx in range(len(label["boxes"])):
+        shifted_boxes = []
+        is_removed = [False] * len(boxes)
+
+        for obj_idx in range(len(boxes)):
             x1, y1, x2, y2 = unnormalize_bbox(
-                xywh_to_x1y1x2y2(label["boxes"][obj_idx]), w, h
+                xywh_to_x1y1x2y2(boxes[obj_idx]), w, h
             )
             # check if bbox is outside cropped image
             if x1 >= w_max or x2 <= w_min or y1 >= h_max or y2 < h_min:
+                is_removed[obj_idx] = True
                 continue
             # clip coords inside bbox.
             x1, y1, x2, y2 = (
@@ -143,12 +177,9 @@ class DetectionCropToRatio(_BaseTransform):
             new_bbox = normalize_bbox(
                 x1y1x2y2_to_xywh([x1, y1, x2, y2]), w_max - w_min, h_max - h_min
             )
+            shifted_boxes.append(new_bbox)
 
-            for key in label.keys():
-                shifted_label.get(key, []).append(label[key][obj_idx])
-            shifted_label["boxes"][-1] = new_bbox
-
-        return cropped_image, shifted_label
+        return cropped_image, torch.tensor(shifted_boxes), is_removed
 
 
 class DetectionConstrainImageSize(_BaseTransform):
@@ -162,6 +193,10 @@ class DetectionConstrainImageSize(_BaseTransform):
             min_size = (min_size,)
         self.min_size = min_size
         self.max_size = max_size
+
+    def __call__(self, d):
+        d["image"] = self.transform(d["image"])
+        return d
 
     # modified from torchvision to add support for max size
     def get_size(self, w, h):
@@ -185,7 +220,7 @@ class DetectionConstrainImageSize(_BaseTransform):
 
         return (oh, ow)
 
-    def input_transform(self, image):
+    def transform(self, image):
         """
         image: torch.Tensor (C, H, W)
         label: list[dict] - [{"boxes": [x, y, w, h], "cls": str}, ...]
@@ -206,18 +241,11 @@ class DetectionHFlip(_BaseTransform):
         super().__init__(**kwargs)
         self.prob = prob
 
-    def joint_transform(self, image, label):
-        """
-        image: torch.Tensor (C, H, W)
-        label: list[dict] - {"boxes": list[list[x, y, w, h], ...], "labels": list[int]}
-        """
-
-    def __call__(self, image, target):
+    def __call__(self, d):
         if random.random() < self.prob:
-            image = TF.hflip(image)
-            for idx in range(len(target)):
-                target[idx]["boxes"][0] = 1.0 - target[idx]["boxes"][0]
-        return image, target
+            d["image"] = TF.hflip(d["image"])
+            d["boxes"][0] = 1.0 - d["boxes"][0]
+        return d
 
 
 class DetectionVFlip(_BaseTransform):
@@ -225,15 +253,8 @@ class DetectionVFlip(_BaseTransform):
         super(self).__init__(**kwargs)
         self.prob = prob
 
-    def joint_transform(self, image, label):
-        """
-        image: torch.Tensor (C, H, W)
-        label: list[dict] - {"boxes": list[list[x, y, w, h], ...], "labels": list[int]}
-        """
-
-    def __call__(self, image, target):
+    def __call__(self, d):
         if random.random() < self.prob:
-            image = TF.vflip(image)
-            for idx in range(len(target)):
-                target[idx]["boxes"][1] = 1.0 - target[idx]["boxes"][1]
-        return image, target
+            d["image"] = TF.vflip(d["image"])
+            d["boxes"][1] = 1.0 - d["boxes"][1]
+        return d

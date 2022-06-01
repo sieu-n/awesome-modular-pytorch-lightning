@@ -9,8 +9,9 @@ class TorchTransforms(_BaseTransform):
         self.transform_f = getattr(TT, NAME)(**ARGS)
         print(f"Found name `{NAME} from `torchvision.transforms`.")
 
-    def input_transform(self, image):
-        return self.transform_f(image)
+    def __call__(self, d):
+        d["image"] = self.transform_f(d["image"])
+        return d
 
 
 def str2interpolation(s):

@@ -58,11 +58,10 @@ transform:
     [
       "trn,val",
       [
-        {
-          "name": "YOLObbox2Pytorch"
-        }
-      ]
-    ]
+        { "name": "YOLObbox2Pytorch" },
+      ],
+    ],
+
   ]
 
 model:
@@ -110,6 +109,9 @@ training:
 validation:
   batch_size: 1
 
+debug:
+  view_train_augmentation:
+    is_xywh: False
 # other useful configs.
 wandb:
   project: "FasterRCNN-detection"

@@ -110,6 +110,7 @@ class Experiment:
         trn_dataloader = DataLoader(
             trn_dataset,
             batch_size=trn_batch_size,
+            collate_fn=lambda batch: tuple(zip(*batch)),
             **trn_dataloader_cfg,
         )
         # dataloader - val
@@ -119,6 +120,7 @@ class Experiment:
         val_dataloader = DataLoader(
             val_dataset,
             batch_size=val_batch_size,
+            collate_fn=lambda batch: tuple(zip(*batch)),
             **val_dataloader_cfg,
         )
 

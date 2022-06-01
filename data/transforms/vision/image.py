@@ -5,7 +5,13 @@ from data.transforms.common import _BaseTransform
 from data.transforms.vision.util import str2interpolation
 
 
-class Normalize(_BaseTransform):
+class _ImageTransform(_BaseTransform):
+    def __call__(self, d):
+        d["image"] = self.transform(d["image"])
+        return d
+
+
+class Normalize(_ImageTransform):
     def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), **kwargs):
         """
         Normalize input image with predefined mean/std.
@@ -21,13 +27,17 @@ class Normalize(_BaseTransform):
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
 
-    def input_transform(self, image):
+    def __call__(self, d):
+        d["image"] = self.transform(d["image"])
+        return d
+
+    def transform(self, image):
         for t, m, s in zip(image, self.mean, self.std):
             t.sub_(m).div_(s)
         return image
 
 
-class ColorJitter(object):
+class ColorJitter(_ImageTransform):
     def __init__(
         self,
         brightness=None,
@@ -42,12 +52,12 @@ class ColorJitter(object):
             hue=hue,
         )
 
-    def input_transform(self, image):
+    def transform(self, image):
         image = self.color_jitter(image)
         return image
 
 
-class UnNormalize(_BaseTransform):
+class UnNormalize(_ImageTransform):
     def __init__(self, mean, std, **kwargs):
         """
         Inverse normalization given predefined mean/std values.
@@ -64,7 +74,7 @@ class UnNormalize(_BaseTransform):
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
 
-    def input_transform(self, tensor):
+    def transform(self, tensor):
         """
         Parameters
         ----------
@@ -79,17 +89,17 @@ class UnNormalize(_BaseTransform):
         return tensor
 
 
-class ToTensor(_BaseTransform):
-    def input_transform(self, image):
+class ToTensor(_ImageTransform):
+    def transform(self, image):
         return TF.to_tensor(image)
 
 
-class ToPIL(_BaseTransform):
-    def input_transform(self, image):
+class ToPIL(_ImageTransform):
+    def transform(self, image):
         return TF.to_pil_image(image)
 
 
-class Resize(_BaseTransform):
+class Resize(_ImageTransform):
     def __init__(
         self, size, interpolation="bilinear", max_size=None, antialias=None, **kwargs
     ):
@@ -102,7 +112,7 @@ class Resize(_BaseTransform):
         self.max_size = max_size
         self.antialias = antialias
 
-    def input_transform(self, image):
+    def transform(self, image):
         return TF.resize(
             image, self.size, self.interpolation, self.max_size, self.antialias
         )

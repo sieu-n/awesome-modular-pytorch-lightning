@@ -15,7 +15,10 @@ class ClassificationTrainer(_BaseLightningTrainer):
         return self.classifier(feature)
 
     def training_step(self, batch, batch_idx):
-        x, y = batch
+        assert "images" in batch
+        assert "labels" in batch
+
+        x, y = batch["images"], batch["labels"]
         pred = self(x)
 
         loss = self.loss_fn(pred, y)
@@ -23,7 +26,10 @@ class ClassificationTrainer(_BaseLightningTrainer):
         return loss
 
     def evaluate(self, batch, stage=None):
-        x, y = batch
+        assert "images" in batch
+        assert "labels" in batch
+
+        x, y = batch["images"], batch["labels"]
         pred = self(x)
         loss = self.loss_fn(pred, y)
         class_pred = torch.argmax(pred, dim=1)
