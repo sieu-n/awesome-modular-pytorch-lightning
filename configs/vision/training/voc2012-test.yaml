@@ -16,7 +16,7 @@ dataset:
     val:
       image_set: "val"
   transformations: [] # same format with `transform`.
-  initial_transform: 
+  initial_transform:
     name: "DetectionVOCLabelTransform"
 
 # Data augmentation for FasterRCNN is adopted from:
@@ -57,13 +57,7 @@ transform:
         },
       ],
     ],
-    [
-      "trn,val",
-      [
-        { "name": "YOLObbox2Pytorch" },
-      ],
-    ],
-
+    ["trn,val", [{ "name": "YOLObbox2Pytorch" }]],
   ]
 
 dataloader:
@@ -128,7 +122,6 @@ training:
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
-
 
   lambda_reg: 10.0
 

@@ -1,3 +1,4 @@
+import math
 import random
 from argparse import ArgumentParser
 from copy import deepcopy
@@ -47,6 +48,12 @@ if __name__ == "__main__":
         "--size_at_cycle_percent",
         nargs="+",
         help="dataset size at each cycle percent",
+    )
+    parser.add_argument(
+        "--same_steps",
+        default=False,
+        action="store_true",
+        help="Increase epochs so # optimization steps are same regardless of dataset size",
     )
 
     args = parser.parse_args()
@@ -113,16 +120,19 @@ if __name__ == "__main__":
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
 
         experiment.setup_experiment_from_cfg(cycle_cfg)
-        result = experiment.train(
-            trainer_cfg=cycle_cfg["trainer"], epochs=cfg["training"]["epochs"]
-        )
+        # compute number of epochs to compensate.
+        epochs = cfg["training"]["epochs"]
+        if args.same_steps:
+            epochs = math.floor(epochs * (data_size_cycle[-1]) / dataset_size)
+            print(f"Increasing training epoch: {cfg['training']['epochs']} -> {epochs}")
+        result = experiment.train(trainer_cfg=cycle_cfg["trainer"], epochs=epochs)
         print("Result:", result)
         results.append(result[0])
     print("Final results:", results)
     if "wandb" in cfg:
         log_to_wandb(
             results,
-            exp_name=f"final_results-{cfg['name']}",
+            exp_name=f"dataset-size-experiment-{cfg['name']}",
             group=cfg["wandb"].get("group", None),
             project=cfg["wandb"].get("project", None),
         )

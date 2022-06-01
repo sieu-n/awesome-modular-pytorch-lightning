@@ -43,9 +43,7 @@ def find_dataset_from_name(d_name):
             sum(is_name_in) == 1
         ), f"Dataset `{d_name}` was found in `{sum(is_name_in)} files."
         file = DATASET_DECLARATIONS[is_name_in.index(True)]
-        print(
-            f"Dataset {d_name} --> {getattr(file, d_name)}: found in {file.__name__}"
-        )
+        print(f"Dataset {d_name} --> {getattr(file, d_name)}: found in {file.__name__}")
         return getattr(file, d_name)
     else:
         print(f"{d_name} might already be a function.")
@@ -96,7 +94,7 @@ def build_dataset(dataset_cfg, transform_cfg, const_cfg):
         subset: ApplyDataTransformations(
             base_dataset=datasets[subset],
             initial_transform=initial_transform,
-            transforms=transforms[subset]
+            transforms=transforms[subset],
         )
         for subset in datasets.keys()
     }

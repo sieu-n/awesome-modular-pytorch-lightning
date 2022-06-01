@@ -41,7 +41,7 @@ class FasterRCNNBaserpn(nn.Module):
         objectness = self.objectness(d).view((bs, 2, self.k, w, h))
         bbox_pred = self.bboxreg(d).view((bs, 4, self.k, w, h))
 
-        rois = None # todo
+        rois = None  # todo
         return {"roi": rois, "objectness": objectness, "bbox_refinement": bbox_pred}
 
 

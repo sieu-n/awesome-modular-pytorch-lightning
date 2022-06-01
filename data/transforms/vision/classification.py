@@ -36,7 +36,7 @@ class RandomResizedCropAndInterpolation(_BaseTransform):
         scale=(0.08, 1.0),
         ratio=(3.0 / 4.0, 4.0 / 3.0),
         interpolation="bilinear",
-        **kwargs
+        **kwargs,
     ):
         super().__init__(**kwargs)
         if isinstance(size, (list, tuple)):

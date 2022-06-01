@@ -1,10 +1,13 @@
+import models.heads as TorchHeads
+import models.vision.backbone as CustomModels
 import pytorch_lightning as pl
+from models.vision.backbone.build import (
+    timm_feature_extractor,
+    torchvision_feature_extractor,
+)
 from torch import optim
 from torch.optim import lr_scheduler
 from utils.models import get_layer
-import models.heads as TorchHeads
-import models.vision.backbone as CustomModels
-from models.vision.backbone.build import timm_feature_extractor, torchvision_feature_extractor
 
 
 class _BaseLightningTrainer(pl.LightningModule):
@@ -25,8 +28,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         heads = model_cfg.get("heads", {})
         for head_name, head_cfg in heads.items():
             head_module = self.build_head(
-                module_type=head_cfg["ID"],
-                **head_cfg.get("cfg", {})
+                module_type=head_cfg["ID"], **head_cfg.get("cfg", {})
             )
             setattr(self, head_name, head_module)
         # setup hooks
@@ -37,7 +39,7 @@ class _BaseLightningTrainer(pl.LightningModule):
                 network=getattr(self, hook_cfg["model"]),
                 key=hook_name,
                 layer_name=hook_cfg["layer_name"],
-                **hook_cfg.get("cfg", {})
+                **hook_cfg.get("cfg", {}),
             )
 
     def build_head(self, module_type, *args, **kwargs):
@@ -46,9 +48,13 @@ class _BaseLightningTrainer(pl.LightningModule):
         head = module_type(*args, **kwargs)
         return head
 
-    def build_backbone(self, name, model_type="custom", drop_after=None, *args, **kwargs):
+    def build_backbone(
+        self, name, model_type="custom", drop_after=None, *args, **kwargs
+    ):
         if model_type == "torchvision":
-            backbone = torchvision_feature_extractor(model_id=name, drop_after=drop_after, *args, **kwargs)
+            backbone = torchvision_feature_extractor(
+                model_id=name, drop_after=drop_after, *args, **kwargs
+            )
         elif model_type == "timm":
             backbone = timm_feature_extractor(model_id=name, *args, **kwargs)
         elif model_type == "custom":
@@ -79,6 +85,7 @@ class _BaseLightningTrainer(pl.LightningModule):
                 f = f.detach()
 
                 self._hook_cache[output.device.index][key] = f
+
             return hook
 
         layer = get_layer(network, layer_name)

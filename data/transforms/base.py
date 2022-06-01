@@ -1,5 +1,6 @@
-from torch.utils.data import Dataset
 import random
+
+from torch.utils.data import Dataset
 
 
 class _BaseTransform:
@@ -17,7 +18,8 @@ class _BaseTransform:
 
     def __call__(self, x, y):
         raise NotImplementedError
-    '''
+
+    """
     def joint_transform(self, image, label):
         return image, label
 
@@ -26,7 +28,7 @@ class _BaseTransform:
 
     def label_transform(self, label):
         return label
-    '''
+    """
 
 
 class ApplyDataTransformations(Dataset):

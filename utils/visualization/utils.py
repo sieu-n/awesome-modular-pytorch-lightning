@@ -1,8 +1,8 @@
 import os
 
 import matplotlib.pyplot as plt
-import torchvision.transforms.functional as TF
 import numpy as np
+import torchvision.transforms.functional as TF
 from data.transforms.vision import UnNormalize
 from utils.experiment import makedir
 
@@ -45,7 +45,7 @@ def plot_samples_from_dataset(
     plot_size=3,
     preprocess_f=None,
     label_map=None,
-    **kwargs
+    **kwargs,
 ):
     """
     Plot multiple samples using matplotlib.
@@ -64,9 +64,7 @@ def plot_samples_from_dataset(
             data = preprocess_f(data)
         if resize_to:
             data["images"] = TF.resize(
-                data["images"],
-                resize_to,
-                interpolation=TF.InterpolationMode.NEAREST
+                data["images"], resize_to, interpolation=TF.InterpolationMode.NEAREST
             )
         if unnormalize:
             data = UnNormalize(normalization_mean, normalization_std)(data)
@@ -74,7 +72,9 @@ def plot_samples_from_dataset(
             data["images"] = np.asarray(TF.to_pil_image(data["images"]))
 
         plt.subplot(w, h, i)
-        plot_image = plot_sample(task, data=data, mode="return", label_map=label_map, **kwargs)
+        plot_image = plot_sample(
+            task, data=data, mode="return", label_map=label_map, **kwargs
+        )
         plt.imshow(plot_image)
         plt.axis("off")
     plt.tight_layout()

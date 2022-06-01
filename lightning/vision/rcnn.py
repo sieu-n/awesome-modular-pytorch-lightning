@@ -1,14 +1,19 @@
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
-from lightning.common import _BaseLightningTrainer
-from collections import OrderedDict
-from utils.image.batcher import batch_images
-from utils.bbox import get_anchor_shapes, check_isvalid_boxes
 import torchvision
-from models.heads import ROIPooler, MLPHead, FastRCNNPredictor
+from lightning.common import _BaseLightningTrainer
+from models.heads import FastRCNNPredictor, MLPHead, ROIPooler
 from torchvision.models.detection import FasterRCNN
-from torchvision.models.detection.rpn import AnchorGenerator, RPNHead, RegionProposalNetwork
 from torchvision.models.detection.roi_heads import RoIHeads
+from torchvision.models.detection.rpn import (
+    AnchorGenerator,
+    RegionProposalNetwork,
+    RPNHead,
+)
+from utils.bbox import check_isvalid_boxes, get_anchor_shapes
+from utils.image.batcher import batch_images
 
 
 class FasterRCNNBaseTrainer(_BaseLightningTrainer):
@@ -51,13 +56,19 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
                     )
         return anchors
 
-    def _get_roibatch(gt_bbox, anchors, roi_threshold=(0.7, 0.3), roi_num=(128, 128), ensure_one_positive=True):
+    def _get_roibatch(
+        gt_bbox,
+        anchors,
+        roi_threshold=(0.7, 0.3),
+        roi_num=(128, 128),
+        ensure_one_positive=True,
+    ):
         """
         Given a single image, Faster R-CNN creates a batch of ROIs that is used to compute the RPN objectness
         classification, bounding box regression, and classification loss for training. `_get_roibatch` returns a batch
         of labels for each task. Specifically, the function recieves the possible anchors location and g.t. bbox labels
         and creates a balanced batch of ROI where the number of positive and negative ROIs can be specified, whereas
-        randomly selecting ROI will return much more negative ROI. The values returned can be directly compared with 
+        randomly selecting ROI will return much more negative ROI. The values returned can be directly compared with
         the model predictions to compute loss.
         Parameters
         ----------
@@ -77,8 +88,8 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         cls_label
         gt_bbox
         """
-        
-        # for x 
+
+        # for x
         return None, None, None
 
     def _objectness_classification_loss(objectness_pred, is_object):
@@ -108,7 +119,7 @@ class FasterRCNNBaseTrainer(_BaseLightningTrainer):
         anchors = self.get_anchor_list(
             feature_shape=(rois.size(3), rois.size(2)),
             image_shape=(image_w, image_h),
-            bbox_shapes=self.bbox_dims
+            bbox_shapes=self.bbox_dims,
         )
         is_selected, cls_label, gt_bbox = self._get_roibatch(y, anchors)
 
@@ -152,10 +163,11 @@ class BaseFasterRCNN(_BaseLightningTrainer):
         # build models and heads defined in `model_cfg`.
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         # rpn
-        rpn_anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256),),
-                                               aspect_ratios=((0.5, 1.0, 2.0),))
+        rpn_anchor_generator = AnchorGenerator(
+            sizes=((32, 64, 128, 256),), aspect_ratios=((0.5, 1.0, 2.0),)
+        )
         rpn_head = RPNHead(  # TODO
-            out_channels=1024,
+            in_channels=1024,
             num_anchors=rpn_anchor_generator.num_anchors_per_location()[0],
         )
         self.rpn = RegionProposalNetwork(  # TODO
@@ -194,18 +206,21 @@ class BaseFasterRCNN(_BaseLightningTrainer):
         assert "boxes" in batch
         assert "labels" in batch
         batch_size = len(batch["images"])
-        img_w = [batch["images"][idx].size(3) for idx in range(batch_size)]
-        img_h = [batch["images"][idx].size(2) for idx in range(batch_size)]
+        img_w = [batch["images"][idx].size(2) for idx in range(batch_size)]
+        img_h = [batch["images"][idx].size(1) for idx in range(batch_size)]
         check_isvalid_boxes(batch["boxes"], xywh=False, img_w=img_w, img_h=img_h)
 
         images = batch_images(batch["images"])
-        targets = [{"boxes": batch["boxes"][idx], "labels": batch["labels"][idx]} for idx in range(batch_size)]
+        targets = [
+            {"boxes": batch["boxes"][idx], "labels": batch["labels"][idx]}
+            for idx in range(batch_size)
+        ]
 
         features = self.backbone(images.tensors)
         if isinstance(features, torch.Tensor):
             features = OrderedDict([("0", features)])
         proposals, proposal_losses = self.rpn(images, features, targets)
-        detections, detector_losses = self.roi_heads(features, proposals, images.image_sizes, targets)
+        detections, detector_losses = self.roi_heads(features, proposals, None, targets)
         # detections = self.transform.postprocess(detections, images.image_sizes, original_image_sizes) # TODO
 
         # compute loss
@@ -226,32 +241,38 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs):
         # build models and heads defined in `model_cfg`.
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
-        anchor_generator = AnchorGenerator(sizes=((32, 64, 128, 256),),
-                                           aspect_ratios=((0.5, 1.0, 2.0),))
+        anchor_generator = AnchorGenerator(
+            sizes=((32, 64, 128, 256),), aspect_ratios=((0.5, 1.0, 2.0),)
+        )
         # roi_pooler = torchvision.ops.RoIPool(output_size=7, spatial_scale=1.0)
-        roi_pooler = torchvision.ops.MultiScaleRoIAlign(featmap_names=['0'],
-                                                        output_size=7,
-                                                        sampling_ratio=2)
+        roi_pooler = torchvision.ops.MultiScaleRoIAlign(
+            featmap_names=["0"], output_size=7, sampling_ratio=2
+        )
 
         # training mode and hyperparameters.
         self.backbone.out_channels = 2048
-        self.model = FasterRCNN(self.backbone,
-                                num_classes=21,
-                                rpn_anchor_generator=anchor_generator,
-                                box_roi_pool=roi_pooler)
+        self.model = FasterRCNN(
+            self.backbone,
+            num_classes=21,
+            rpn_anchor_generator=anchor_generator,
+            box_roi_pool=roi_pooler,
+        )
 
     def training_step(self, batch, batch_idx):
         assert "images" in batch
         assert "boxes" in batch
         assert "labels" in batch
         batch_size = len(batch["images"])
-        img_w = [batch["images"][idx].size(3) for idx in range(batch_size)]
-        img_h = [batch["images"][idx].size(2) for idx in range(batch_size)]
+        img_w = [batch["images"][idx].size(2) for idx in range(batch_size)]
+        img_h = [batch["images"][idx].size(1) for idx in range(batch_size)]
         check_isvalid_boxes(batch["boxes"], xywh=False, img_w=img_w, img_h=img_h)
 
         loss_dict = self.model(
             batch["images"],
-            [{"boxes": batch["boxes"][idx], "labels": batch["labels"][idx]} for idx in range(batch_size)],
+            [
+                {"boxes": batch["boxes"][idx], "labels": batch["labels"][idx]}
+                for idx in range(batch_size)
+            ],
         )
         losses = sum(loss for loss in loss_dict.values())
         return losses

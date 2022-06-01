@@ -1,6 +1,6 @@
 import random
-import torch
 
+import torch
 import torchvision.transforms.functional as TF
 from data.transforms.base import _BaseTransform
 from utils.bbox import (
@@ -59,7 +59,9 @@ class DetectionVOCLabelTransform(_BaseTransform):
 
 class YOLObbox2Pytorch(_BaseTransform):
     def __call__(self, d):
-        d["boxes"] = self.transform(d["boxes"], d["images"].size(2), d["images"].size(1))
+        d["boxes"] = self.transform(
+            d["boxes"], d["images"].size(2), d["images"].size(1)
+        )
         return d
 
     def transform(self, boxes, img_w, img_h):
@@ -76,7 +78,9 @@ class YOLObbox2Pytorch(_BaseTransform):
 
 class Pytorchbbox2YOLO(_BaseTransform):
     def __call__(self, d):
-        d["boxes"] = self.transform(d["boxes"], d["images"].size(2), d["images"].size(1))
+        d["boxes"] = self.transform(
+            d["boxes"], d["images"].size(2), d["images"].size(1)
+        )
         return d
 
     def transform(self, boxes, img_w, img_h):
@@ -105,15 +109,17 @@ class DetectionCropToRatio(_BaseTransform):
         # assert "boxes" in d
         # assert "labels" in d
 
-        cropped_image, shifted_boxes, is_removed = self.transform(d["images"], d["boxes"])
+        cropped_image, shifted_boxes, is_removed = self.transform(
+            d["images"], d["boxes"]
+        )
         num_boxes = len(is_removed)
-        box_mask = (torch.tensor(is_removed) == False) # noqa E712
+        box_mask = torch.tensor(is_removed) == False  # noqa E712
 
         new_data = {"images": cropped_image, "boxes": shifted_boxes}
         for key in d.keys():
             if key == "images" or key == "boxes":
                 continue
-            if hasattr(d[key], '__len__') and len(d[key]) == num_boxes:
+            if hasattr(d[key], "__len__") and len(d[key]) == num_boxes:
                 # if some attribute is assigned per-box such as `label`, remove some of them.
                 new_data[key] = d[key][box_mask]
             else:
@@ -156,9 +162,7 @@ class DetectionCropToRatio(_BaseTransform):
         is_removed = [False] * len(boxes)
 
         for obj_idx in range(len(boxes)):
-            x1, y1, x2, y2 = unnormalize_bbox(
-                xywh_to_x1y1x2y2(boxes[obj_idx]), w, h
-            )
+            x1, y1, x2, y2 = unnormalize_bbox(xywh_to_x1y1x2y2(boxes[obj_idx]), w, h)
             # check if bbox is outside cropped image
             if x1 >= w_max or x2 <= w_min or y1 >= h_max or y2 < h_min:
                 is_removed[obj_idx] = True
@@ -228,6 +232,7 @@ class DetectionConstrainImageSize(_BaseTransform):
         # no need to transform labels as they are already normalized
         # target = target.resize(image.size)
         return image
+
 
 ################################################################
 # Data Augmentation for object detection

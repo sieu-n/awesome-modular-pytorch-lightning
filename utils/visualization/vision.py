@@ -37,7 +37,9 @@ def plot_image_classification(images, labels=None, label_map=None, **kwargs):
     return image
 
 
-def plot_object_detection(images, boxes=None, labels=None, label_map=None, is_xywh=True, **kwargs):
+def plot_object_detection(
+    images, boxes=None, labels=None, label_map=None, is_xywh=True, **kwargs
+):
     """
     x: np.array(W, H, C)
         rgb image
