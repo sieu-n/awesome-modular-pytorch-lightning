@@ -274,6 +274,9 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
                 for idx in range(batch_size)
             ],
         )
+        for k in loss_dict:
+            self.log(k, loss_dict[k])
+
         losses = sum(loss for loss in loss_dict.values())
         return losses
 

@@ -18,7 +18,7 @@ def plot_image_classification(images, labels=None, label_map=None, **kwargs):
     fontColor = (255, 0, 0)
     fontThickness = 2
     if labels is not None:
-        label = labels
+        label = int(labels)
         # convert label to correct str id if specified.
         if label_map and label in label_map:
             label = label_map[label]
@@ -67,7 +67,9 @@ def plot_object_detection(
         # plot gt bbox in red
         obj_classes, obj_bboxes = labels, boxes
         for obj_idx in range(len(obj_classes)):
-            obj_class, obj_bbox = obj_classes[obj_idx], list(obj_bboxes[obj_idx])
+            obj_class = list(map(int, obj_classes[obj_idx]))
+            obj_bbox = list(obj_bboxes[obj_idx])
+
             if label_map and obj_class in label_map:
                 # convert label to correct str id if specified.
                 obj_class = label_map[obj_class]

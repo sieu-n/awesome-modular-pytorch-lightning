@@ -80,7 +80,7 @@ if __name__ == "__main__":
         data_size_cycle = [int(n) for n in args.size_at_cycle]
     elif args.size_at_cycle_percent:
         data_size_cycle = [
-            (float(n) * num_train_samples) for n in args.size_at_cycle_percent
+            int(float(n) * num_train_samples) for n in args.size_at_cycle_percent
         ]
 
     if args.seed:

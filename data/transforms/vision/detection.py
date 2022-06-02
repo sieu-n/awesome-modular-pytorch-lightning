@@ -59,9 +59,10 @@ class DetectionVOCLabelTransform(_BaseTransform):
 
 class YOLObbox2Pytorch(_BaseTransform):
     def __call__(self, d):
-        d["boxes"] = self.transform(
-            d["boxes"], d["images"].size(2), d["images"].size(1)
-        )
+        if len(d["boxes"]) > 0:
+            d["boxes"] = self.transform(
+                d["boxes"], d["images"].size(2), d["images"].size(1)
+            )
         return d
 
     def transform(self, boxes, img_w, img_h):
@@ -78,9 +79,10 @@ class YOLObbox2Pytorch(_BaseTransform):
 
 class Pytorchbbox2YOLO(_BaseTransform):
     def __call__(self, d):
-        d["boxes"] = self.transform(
-            d["boxes"], d["images"].size(2), d["images"].size(1)
-        )
+        if len(d["boxes"]) > 0:
+            d["boxes"] = self.transform(
+                d["boxes"], d["images"].size(2), d["images"].size(1)
+            )
         return d
 
     def transform(self, boxes, img_w, img_h):
@@ -247,7 +249,8 @@ class DetectionHFlip(_BaseTransform):
     def __call__(self, d):
         if random.random() < self.prob:
             d["images"] = TF.hflip(d["images"])
-            d["boxes"][..., 0] = 1.0 - d["boxes"][..., 0]
+            if len(d["boxes"]) > 0:
+                d["boxes"][..., 0] = 1.0 - d["boxes"][..., 0]
         return d
 
 
@@ -259,5 +262,6 @@ class DetectionVFlip(_BaseTransform):
     def __call__(self, d):
         if random.random() < self.prob:
             d["images"] = TF.vflip(d["images"])
-            d["boxes"][..., 1] = 1.0 - d["boxes"][..., 1]
+            if len(d["boxes"]) > 0:
+                d["boxes"][..., 1] = 1.0 - d["boxes"][..., 1]
         return d
