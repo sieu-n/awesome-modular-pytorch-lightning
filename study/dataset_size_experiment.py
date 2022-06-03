@@ -87,14 +87,14 @@ if __name__ == "__main__":
         random_sampler = random.Random(args.seed).sample
     else:
         random_sampler = random.sample
-    # train
+
     experiment = Experiment(cfg)
     results = []
     for idx, dataset_size in enumerate(data_size_cycle):
         print(
             f"Cycle # {idx} / {len(data_size_cycle)} | Training data size: {dataset_size}"
         )
-        cycle_cfg = deepcopy(cfg)
+        cycle_cfg = deepcopy(cfg)   # copy and edit config file for dataset size experiment.
         idx_labeled = random_sampler(range(num_train_samples), dataset_size)
 
         # control dataset size
@@ -119,12 +119,14 @@ if __name__ == "__main__":
             cycle_cfg["wandb"]["group"] = cfg["name"]
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
 
-        experiment.setup_experiment_from_cfg(cycle_cfg)
-        # compute number of epochs to compensate.
+        # compute number of epochs to compensate smaller number of steps.
         epochs = cfg["training"]["epochs"]
         if args.same_steps:
             epochs = math.floor(epochs * (data_size_cycle[-1]) / dataset_size)
             print(f"Increasing training epoch: {cfg['training']['epochs']} -> {epochs}")
+        cfg["training"]["epochs"] = epochs
+
+        experiment.setup_experiment_from_cfg(cycle_cfg)
         result = experiment.train(trainer_cfg=cycle_cfg["trainer"], epochs=epochs)
         print("Result:", result)
         results.append(result[0])

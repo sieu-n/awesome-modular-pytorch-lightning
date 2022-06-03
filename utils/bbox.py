@@ -104,6 +104,10 @@ def check_isvalid_boxes(batch_of_boxes, img_w=1.0, img_h=1.0, xywh=True, is_batc
         is_imsize_list = True
 
     for idx, boxes in enumerate(batch_of_boxes):
+        # if `boxes` is empty(no objects are present)
+        if len(boxes) == 0:
+            continue
+
         if is_imsize_list:
             w, h = img_w[idx], img_h[idx]
         w_tolerance, h_tolerance = w * tolerance, h * tolerance

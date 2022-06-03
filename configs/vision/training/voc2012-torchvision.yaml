@@ -86,7 +86,7 @@ training:
   ID: "TorchVisionFasterRCNN"
   batch_size: 1
   epochs: 100
-  lr: 0.1
+  lr: 0.003
 
   optimizer: "sgd"
   optimizer_cfg:
