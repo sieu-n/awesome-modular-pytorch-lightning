@@ -63,5 +63,5 @@ def torchvision_feature_extractor(model_id, drop_after=None, *args, **kwargs):
     model = getattr(TorchvisionModels, str(model_id))(*args, **kwargs)
     # detach final classification head(make it feature extractor)
     if drop_after:
-        drop_layers_after(model, drop_after)
+        model = drop_layers_after(model, drop_after)
     return model

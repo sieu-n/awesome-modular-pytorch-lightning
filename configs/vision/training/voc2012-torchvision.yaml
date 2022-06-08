@@ -81,40 +81,12 @@ model:
     rpn:
       model: "backbone"
       layer_name: "layer3"
-  heads:
-    rpn:
-      ID: "RPNHead"
-      cfg:
-        d: 256
-        n: 3
-        k: 9
-        in_channels: 1024
-
-    roi_pooler:
-      ID: "ROIPooler"
-      cfg:
-        output_size: [7, 7]
-
-    anchor_generator:
-      ID: "AnchorGenerator"
-      cfg:
-        sizes: [128, 256, 512]
-        aspect_ratios: [0.5, 1.0, 2.0]
-
-    classifier:
-      ID: ClassificationHead
-      cfg:
-        reduction: "none"
-        dropout: 0.2
-        in_features: 128
-        num_classes: 21
-        return_logits: True # return logits instead of softmax probability.
 
 training:
   ID: "TorchVisionFasterRCNN"
   batch_size: 1
   epochs: 100
-  lr: 0.1
+  lr: 0.003
 
   optimizer: "sgd"
   optimizer_cfg:
@@ -124,6 +96,16 @@ training:
   lr_scheduler_cfg: {}
 
   lambda_reg: 10.0
+  roi:
+    # k = len(anchor_size) * len(aspect_ratio)
+    anchor_size: [128, 256, 512]
+    aspect_ratio: [0.5, 1.0, 2.0]
+    ensure_one_positive: True
+    positive_roi_threshold: 0.7
+    negative_roi_threshold: 0.3
+    positive_roi_count: 128
+    negative_roi_count: 128
+  detector:
 
 validation:
   batch_size: 1

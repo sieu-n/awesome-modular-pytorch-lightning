@@ -1,4 +1,6 @@
 debug:
+  view_train_augmentation:
+    resize_to: [256, 256] # resize so class text is displayed.
   network_summary:
     input_shape: [3, 224, 224]
 dataset:
@@ -9,13 +11,16 @@ dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     root: "./cifar10"
-    download: True
   dataset_subset_cfg:
     trn:
+      download: True
       train: True
     val:
       train: False
   transformations: [] # same format with `transform`.
+  initial_transform:
+    name: "TupleToClassificationData"
+
 # default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
 transform:
   [

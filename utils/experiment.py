@@ -8,12 +8,46 @@ from pathlib import Path
 import data.transforms.vision as DT_V
 import yaml
 from data.dataset.util import torchvision_dataset
-from data.transforms.common import ApplyDataTransformations, ComposeTransforms
+from data.transforms.base import ApplyDataTransformations, ComposeTransforms
 
 from .verbose import set_verbose
 
 """ Implement utilities used in `main.py`.
 """
+
+
+def find_transform_from_name(f_name):
+    TRANSFORM_DECLARATIONS = [DT_V]  # list of modules to serach for.
+    if type(f_name) == str:
+        # find transform name that matches `name` from TRANSFORM_DECLARATIONS
+        is_name_in = [hasattr(file, f_name) for file in TRANSFORM_DECLARATIONS]
+        assert (
+            sum(is_name_in) == 1
+        ), f"Transform `{f_name}` was found in `{sum(is_name_in)} files."
+        file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
+        print(
+            f"Transform {f_name} --> {getattr(file, f_name)}: found in {file.__name__}"
+        )
+        return getattr(file, f_name)
+    else:
+        print(f"{f_name} might already be a function.")
+        return f_name
+
+
+def find_dataset_from_name(d_name):
+    DATASET_DECLARATIONS = []  # list of modules to serach for.
+    if type(d_name) == str:
+        # find transform name that matches `name` from TRANSFORM_DECLARATIONS
+        is_name_in = [hasattr(file, d_name) for file in DATASET_DECLARATIONS]
+        assert (
+            sum(is_name_in) == 1
+        ), f"Dataset `{d_name}` was found in `{sum(is_name_in)} files."
+        file = DATASET_DECLARATIONS[is_name_in.index(True)]
+        print(f"Dataset {d_name} --> {getattr(file, d_name)}: found in {file.__name__}")
+        return getattr(file, d_name)
+    else:
+        print(f"{d_name} might already be a function.")
+        return d_name
 
 
 def build_dataset(dataset_cfg, transform_cfg, const_cfg):
@@ -29,64 +63,51 @@ def build_dataset(dataset_cfg, transform_cfg, const_cfg):
 
     # 2.1. build list of transformations using `transform` defined in config.
     # transforms: dict{subset_key: [t1, t2, ...], ...}
-    TRANSFORM_DECLARATIONS = [DT_V]
     transforms = {subset: [] for subset in datasets.keys()}
     for subsets, t_configs in transform_cfg:
         t = []
         # for each element of transforms,
         for t_config in t_configs:
-            name, kwargs = t_config["name"], t_config.get("args", {})
-            if type(name) == str:
-                # find transform name that matches `name` from TRANSFORM_DECLARATIONS
-                is_name_in = [hasattr(file, name) for file in TRANSFORM_DECLARATIONS]
-                assert (
-                    sum(is_name_in) == 1
-                ), f"Transform `{name}` was found in `{sum(is_name_in)} files."
-                file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
-                print(
-                    f"Transform {name} --> {getattr(file, name)}: found in {file.__name__}"
-                )
-                name = getattr(file, name)
-
+            f_name, kwargs = t_config["name"], t_config.get("args", {})
+            # find transform from name
+            transform_f = find_transform_from_name(f_name)
             # build transform using arguments.
             kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
-            t.append(name(**kwargs))
+            t.append(transform_f(**kwargs))
 
         for subset in subsets.split(","):
             transforms[subset] += t
 
     # 2.2. actually apply transformations.
+    initial_transform = None
+    if "initial_transform" in dataset_cfg:
+        # find transform from name
+        transform_f = find_transform_from_name(dataset_cfg["initial_transform"]["name"])
+        # build transform using arguments.
+        kwargs = dataset_cfg["initial_transform"].get("args", {})
+        kwargs["const_cfg"] = const_cfg
+        initial_transform = transform_f(**kwargs)
     transforms = {
         subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
     }
     datasets = {
         subset: ApplyDataTransformations(
-            base_dataset=datasets[subset], transforms=transforms[subset]
+            base_dataset=datasets[subset],
+            initial_transform=initial_transform,
+            transforms=transforms[subset],
         )
         for subset in datasets.keys()
     }
     # 3. apply datasets.
-    DATASET_DECLARATIONS = []
     apply_dataset_cfg = dataset_cfg["transformations"]
     for subsets, d_configs in apply_dataset_cfg:
         d_operations = []
         # for each element of transforms,
         for d_config in d_configs:
-            name, kwargs = d_config["name"], d_config["args"]
-            if type(name) == str:
-                # find transform name that matches `name` from TRANSFORM_DECLARATIONS
-                is_name_in = [hasattr(file, name) for file in DATASET_DECLARATIONS]
-                assert (
-                    sum(is_name_in) == 1
-                ), f"Dataset `{name}` was found in `{sum(is_name_in)} files."
-                file = DATASET_DECLARATIONS[is_name_in.index(True)]
-                print(
-                    f"Dataset {name} --> {getattr(file, name)}: found in {file.__name__}"
-                )
-                name = getattr(file, name)
-
+            d_name, kwargs = d_config["name"], d_config["args"]
+            dataset_f = find_dataset_from_name(d_name)
             # build dataset operation using arguments.
-            d_operations.append(lambda base_dataset: name(base_dataset, **kwargs))
+            d_operations.append(lambda base_dataset: dataset_f(base_dataset, **kwargs))
 
         for subset in subsets.split(","):
             for d_operation in d_operations:

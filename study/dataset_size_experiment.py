@@ -1,3 +1,4 @@
+import math
 import random
 from argparse import ArgumentParser
 from copy import deepcopy
@@ -48,6 +49,12 @@ if __name__ == "__main__":
         nargs="+",
         help="dataset size at each cycle percent",
     )
+    parser.add_argument(
+        "--same_steps",
+        default=False,
+        action="store_true",
+        help="Increase epochs so # optimization steps are same regardless of dataset size",
+    )
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -73,21 +80,23 @@ if __name__ == "__main__":
         data_size_cycle = [int(n) for n in args.size_at_cycle]
     elif args.size_at_cycle_percent:
         data_size_cycle = [
-            (float(n) * num_train_samples) for n in args.size_at_cycle_percent
+            int(float(n) * num_train_samples) for n in args.size_at_cycle_percent
         ]
 
     if args.seed:
         random_sampler = random.Random(args.seed).sample
     else:
         random_sampler = random.sample
-    # train
+
     experiment = Experiment(cfg)
     results = []
     for idx, dataset_size in enumerate(data_size_cycle):
         print(
             f"Cycle # {idx} / {len(data_size_cycle)} | Training data size: {dataset_size}"
         )
-        cycle_cfg = deepcopy(cfg)
+        cycle_cfg = deepcopy(
+            cfg
+        )  # copy and edit config file for dataset size experiment.
         idx_labeled = random_sampler(range(num_train_samples), dataset_size)
 
         # control dataset size
@@ -112,17 +121,22 @@ if __name__ == "__main__":
             cycle_cfg["wandb"]["group"] = cfg["name"]
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
 
+        # compute number of epochs to compensate smaller number of steps.
+        epochs = cfg["training"]["epochs"]
+        if args.same_steps:
+            epochs = math.floor(epochs * (data_size_cycle[-1]) / dataset_size)
+            print(f"Increasing training epoch: {cfg['training']['epochs']} -> {epochs}")
+        cfg["training"]["epochs"] = epochs
+
         experiment.setup_experiment_from_cfg(cycle_cfg)
-        result = experiment.train(
-            trainer_cfg=cycle_cfg["trainer"], epochs=cfg["training"]["epochs"]
-        )
+        result = experiment.train(trainer_cfg=cycle_cfg["trainer"], epochs=epochs)
         print("Result:", result)
         results.append(result[0])
     print("Final results:", results)
     if "wandb" in cfg:
         log_to_wandb(
             results,
-            exp_name=f"final_results-{cfg['name']}",
+            exp_name=f"dataset-size-experiment-{cfg['name']}",
             group=cfg["wandb"].get("group", None),
             project=cfg["wandb"].get("project", None),
         )

@@ -2,7 +2,8 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-from data.transforms.vision import ToPIL, UnNormalize
+import torchvision.transforms.functional as TF
+from data.transforms.vision import UnNormalize
 from utils.experiment import makedir
 
 from .vision import plot_image_classification, plot_object_detection
@@ -14,10 +15,10 @@ function_for_plotting = {
 
 
 def plot_sample(
-    task, x, y=None, mode="save", savedir="results/example.png", label_map=None
+    task, data, mode="save", savedir="results/example.png", label_map=None, **kwargs
 ):
     get_image = function_for_plotting[task]
-    image = get_image(x, y=y, label_map=label_map)
+    image = get_image(label_map=label_map, **data, **kwargs)
 
     assert mode in ["save", "return"]
     if mode == "save":
@@ -40,9 +41,11 @@ def plot_samples_from_dataset(
     unnormalize=False,
     normalization_mean=(0.5, 0.5, 0.5),
     normalization_std=(0.5, 0.5, 0.5),
-    imsize=3,
+    resize_to=None,
+    plot_size=3,
     preprocess_f=None,
     label_map=None,
+    **kwargs,
 ):
     """
     Plot multiple samples using matplotlib.
@@ -53,22 +56,27 @@ def plot_samples_from_dataset(
     makedir(save_to)
 
     w, h = subplot_dim
-    plt.figure(figsize=(w * imsize, h * imsize))
+    plt.figure(figsize=(w * plot_size, h * plot_size))
     for i in range(1, w * h + 1):
-        x, y = dataset[i - 1]
+        data = dataset[i - 1]
 
         if preprocess_f:
-            x, y = preprocess_f(x, y)
+            data = preprocess_f(data)
+        if resize_to:
+            data["images"] = TF.resize(
+                data["images"], resize_to, interpolation=TF.InterpolationMode.NEAREST
+            )
         if unnormalize:
-            x, _ = UnNormalize(normalization_mean, normalization_std)(x, None)
+            data = UnNormalize(normalization_mean, normalization_std)(data)
         if image_tensor_to_numpy:
-            x, _ = ToPIL()(x, None)
-            x = np.asarray(x)
+            data["images"] = np.asarray(TF.to_pil_image(data["images"]))
 
         plt.subplot(w, h, i)
-        plot_image = plot_sample(task, x, y=y, mode="return", label_map=label_map)
+        plot_image = plot_sample(
+            task, data=data, mode="return", label_map=label_map, **kwargs
+        )
         plt.imshow(plot_image)
         plt.axis("off")
-
+    plt.tight_layout()
     plt.savefig(save_to)
     plt.close()
