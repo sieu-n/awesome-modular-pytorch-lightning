@@ -9,6 +9,7 @@ import pandas as pd
 from main import Experiment
 from torch.utils.data import Dataset, DataLoader
 from utils.configs import read_configs, merge_config
+from utils.experiment import build_transforms, apply_transforms
 
 
 class CowDataset(Dataset):
@@ -50,6 +51,12 @@ class CowDataset(Dataset):
             return {"images": image}
 
 
+def save_predictions_to_csv(image_names, pred, label_map, filename="prediction.csv"):
+    grades = [label_map[x] for x in pred]
+    df = pd.DataFrame(data={'id': image_names, 'grade': grades})
+    df.to_csv(filename, index=False)
+
+
 if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
@@ -58,7 +65,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     cfg = read_configs(args.configs)
 
-    assert "state_dict_path" in cfg["model"]
     # move data
     base_path = "/content/drive/MyDrive/data/cow_classification/"
     target_path = "./cow/"
@@ -80,14 +86,23 @@ if __name__ == "__main__":
         csv_path=train_csv_path,
         idx_min=9000
     )
+    # test dataset
     test_dataset = CowDataset(
         base_dir="./cow/test/images/",
         csv_path="./cow/test/test_images.csv",
         has_labels=False,
     )
+    test_image_names = test_dataset.image_names
+    transforms = build_transforms(
+        transform_cfg=cfg["transform"],
+        const_cfg=cfg["const"],
+        subset_keys=["pred"],
+    )["pred"]
+    test_dataset = apply_transforms(test_dataset, None, transforms)
     # train
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg)
+    experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
     experiment.setup_experiment_from_cfg(
         cfg,
         setup_env=False,
@@ -104,3 +119,12 @@ if __name__ == "__main__":
         **val_dataloader_cfg,
     )
     predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
+    predictions = torch.argmax(torch.cat(predictions), dim=1)
+
+    print("saving file under:", experiment.get_directory() + "/prediction.csv")
+    save_predictions_to_csv(
+        image_names=test_image_names,
+        pred=predictions,
+        label_map=cfg["const"]["label_map"],
+        filename=experiment.get_directory() + "/prediction.csv",
+    )

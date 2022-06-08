@@ -101,6 +101,9 @@ class _BaseLightningTrainer(pl.LightningModule):
     def evaluate(self, batch, stage=None):
         raise NotImplementedError()
 
+    def predict_step(self, batch, batch_idx):
+        raise NotImplementedError()
+
     def validation_step(self, batch, batch_idx):
         return self.evaluate(batch, "val")
 

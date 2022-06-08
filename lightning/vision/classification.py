@@ -35,3 +35,10 @@ class ClassificationTrainer(_BaseLightningTrainer):
         class_pred = torch.argmax(pred, dim=1)
         acc = accuracy(class_pred, y)
         return loss, acc
+
+    def predict_step(self, batch, batch_idx):
+        assert "images" in batch
+        x = batch["images"]
+        pred = self(x)
+        # class_pred = torch.argmax(pred, dim=1)
+        return pred

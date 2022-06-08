@@ -74,7 +74,8 @@ def build_transforms(transform_cfg, const_cfg, subset_keys):
             t.append(transform_f(**kwargs))
 
         for subset in subsets.split(","):
-            transforms[subset] += t
+            if subset in subset_keys:
+                transforms[subset] += t
     composed = {
         subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
     }

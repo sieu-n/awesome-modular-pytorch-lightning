@@ -6,6 +6,7 @@ import torch
 from data.collate_fn import build_collate_fn
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
+from pathlib import Path
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
 from utils.experiment import (
@@ -30,7 +31,7 @@ class Experiment:
             raise ValueError(
                 "Experiment is not yet initialized. Please call `setup_experiment_from_cfg`."
             )
-        return os.path.join(os.getcwd(), self.experiment_name)
+        return os.path.join(os.getcwd(), self.exp_dir)
 
     def initialize_environment(self, cfg):
         self.experiment_name = _initialize_environment(cfg)
@@ -255,7 +256,7 @@ class Experiment:
         trainer_cfg={},
         epochs=None,
         root_dir=None,
-        state_dict_path="model_state_dict.pth",
+        state_dict_path="checkpoints/model_state_dict.pth",
         test_after=True,
     ):
         # define pl.Trainer
@@ -295,7 +296,10 @@ class Experiment:
         ):
             self.logger_and_callbacks["logger"].experiment.finish()
         if state_dict_path is not None:
-            torch.save(self.model.state_dict(), f"{root_dir}/{state_dict_path}")
+            root_path = os.path.dirname(f"{self.exp_dir}/{state_dict_path}")
+            if not os.path.exists(root_path):
+                os.makedirs(root_path)
+            torch.save(self.model.state_dict(), f"{self.exp_dir}/{state_dict_path}")
         return res
 
     def predict(

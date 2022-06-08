@@ -14,8 +14,6 @@ dataset:
       subset: "train"
     val:
       subset: "train"
-  initial_transform:
-    name: "TupleToClassificationData"
 
 # Data augmentation for FasterRCNN is adopted from:
 # https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/build.py
@@ -25,7 +23,6 @@ transform:
     [
       "trn",
       [
-        { "name": "Resize", "args": { "size": [224, 224] } },
         {
           "name": "TorchTransforms",
           "args": { "NAME": "RandomHorizontalFlip" },
@@ -35,8 +32,15 @@ transform:
     [
       "trn,val",
       [
+        { "name": "ClassificationLabelEncoder" },
+      ],
+    ],
+
+    [
+      "trn,val,pred",
+      [
+        { "name": "Resize", "args": { "size": [224, 224] } },
         { "name": "ToTensor", "args": {} },
-        { "name": "LabelEncoder" },
         {
           "name": "Normalize",
           "args": { "mean": [0.5, 0.5, 0.5], "std": [1, 1, 1] },
