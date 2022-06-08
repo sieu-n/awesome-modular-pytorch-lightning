@@ -17,7 +17,7 @@ class TupleToClassificationData(_BaseTransform):
         return {"images": x, "labels": y}
 
 
-class LabelEncoder(_BaseTransform):
+class ClassificationLabelEncoder(_BaseTransform):
     def __init__(self, **kwargs):
         """
         Recieves the naive `VOC2012` torchvision dataset, which contains the annotations from the `.xml` file.

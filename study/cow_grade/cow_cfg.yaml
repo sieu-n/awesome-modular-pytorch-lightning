@@ -36,6 +36,7 @@ transform:
       "trn,val",
       [
         { "name": "ToTensor", "args": {} },
+        { "name": "LabelEncoder" },
         {
           "name": "Normalize",
           "args": { "mean": [0.5, 0.5, 0.5], "std": [1, 1, 1] },

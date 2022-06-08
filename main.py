@@ -13,7 +13,7 @@ from utils.experiment import (
     build_dataset,
     build_initial_transform,
     build_transforms,
-    initialize_environment,
+    initialize_environment as _initialize_environment,
     print_to_end,
 )
 from utils.logging import create_logger
@@ -31,6 +31,12 @@ class Experiment:
                 "Experiment is not yet initialized. Please call `setup_experiment_from_cfg`."
             )
         return os.path.join(os.getcwd(), self.experiment_name)
+
+    def initialize_environment(self, cfg):
+        self.experiment_name = _initialize_environment(cfg)
+        self.exp_dir = f"results/{self.experiment_name}"
+        # set `experiment_name` as os.environ
+        os.environ["EXPERIMENT_NAME"] = self.experiment_name
 
     def setup_dataset(self, train_dataset, val_dataset, cfg, dataloader=True):
         self._setup_dataset(
@@ -69,10 +75,8 @@ class Experiment:
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
 
         if setup_env:
-            self.experiment_name = initialize_environment(cfg)
-        self.exp_dir = f"results/{self.experiment_name}"
-        # set `experiment_name` as os.environ
-        os.environ["EXPERIMENT_NAME"] = self.experiment_name
+            self.initialize_environment(cfg)
+
         if setup_dataset:
             self._setup_dataset(
                 dataset_cfg=cfg["dataset"],

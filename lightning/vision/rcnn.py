@@ -242,7 +242,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
         # build models and heads defined in `model_cfg`.
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         anchor_generator = AnchorGenerator(
-            sizes=((32, 64, 128, 256),), aspect_ratios=((0.5, 1.0, 2.0),)
+            sizes=((32, 64, 128, 256, 512),), aspect_ratios=((0.5, 1.0, 2.0),)
         )
         # roi_pooler = torchvision.ops.RoIPool(output_size=7, spatial_scale=1.0)
         roi_pooler = torchvision.ops.MultiScaleRoIAlign(
