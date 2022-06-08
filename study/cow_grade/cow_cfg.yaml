@@ -23,9 +23,11 @@ transform:
     [
       "trn",
       [
+        { "name": "TorchTransforms", "args": { "NAME": "RandomHorizontalFlip" } },
+        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchTransforms", 
+          "args": { "NAME": "RandAugment", "ARGS": {"num_ops": 2,  "magnitude": 9} }
         },
       ],
     ],
@@ -43,7 +45,7 @@ transform:
         { "name": "ToTensor", "args": {} },
         {
           "name": "Normalize",
-          "args": { "mean": [0.5, 0.5, 0.5], "std": [1, 1, 1] },
+          "args": { "mean": [0.25252014, 0.12918881, 0.12411932], "std": [0.24537923, 0.17195621, 0.17269008] },
         },
       ],
     ],
@@ -63,7 +65,7 @@ model:
       cfg:
         reduction: "gap"
         in_features: 512
-        dropout: 0.2
+        dropout: 0.5
         num_classes: 5
         return_logits: True # return logits instead of softmax probability.
 
@@ -74,13 +76,14 @@ training:
   lr: 0.1
   batch_size: 64
 
-  optimizer: "sgd"
+  optimizer: "adamw"
   optimizer_cfg:
-    momentum: 0.9
+    betas: [0.9, 0.999]
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
   losses:
+    label_smoothing: 0.1
 
 validation:
   batch_size: 64
@@ -96,8 +99,8 @@ wandb:
 
 const:
   task: "image classification"
-  normalization_mean: [0.5, 0.5, 0.5]
-  normalization_std: [1, 1, 1]
+  normalization_mean: [0.25252014, 0.12918881, 0.12411932]
+  normalization_std: [0.24537923, 0.17195621, 0.17269008]
 
   label_map:
     - "1++"

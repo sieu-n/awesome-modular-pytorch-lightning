@@ -118,6 +118,8 @@ class _BaseLightningTrainer(pl.LightningModule):
             optimizer_builder = optim.SGD
         elif optimizer_name == "adam":
             optimizer_builder = optim.Adam
+        elif optimizer_name == "adamw":
+            optimizer_builder = optim.AdamW
         else:
             raise ValueError(f"Invalid value for optimizer: {optimizer_name}")
         optimizer = optimizer_builder(
