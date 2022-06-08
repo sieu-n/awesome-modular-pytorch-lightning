@@ -94,7 +94,9 @@ if __name__ == "__main__":
         print(
             f"Cycle # {idx} / {len(data_size_cycle)} | Training data size: {dataset_size}"
         )
-        cycle_cfg = deepcopy(cfg)   # copy and edit config file for dataset size experiment.
+        cycle_cfg = deepcopy(
+            cfg
+        )  # copy and edit config file for dataset size experiment.
         idx_labeled = random_sampler(range(num_train_samples), dataset_size)
 
         # control dataset size

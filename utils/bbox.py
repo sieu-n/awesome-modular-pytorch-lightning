@@ -17,12 +17,16 @@ def normalize_bbox(coord, img_w, img_h):
     # either [x1 y1 x2 y2] or [x y w h] format, either 1d or 2d [[x1 y1 x2 y2], ...]
     if not isinstance(coord, torch.Tensor):
         coord = torch.tensor(coord)
-    return input_type(stack_and_round_boxes([
-        coord[..., 0] / img_w,
-        coord[..., 1] / img_h,
-        coord[..., 2] / img_w,
-        coord[..., 3] / img_h,
-    ]))
+    return input_type(
+        stack_and_round_boxes(
+            [
+                coord[..., 0] / img_w,
+                coord[..., 1] / img_h,
+                coord[..., 2] / img_w,
+                coord[..., 3] / img_h,
+            ]
+        )
+    )
 
 
 def unnormalize_bbox(coord, img_w, img_h):
@@ -37,12 +41,16 @@ def unnormalize_bbox(coord, img_w, img_h):
     # either [x1 y1 x2 y2] or [x y w h] format, either 1d or 2d: shape(4,) [[x1 y1 x2 y2], ...]
     if not isinstance(coord, torch.Tensor):
         coord = torch.tensor(coord)
-    return input_type(stack_and_round_boxes([
-        coord[..., 0] * img_w,
-        coord[..., 1] * img_h,
-        coord[..., 2] * img_w,
-        coord[..., 3] * img_h,
-    ]))
+    return input_type(
+        stack_and_round_boxes(
+            [
+                coord[..., 0] * img_w,
+                coord[..., 1] * img_h,
+                coord[..., 2] * img_w,
+                coord[..., 3] * img_h,
+            ]
+        )
+    )
 
 
 def xywh_to_x1y1x2y2(xywh):
@@ -54,12 +62,16 @@ def xywh_to_x1y1x2y2(xywh):
     input_type = type(xywh)
     if not isinstance(xywh, torch.Tensor):
         xywh = torch.tensor(xywh)
-    return input_type(stack_and_round_boxes([
-        xywh[..., 0] - xywh[..., 2] / 2,
-        xywh[..., 1] - xywh[..., 3] / 2,
-        xywh[..., 0] + xywh[..., 2] / 2,
-        xywh[..., 1] + xywh[..., 3] / 2,
-    ]))
+    return input_type(
+        stack_and_round_boxes(
+            [
+                xywh[..., 0] - xywh[..., 2] / 2,
+                xywh[..., 1] - xywh[..., 3] / 2,
+                xywh[..., 0] + xywh[..., 2] / 2,
+                xywh[..., 1] + xywh[..., 3] / 2,
+            ]
+        )
+    )
 
 
 def x1y1x2y2_to_xywh(x1y1x2y2):
@@ -71,15 +83,21 @@ def x1y1x2y2_to_xywh(x1y1x2y2):
     input_type = type(x1y1x2y2)
     if not isinstance(x1y1x2y2, torch.Tensor):
         x1y1x2y2 = torch.tensor(x1y1x2y2)
-    return input_type(stack_and_round_boxes([
-        (x1y1x2y2[..., 0] + x1y1x2y2[..., 2]) / 2,
-        (x1y1x2y2[..., 1] + x1y1x2y2[..., 3]) / 2,
-        x1y1x2y2[..., 2] - x1y1x2y2[..., 0],
-        x1y1x2y2[..., 3] - x1y1x2y2[..., 1],
-    ]))
+    return input_type(
+        stack_and_round_boxes(
+            [
+                (x1y1x2y2[..., 0] + x1y1x2y2[..., 2]) / 2,
+                (x1y1x2y2[..., 1] + x1y1x2y2[..., 3]) / 2,
+                x1y1x2y2[..., 2] - x1y1x2y2[..., 0],
+                x1y1x2y2[..., 3] - x1y1x2y2[..., 1],
+            ]
+        )
+    )
 
 
-def check_isvalid_boxes(batch_of_boxes, img_w=1.0, img_h=1.0, xywh=True, is_batch=True, tolerance=0.001):
+def check_isvalid_boxes(
+    batch_of_boxes, img_w=1.0, img_h=1.0, xywh=True, is_batch=True, tolerance=0.001
+):
     """
     Check if there is invalid boxes. For example, no boxes should have coordinates smaller that 0 or greater than the
     width / height of the image.
@@ -127,10 +145,14 @@ def check_isvalid_boxes(batch_of_boxes, img_w=1.0, img_h=1.0, xywh=True, is_batc
         # 3. check if some boxes have coordinates outside the image
         if xywh:
             boxes = xywh_to_x1y1x2y2(boxes)
-        assert (torch.min(boxes[..., 0]) >= 0.0 - w_tolerance and
-                torch.min(boxes[..., 1]) >= 0.0 - h_tolerance), f"Got {boxes}"
-        assert (torch.max(boxes[..., 2]) <= w + w_tolerance and
-                torch.max(boxes[..., 3]) <= h + h_tolerance), f"Got {boxes}"
+        assert (
+            torch.min(boxes[..., 0]) >= 0.0 - w_tolerance
+            and torch.min(boxes[..., 1]) >= 0.0 - h_tolerance
+        ), f"Got {boxes}"
+        assert (
+            torch.max(boxes[..., 2]) <= w + w_tolerance
+            and torch.max(boxes[..., 3]) <= h + h_tolerance
+        ), f"Got {boxes}"
 
 
 def get_anchor_shape(anchor_size, aspect_ratio):

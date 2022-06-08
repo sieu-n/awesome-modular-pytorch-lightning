@@ -67,7 +67,7 @@ def plot_object_detection(
         # plot gt bbox in red
         obj_classes, obj_bboxes = labels, boxes
         for obj_idx in range(len(obj_classes)):
-            obj_class = int(obj_bboxes[obj_idx])
+            obj_class = int(obj_classes[obj_idx])
             obj_bbox = list(obj_bboxes[obj_idx])
 
             if label_map and obj_class in label_map:
