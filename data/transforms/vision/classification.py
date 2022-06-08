@@ -10,8 +10,33 @@ _RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicub
 
 
 class TupleToClassificationData(_BaseTransform):
+    """
+    initial transforms.
+    """
     def __call__(self, x, y):
         return {"images": x, "labels": y}
+
+
+class LabelEncoder(_BaseTransform):
+    def __init__(self, **kwargs):
+        """
+        Recieves the naive `VOC2012` torchvision dataset, which contains the annotations from the `.xml` file.
+        Processes and returns the class and bbox in the following format:
+
+        x = PIL.Image
+        y = {"boxes": torch.Tensor(4, num_obj), "labels": torch.Tensor(num_obj)}
+
+        Each bbox coordinates are given in (x, y, w, h) format. The numbers are normalized to (0, 1) range by dividing
+        them with the width and height of the image.
+        """
+        super().__init__(**kwargs)
+        self.label2code = {
+            name: idx for idx, name in enumerate(self.const_cfg["label_map"])
+        }
+
+    def __call__(self, d):
+        d["labels"] = self.label2code[d["labels"]]
+        return d
 
 
 class RandomResizedCropAndInterpolation(_BaseTransform):

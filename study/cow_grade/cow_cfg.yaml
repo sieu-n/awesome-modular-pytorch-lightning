@@ -11,11 +11,9 @@ dataset:
     split: 1000
   dataset_subset_cfg:
     trn:
-
       subset: "train"
     val:
       subset: "train"
-  transformations: [] # same format with `transform`.
   initial_transform:
     name: "TupleToClassificationData"
 
@@ -27,10 +25,7 @@ transform:
     [
       "trn",
       [
-        {
-          "name": "Resize",
-          "args": { "size": [224, 224] },
-        },
+        { "name": "Resize", "args": { "size": [224, 224] } },
         {
           "name": "TorchTransforms",
           "args": { "NAME": "RandomHorizontalFlip" },
@@ -43,11 +38,7 @@ transform:
         { "name": "ToTensor", "args": {} },
         {
           "name": "Normalize",
-          "args":
-            {
-              "mean": [0.5, 0.5, 0.5],
-              "std": [1, 1, 1],
-            },
+          "args": { "mean": [0.5, 0.5, 0.5], "std": [1, 1, 1] },
         },
       ],
     ],
@@ -56,17 +47,17 @@ transform:
 model:
   backbone:
     TYPE: "timm"
-    ID: "resnet50"
+    ID: "resnet18"
     cfg:
       pretrained: False
-    out_features: 2048
+    out_features: 512
   heads:
     classifier:
       ID: ClassificationHead
       input: "output"
       cfg:
         reduction: "gap"
-        in_features: 2048
+        in_features: 512
         dropout: 0.2
         num_classes: 5
         return_logits: True # return logits instead of softmax probability.

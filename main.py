@@ -2,13 +2,20 @@ import os
 
 import lightning.trainers as trainers
 import pytorch_lightning as pl
+import torch
 from data.collate_fn import build_collate_fn
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
-from utils.experiment import build_dataset, build_transforms, build_initial_transform, apply_transforms, initialize_environment, print_to_end
+from utils.experiment import (
+    apply_transforms,
+    build_dataset,
+    build_initial_transform,
+    build_transforms,
+    initialize_environment,
+    print_to_end,
+)
 from utils.logging import create_logger
 from utils.visualization.utils import plot_samples_from_dataset
 
@@ -20,7 +27,9 @@ class Experiment:
 
     def get_directory(self):
         if not hasattr(self, "experiment_name"):
-            raise ValueError("Experiment is not yet initialized. Please call `setup_experiment_from_cfg`.")
+            raise ValueError(
+                "Experiment is not yet initialized. Please call `setup_experiment_from_cfg`."
+            )
         return os.path.join(os.getcwd(), self.experiment_name)
 
     def setup_dataset(self, train_dataset, val_dataset, cfg, dataloader=True):
@@ -95,7 +104,9 @@ class Experiment:
         if "logger" in self.logger_and_callbacks:
             self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
-    def _setup_dataset(self, initial_dataset=None, dataset_cfg=None, transform_cfg=None):
+    def _setup_dataset(
+        self, initial_dataset=None, dataset_cfg=None, transform_cfg=None
+    ):
         # load data
         print_to_end("-")
         print("[*] Start loading dataset")
@@ -110,7 +121,7 @@ class Experiment:
         if "initial_transform" in dataset_cfg:
             initial_transform = build_initial_transform(
                 initial_transform_cfg=dataset_cfg["initial_transform"],
-                const_cfg=self.const_cfg
+                const_cfg=self.const_cfg,
             )
         else:
             initial_transform = None
@@ -118,12 +129,16 @@ class Experiment:
         transforms = build_transforms(
             transform_cfg=transform_cfg,
             const_cfg=self.const_cfg,
-            subset_keys=datasets.keys()
+            subset_keys=datasets.keys(),
         )
         # 4. actually apply transformations.
         subsets = datasets.keys()
-        datasets = {subset: apply_transforms(datasets[subset], initial_transform, transforms[subset])
-                    for subset in subsets}
+        datasets = {
+            subset: apply_transforms(
+                datasets[subset], initial_transform, transforms[subset]
+            )
+            for subset in subsets
+        }
         # for now, we mainly consider trn and val subsets.
         trn_dataset, val_dataset = datasets["trn"], datasets["val"]
         # plot samples after data augmentation
