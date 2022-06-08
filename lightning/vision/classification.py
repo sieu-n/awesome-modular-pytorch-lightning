@@ -8,7 +8,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs):
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         # define loss function.
-        if "label_smoothing" in training_cfg["losses"]:
+        if "losses" in training_cfg and "label_smoothing" in training_cfg["losses"]:
             label_smoothing = training_cfg["losses"]["label_smoothing"]
         else:
             label_smoothing = 0.0

@@ -5,15 +5,6 @@ dataset:
   NAME: "CIFAR10"
   trn_size: 9000
   val_size: 1000
-  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
-  dataset_base_cfg:
-    seed: 42
-    split: 1000
-  dataset_subset_cfg:
-    trn:
-      subset: "train"
-    val:
-      subset: "train"
 
 # Data augmentation for FasterRCNN is adopted from:
 # https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/build.py
@@ -56,7 +47,7 @@ model:
     TYPE: "timm"
     ID: "resnet18"
     cfg:
-      pretrained: False
+      pretrained: True
     out_features: 512
   heads:
     classifier:
