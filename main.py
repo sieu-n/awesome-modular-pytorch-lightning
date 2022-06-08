@@ -4,10 +4,11 @@ import lightning.trainers as trainers
 import pytorch_lightning as pl
 from data.collate_fn import build_collate_fn
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
-from utils.experiment import build_dataset, initialize_environment, print_to_end
+from utils.experiment import build_dataset, build_transforms, build_initial_transform, apply_transforms, initialize_environment, print_to_end
 from utils.logging import create_logger
 from utils.visualization.utils import plot_samples_from_dataset
 
@@ -16,6 +17,35 @@ class Experiment:
     def __init__(self, cfg=None, const_cfg=None, debug_cfg=None):
         self.const_cfg = cfg["const"] if "const" in cfg else None
         self.cfg_debug = cfg["debug"] if "debug" in cfg else None
+
+    def get_directory(self):
+        if not hasattr(self, "experiment_name"):
+            raise ValueError("Experiment is not yet initialized. Please call `setup_experiment_from_cfg`.")
+        return os.path.join(os.getcwd(), self.experiment_name)
+
+    def setup_dataset(self, train_dataset, val_dataset, cfg, dataloader=True):
+        self._setup_dataset(
+            initial_dataset={
+                "trn": train_dataset,
+                "val": val_dataset,
+            },
+            dataset_cfg=cfg["dataset"],
+            transform_cfg=cfg["transform"],
+        )
+
+        if dataloader:
+            val_batch_size = (
+                cfg["validation"]["batch_size"]
+                if ("validation" in cfg and "batch_size" in cfg["validation"])
+                else cfg["training"]["batch_size"]
+            )
+            self._setup_dataloader(
+                self.trn_dataset,
+                self.val_dataset,
+                cfg["dataloader"],
+                trn_batch_size=cfg["training"]["batch_size"],
+                val_batch_size=val_batch_size,
+            )
 
     def setup_experiment_from_cfg(
         self,
@@ -35,7 +65,10 @@ class Experiment:
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
         if setup_dataset:
-            self._setup_dataset(cfg["dataset"], cfg["transform"])
+            self._setup_dataset(
+                dataset_cfg=cfg["dataset"],
+                transform_cfg=cfg["transform"],
+            )
 
         if setup_dataloader:
             val_batch_size = (
@@ -62,13 +95,37 @@ class Experiment:
         if "logger" in self.logger_and_callbacks:
             self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
-    def _setup_dataset(self, dataset_cfg, transform_cfg):
+    def _setup_dataset(self, initial_dataset=None, dataset_cfg=None, transform_cfg=None):
         # load data
         print_to_end("-")
         print("[*] Start loading dataset")
-        datasets = build_dataset(dataset_cfg, transform_cfg, self.const_cfg)
-        trn_dataset, val_dataset = datasets["trn"], datasets["val"]
+        # 1. build initial dataset to read data.
+        if initial_dataset is None:
+            datasets = build_dataset(dataset_cfg)
+        else:
+            datasets = initial_dataset
+        # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
 
+        # 2. build initial transformation to convert raw data into dictionary.
+        if "initial_transform" in dataset_cfg:
+            initial_transform = build_initial_transform(
+                initial_transform_cfg=dataset_cfg["initial_transform"],
+                const_cfg=self.const_cfg
+            )
+        else:
+            initial_transform = None
+        # 3. build list of transformations using `transform` defined in config.
+        transforms = build_transforms(
+            transform_cfg=transform_cfg,
+            const_cfg=self.const_cfg,
+            subset_keys=datasets.keys()
+        )
+        # 4. actually apply transformations.
+        subsets = datasets.keys()
+        datasets = {subset: apply_transforms(datasets[subset], initial_transform, transforms[subset])
+                    for subset in subsets}
+        # for now, we mainly consider trn and val subsets.
+        trn_dataset, val_dataset = datasets["trn"], datasets["val"]
         # plot samples after data augmentation
         if self.cfg_debug and "view_train_augmentation" in self.cfg_debug:
             save_to = (
@@ -108,7 +165,7 @@ class Experiment:
         val_dataloader_cfg = merge_config(
             dataloader_cfg["base_dataloader"], dataloader_cfg["val"]
         )
-        if "collate_fn" in val_dataloader_cfg:
+        if "collate_fn" in dataloader_cfg:
             collate_fn = build_collate_fn(dataloader_cfg["collate_fn"])
         else:
             collate_fn = None  # use default collate_fn.
@@ -167,6 +224,9 @@ class Experiment:
             ]
 
             print_model_summary(model, input_size=input_shape)
+        # load model from path if specified.
+        if "state_dict_path" in model_cfg:
+            model.load_state_dict(torch.load(model_cfg["state_dict_path"]))
 
         self.model = model
 
@@ -176,17 +236,20 @@ class Experiment:
         trainer_cfg={},
         epochs=None,
         root_dir=None,
+        state_dict_path="model_state_dict.pth",
         test_after=True,
     ):
+        # define pl.Trainer
+        if not root_dir:
+            root_dir = f"{self.exp_dir}/checkpoints"
+        if epochs is None:
+            epochs = self.model.training_cfg["epochs"]
         if use_existing_trainer:
             train_trainer = self.trainers["train"]
-            raise NotImplementedError()
         else:
-            if not root_dir:
-                root_dir = f"{self.exp_dir}/checkpoints"
             train_trainer = pl.Trainer(
                 max_epochs=epochs,
-                default_root_dir=f"{self.exp_dir}/checkpoints",
+                default_root_dir=root_dir,
                 **(
                     self.logger_and_callbacks
                     if hasattr(self, "logger_and_callbacks")
@@ -199,14 +262,44 @@ class Experiment:
             self.trainers = {}
         self.trainers["train"] = train_trainer
 
+        # train-test using trainer
         train_trainer.fit(self.model, self.trn_dataloader, self.val_dataloader)
         if test_after:
             res = train_trainer.test(self.model, self.val_dataloader)
         else:
             res = {}
+
+        # finish experiment
         if (
             hasattr(self, "logger_and_callbacks")
             and "logger" in self.logger_and_callbacks
         ):
             self.logger_and_callbacks["logger"].experiment.finish()
+        if state_dict_path is not None:
+            torch.save(self.model.state_dict(), f"{root_dir}/{state_dict_path}")
         return res
+
+    def predict(
+        self,
+        x,
+        use_existing_trainer=False,
+        trainer_cfg={},
+        root_dir=None,
+    ):
+        if use_existing_trainer:
+            pred_trainer = self.trainers["pred"]
+            raise NotImplementedError()
+        else:
+            if not root_dir:
+                root_dir = f"{self.exp_dir}/checkpoints"
+            pred_trainer = pl.Trainer(
+                default_root_dir=root_dir,
+                **trainer_cfg,
+            )
+        # keep track of trainer
+        if not hasattr(self, "trainers"):
+            self.trainers = {}
+        self.trainers["pred"] = pred_trainer
+
+        pred = pred_trainer.predict(model=self.model, dataloaders=x)
+        return pred

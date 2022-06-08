@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # train
     experiment = Experiment(cfg)
     experiment.setup_experiment_from_cfg(cfg)
-    result = experiment.train(
+    result = experiment.predict(
         trainer_cfg=cfg["trainer"],
         epochs=cfg["training"]["epochs"],
     )

@@ -50,20 +50,18 @@ def find_dataset_from_name(d_name):
         return d_name
 
 
-def build_dataset(dataset_cfg, transform_cfg, const_cfg):
-    # 1. build initial dataset to read data.
+def build_dataset(dataset_cfg):
+    # returns: dict{subset_key: torch.utils.data.Dataset, ...}
     dataset_mode = dataset_cfg["MODE"]
     if dataset_mode == "torchvision":
-        datasets = torchvision_dataset(dataset_cfg["NAME"], dataset_cfg)
-    elif dataset_mode == "from-directory":
-        raise NotImplementedError("TODO!")
+        return torchvision_dataset(dataset_cfg["NAME"], dataset_cfg)
     else:
         raise ValueError(f"Invalid dataset type: `{dataset_mode}`")
-    # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
 
-    # 2.1. build list of transformations using `transform` defined in config.
-    # transforms: dict{subset_key: [t1, t2, ...], ...}
-    transforms = {subset: [] for subset in datasets.keys()}
+
+def build_transforms(transform_cfg, const_cfg, subset_keys):
+    # returns: dict{subset_key: [t1, t2, ...], ...}
+    transforms = {subset: [] for subset in subset_keys}
     for subsets, t_configs in transform_cfg:
         t = []
         # for each element of transforms,
@@ -77,42 +75,30 @@ def build_dataset(dataset_cfg, transform_cfg, const_cfg):
 
         for subset in subsets.split(","):
             transforms[subset] += t
-
-    # 2.2. actually apply transformations.
-    initial_transform = None
-    if "initial_transform" in dataset_cfg:
-        # find transform from name
-        transform_f = find_transform_from_name(dataset_cfg["initial_transform"]["name"])
-        # build transform using arguments.
-        kwargs = dataset_cfg["initial_transform"].get("args", {})
-        kwargs["const_cfg"] = const_cfg
-        initial_transform = transform_f(**kwargs)
-    transforms = {
+    composed = {
         subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
     }
-    datasets = {
-        subset: ApplyDataTransformations(
-            base_dataset=datasets[subset],
-            initial_transform=initial_transform,
-            transforms=transforms[subset],
-        )
-        for subset in datasets.keys()
-    }
-    # 3. apply datasets.
-    apply_dataset_cfg = dataset_cfg["transformations"]
-    for subsets, d_configs in apply_dataset_cfg:
-        d_operations = []
-        # for each element of transforms,
-        for d_config in d_configs:
-            d_name, kwargs = d_config["name"], d_config["args"]
-            dataset_f = find_dataset_from_name(d_name)
-            # build dataset operation using arguments.
-            d_operations.append(lambda base_dataset: dataset_f(base_dataset, **kwargs))
+    return composed
 
-        for subset in subsets.split(","):
-            for d_operation in d_operations:
-                datasets[subset] = d_operation(datasets[subset])
-    return datasets
+
+def build_initial_transform(initial_transform_cfg, const_cfg):
+    # 2.2. actually apply transformations.
+    initial_transform = None
+    # find transform from name
+    transform_f = find_transform_from_name(initial_transform_cfg["name"])
+    # build transform using arguments.
+    kwargs = initial_transform_cfg.get("args", {})
+    kwargs["const_cfg"] = const_cfg
+    initial_transform = transform_f(**kwargs)
+    return initial_transform
+
+
+def apply_transforms(dataset, initial_transform=None, transforms=None):
+    return ApplyDataTransformations(
+        base_dataset=dataset,
+        initial_transform=initial_transform,
+        transforms=transforms,
+    )
 
 
 def replace_non_json_serializable(cfg):
