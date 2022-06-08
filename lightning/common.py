@@ -138,6 +138,8 @@ class _BaseLightningTrainer(pl.LightningModule):
                 schedule_kwargs["T_max"] = self.training_cfg["epochs"]
             elif schedule_name == "exponential":
                 schedule_builder = lr_scheduler.ExponentialLR
+            elif schedule_name == "1cycle":
+                schedule_builder = lr_scheduler.OneCycleLR
             elif schedule_name == "step":
                 schedule_builder = lr_scheduler.StepLR
             elif schedule_name == "multi-step":

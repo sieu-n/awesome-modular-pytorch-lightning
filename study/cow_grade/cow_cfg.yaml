@@ -18,6 +18,11 @@ transform:
         { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
         {
           "name": "TorchTransforms", 
+          "args": { "NAME": "RandomRotation", "ARGS": {"degrees": [0, 360]} }
+        },
+
+        {
+          "name": "TorchTransforms", 
           "args": { "NAME": "RandAugment", "ARGS": {"num_ops": 2,  "magnitude": 9} }
         },
       ],

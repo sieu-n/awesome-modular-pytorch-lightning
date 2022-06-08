@@ -24,7 +24,7 @@ transform: [
           "args":
             {
               "scale": [0.08, 1.0],
-              "ratio": [0.75., 1.3333],
+              "ratio": [0.75, 1.3333],
               "interpolation": "random",
             },
         },
