@@ -15,9 +15,10 @@ transform:
           "name": "TorchTransforms",
           "args": { "NAME": "RandomHorizontalFlip" },
         },
-        {
-          "name": CutOut
-        }
+        { # CutOut!!
+          "name": "CutOut",
+          "args": { "mask_size": 0.5, "num_masks": 1 }
+        },
       ],
     ],
     [

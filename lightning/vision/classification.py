@@ -1,6 +1,6 @@
 import torch
 from torchmetrics.functional import accuracy
-from algorithms.data_augmentation.mixup import MixupCutmix
+from algorithms.augmentation.mixup import MixupCutmix
 
 from lightning.base import _BaseLightningTrainer
 

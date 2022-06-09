@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-
+from PIL import Image
 
 from data.transforms.base import _BaseTransform
 from data.transforms.vision.util import str2interpolation
@@ -89,11 +89,12 @@ class UnNormalize(_ImageTransform):
 
 
 class CutOut(_ImageTransform):
-    def __init__(self, mask_size=0.3, num_masks=1, p=0.5, cutout_inside=False, mask_color=0):
+    def __init__(self, mask_size=0.3, num_masks=1, p=0.5, cutout_inside=False, mask_color=0, **kwargs):
         """
         https://github.com/hysts/pytorch_cutout/blob/ca4711283c7bc797774d486c6c41e06714350ded/dataloader.py#L36
         Improved regularization of convolutional neural networks with cutout.
         """
+        super().__init__(**kwargs)
         assert p >= 0.0 and p <= 1.0
         assert mask_size >= 0.0 and mask_size <= 1.0
         self.p = p
@@ -109,12 +110,13 @@ class CutOut(_ImageTransform):
 
         image = np.asarray(image).copy()
         h, w = image.shape[:2]
-        mask_size_x, mask_size_y = self.mask_size_relative * w, self.mask_size_relative * h
+        mask_size_x, mask_size_y = int(self.mask_size_relative * w), int(self.mask_size_relative * h)
         mask_size_x_half, mask_size_y_half = mask_size_x // 2, mask_size_y // 2
         offset_x, offset_y = 1 if mask_size_x % 2 == 0 else 0, 1 if mask_size_y % 2 == 0 else 0
 
         for _ in range(self.num_masks):
             if self.cutout_inside:
+                # cut region is fully inside image
                 cxmin, cxmax = mask_size_x_half, w + offset_x - mask_size_x_half
                 cymin, cymax = mask_size_y_half, h + offset_y - mask_size_y_half
             else:
@@ -134,8 +136,8 @@ class CutOut(_ImageTransform):
             xmax = min(w, xmax)
             ymax = min(h, ymax)
             # apply mask
-            image[:, ymin:ymax, xmin:xmax] = self.mask_color
-        return image
+            image[ymin:ymax, xmin:xmax, :] = self.mask_color
+        return Image.fromarray(image)
 
 
 class ToTensor(_ImageTransform):
