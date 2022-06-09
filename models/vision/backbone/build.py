@@ -22,7 +22,7 @@ def timm_feature_extractor(model_id, *args, **kwargs):
     """
     # detach final classification head(make it feature extractor)
     # find model with same id & create model
-    model = timm.create_model(model_id, num_classes=0, global_pool="", *args, **kwargs)
+    model = timm.create_model(model_id, num_classes=0, *args, **kwargs)
     return model
 
 

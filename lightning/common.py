@@ -8,6 +8,8 @@ from models.vision.backbone.build import (
 from torch import optim
 from torch.optim import lr_scheduler
 from utils.models import get_layer
+from torch_ema import ExponentialMovingAverage
+from utils.pretrained import load_model_weights
 
 
 class _BaseLightningTrainer(pl.LightningModule):
@@ -24,6 +26,9 @@ class _BaseLightningTrainer(pl.LightningModule):
                 drop_after=backbone_cfg.get("drop_after", None),
                 **backbone_cfg.get("cfg", {}),
             )
+            # load backbone weights from url / filepath
+            if "weights" in backbone_cfg:
+                self.backbone = load_model_weights(model=self.backbone, **backbone_cfg["weights"])
         # build heads
         heads = model_cfg.get("heads", {})
         for head_name, head_cfg in heads.items():
@@ -41,6 +46,11 @@ class _BaseLightningTrainer(pl.LightningModule):
                 layer_name=hook_cfg["layer_name"],
                 **hook_cfg.get("cfg", {}),
             )
+        # build EMA
+        self.EMA = "ema" in training_cfg
+        if "ema" in training_cfg:
+            ema_cfg = training_cfg["ema"]
+            self.ema_manager = ExponentialMovingAverage(self.parameters(), decay=ema_cfg["decay"])
 
     def build_head(self, module_type, *args, **kwargs):
         if type(module_type) == str:
@@ -150,12 +160,36 @@ class _BaseLightningTrainer(pl.LightningModule):
             config["lr_scheduler"] = scheduler
         return config
 
+    def use_ema_weights(self):
+        if self.EMA is False:
+            raise ValueError()
+        return self.ema_manager.average_parameters()
+
+    def _apply_ema_weights(self):
+        self.ema_manager.store()
+        self.ema_manager.copy_to()
+
+    def _apply_regular_weights(self):
+        self.ema_manager.restore()
+
     def training_epoch_end(self, outputs):
+        # update callbacks
+        if self.EMA:
+            self.ema_manager.update()
+        # log epoch-wise metrics
         total_loss = sum([x["loss"] for x in outputs])
         total_loss = total_loss / len(outputs)
         self.log("epoch/trn_loss", float(total_loss.cpu()))
 
+    def validation_epoch_start(self):
+        if self.EMA:
+            self._apply_ema_weights()
+
     def validation_epoch_end(self, validation_step_outputs):
+        # reset EMA
+        if self.EMA:
+            self._apply_regular_weights()
+
         # TODO: make it flexible for more output formats.
         total_loss, total_performance = map(sum, zip(*validation_step_outputs))
         total_performance = total_performance / len(validation_step_outputs)
@@ -163,7 +197,15 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.log("epoch/val_performance", total_performance)
         self.log("epoch/val_loss", total_loss)
 
+    def test_epoch_start(self, outputs):
+        if self.EMA:
+            self._apply_ema_weights()
+
     def test_epoch_end(self, test_step_outputs):
+        # reset EMA
+        if self.EMA:
+            self._apply_regular_weights()
+
         total_loss, total_performance = map(sum, zip(*test_step_outputs))
         total_performance = total_performance / len(test_step_outputs)
         total_loss = total_loss / len(test_step_outputs)

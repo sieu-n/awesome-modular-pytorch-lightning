@@ -11,3 +11,4 @@ timm
 torch
 torchinfo
 wandb
+torch-ema

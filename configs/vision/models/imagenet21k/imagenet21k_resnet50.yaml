@@ -1,0 +1,16 @@
+model:
+  backbone:
+    TYPE: "timm"
+    ID: "resnet50"
+    cfg:
+      pretrained: False
+    out_features: 2048
+
+    weights:
+      url: "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/ImageNet_21K_P/models/resnet50_miil_21k.pth"
+
+model:
+  heads:
+    classifier:
+      cfg:
+        in_features: 2048

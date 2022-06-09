@@ -1,8 +1,6 @@
 name: "CowPrediction"
 
 dataset:
-  MODE: "custom"
-  NAME: "CIFAR10"
   trn_size: 9000
   val_size: 1000
 
@@ -61,7 +59,7 @@ model:
       cfg:
         reduction: "gap"
         in_features: 512
-        dropout: 0.5
+        dropout: 0.2
         num_classes: 5
         return_logits: True # return logits instead of softmax probability.
 
@@ -80,6 +78,8 @@ training:
   lr_scheduler_cfg: {}
   losses:
     label_smoothing: 0.1
+  ema:
+    decay: 0.995
 
 validation:
   batch_size: 64
