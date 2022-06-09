@@ -63,7 +63,6 @@ training:
   epochs: 200
   lr: 0.1
   batch_size: 64
-
   optimizer: "sgd"
   optimizer_cfg:
     momentum: 0.9
@@ -71,7 +70,7 @@ training:
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
   lr_warmup:
-    multiplier: 0.02
+    multiplier: 1
     total_epoch: 5
 validation:
   batch_size: 64

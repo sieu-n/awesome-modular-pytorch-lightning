@@ -163,10 +163,6 @@ class _BaseLightningTrainer(pl.LightningModule):
 
             if "lr_warmup" in self.training_cfg:
                 warmup_cfg = self.training_cfg["lr_warmup"]
-                assert "total_epoch" in warmup_cfg
-                if "multiplier" not in warmup_cfg:
-                    warmup_cfg["multiplier"] = self.training_cfg["lr"] / warmup_cfg["total_epoch"]
-
                 scheduler = GradualWarmupScheduler(
                     optimizer=optimizer,
                     after_scheduler=scheduler,

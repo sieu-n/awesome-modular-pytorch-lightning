@@ -6,14 +6,20 @@ class GradualWarmupScheduler(_LRScheduler):
     """ Gradually warm-up(increasing) learning rate in optimizer.
     https://github.com/ildoonet/pytorch-gradual-warmup-lr/blob/master/warmup_scheduler/scheduler.py
     Proposed in 'Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour'.
-    Args:
-        optimizer (Optimizer): Wrapped optimizer.
-        multiplier: target learning rate = base lr * multiplier if multiplier > 1.0. if multiplier = 1.0, lr starts from 0 and ends up with the base_lr.
-        total_epoch: target learning rate is reached at total_epoch, gradually
-        after_scheduler: after target_epoch, use this scheduler(eg. ReduceLROnPlateau)
+    Parameters
+    ----------
+    optimizer: torch.optim.Optimizer
+        Wrapped optimizer.
+    multiplier: float
+        Target learning rate = base lr * multiplier if multiplier > 1.0.
+        if multiplier = 1.0, lr starts from 0 and ends up with the base_lr.
+    total_epoch: int
+        target learning rate is reached at total_epoch, gradually
+    after_scheduler: torch.optim.lr_scheduler._LRScheduler
+        after target_epoch, use this scheduler(eg. ReduceLROnPlateau)
     """
 
-    def __init__(self, optimizer, multiplier, total_epoch, after_scheduler=None):
+    def __init__(self, optimizer, multiplier=1.0, total_epoch=5, after_scheduler=None):
         self.multiplier = multiplier
         if self.multiplier < 1.:
             raise ValueError('multiplier should be greater thant or equal to 1.')

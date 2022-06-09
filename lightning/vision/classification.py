@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from lightning.common import _BaseLightningTrainer
+from lightning.base import _BaseLightningTrainer
 from torchmetrics.functional import accuracy
 
 
