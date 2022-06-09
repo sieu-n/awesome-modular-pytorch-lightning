@@ -7,7 +7,8 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
   - `torchvision.models` for models, `torchvision.transforms` for transforms, optimizers and learning rate schedules from `pytorch`.
   - Network backbones from `timm`. 
   - `inagenet21k` [pretrained weights](https://github.com/Alibaba-MIIL/ImageNet21K) and feature to load model weights from url / `.pth` file.
-  - `torch-ema` for using EMA weights for any model.
+  - `torch-ema` for saving EMA weights.
+
 
 ## How to run experiments
 1. Run experiments using `train.py`

@@ -5,6 +5,8 @@ from models.vision.backbone.torchvision import torchvision_feature_extractor
 from torch import optim
 from torch.optim import lr_scheduler
 from torch_ema import ExponentialMovingAverage
+
+from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
 
@@ -158,6 +160,18 @@ class _BaseLightningTrainer(pl.LightningModule):
             else:
                 raise ValueError(f"Invalid value for lr_scheduler: {schedule_name}")
             scheduler = schedule_builder(optimizer, **schedule_kwargs)
+
+            if "lr_warmup" in self.training_cfg:
+                warmup_cfg = self.training_cfg["lr_warmup"]
+                assert "total_epoch" in warmup_cfg
+                if "multiplier" not in warmup_cfg:
+                    warmup_cfg["multiplier"] = self.training_cfg["lr"] / warmup_cfg["total_epoch"]
+
+                scheduler = GradualWarmupScheduler(
+                    optimizer=optimizer,
+                    after_scheduler=scheduler,
+                    **warmup_cfg
+                )
             config["lr_scheduler"] = scheduler
         return config
 

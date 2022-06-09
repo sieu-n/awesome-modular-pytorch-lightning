@@ -6,7 +6,6 @@ from . import (  # noqa F401
     image,
     logging,
     models,
-    optimizers,
     pretrained,
     verbose,
     visualization,

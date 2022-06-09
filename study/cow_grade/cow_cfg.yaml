@@ -70,7 +70,9 @@ training:
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
-
+  lr_warmup:
+    multiplier: 0.02
+    total_epoch: 5
 validation:
   batch_size: 64
   metrics:

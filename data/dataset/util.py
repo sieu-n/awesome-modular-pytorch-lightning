@@ -1,5 +1,21 @@
 import torchvision.datasets as TD
-from utils.configs import merge_config
+from copy import deepcopy
+
+
+def merge_config(cfg_base, cfg_from):
+    def recursively_write(base, f):
+        for k in f.keys():
+            if isinstance(f[k], dict):
+                if k in base:
+                    base[k] = recursively_write(deepcopy(base[k]), f[k])
+                else:
+                    base[k] = f[k]
+            # overwrite, like the case of "optimizer/lr" and "d" in the example.
+            else:
+                base[k] = f[k]
+        return base
+
+    return recursively_write(deepcopy(cfg_base), cfg_from)
 
 
 def torchvision_dataset(name, cfg):
