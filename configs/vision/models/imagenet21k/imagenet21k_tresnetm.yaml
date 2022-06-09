@@ -2,7 +2,7 @@
 model:
   backbone:
     TYPE: "timm"
-    ID: "vit_base_patch16_224_miil_in21k"
+    ID: "tresnet_m_miil_in21k"
     cfg:
       pretrained: True
     out_features: 768

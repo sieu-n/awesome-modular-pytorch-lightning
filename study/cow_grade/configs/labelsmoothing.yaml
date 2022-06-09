@@ -1,0 +1,3 @@
+training:
+  losses:
+    label_smoothing: 0.1

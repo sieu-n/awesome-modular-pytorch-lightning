@@ -3,6 +3,12 @@ transform:
     [
       "trn",
       [
+        { "name": "TorchTransforms", "args": { "NAME": "RandomHorizontalFlip" } },
+        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
+        {
+          "name": "TorchTransforms", 
+          "args": { "NAME": "RandomRotation", "ARGS": {"degrees": [0, 360]} }
+        },
         {
           "name": "RandomResizedCropAndInterpolation",
           "args":
@@ -13,12 +19,7 @@ transform:
               "interpolation": "random",
             },
         },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomHorizontalFlip" } },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
-        {
-          "name": "TorchTransforms", 
-          "args": { "NAME": "RandomRotation", "ARGS": {"degrees": [0, 360]} }
-        },
+
         {
           "name": "TorchTransforms",
           "args":

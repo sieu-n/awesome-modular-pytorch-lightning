@@ -4,9 +4,6 @@ dataset:
   trn_size: 9000
   val_size: 1000
 
-# Data augmentation for FasterRCNN is adopted from:
-# https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/data/transforms/build.py
-# https://github.com/jwyang/faster-rcnn.pytorch/blob/master/lib/roi_data_layer/roibatchLoader.py
 transform:
   [
     [
@@ -17,11 +14,6 @@ transform:
         {
           "name": "TorchTransforms", 
           "args": { "NAME": "RandomRotation", "ARGS": {"degrees": [0, 360]} }
-        },
-
-        {
-          "name": "TorchTransforms", 
-          "args": { "NAME": "RandAugment", "ARGS": {"num_ops": 2,  "magnitude": 9} }
         },
       ],
     ],
@@ -76,10 +68,6 @@ training:
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
-  losses:
-    label_smoothing: 0.1
-  ema:
-    decay: 0.995
 
 validation:
   batch_size: 64

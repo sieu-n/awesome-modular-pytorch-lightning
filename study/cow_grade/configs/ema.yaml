@@ -1,0 +1,3 @@
+training:
+  ema:
+    decay: 0.995
