@@ -12,4 +12,4 @@ training:
     mode: 'batch'
     correct_lam: True
     label_smoothing: 0.0
-    num_classes: 1000
+    num_classes: 5

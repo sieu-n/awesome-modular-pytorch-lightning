@@ -77,7 +77,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         elif type(module_type) == str:
             is_found = False
             for location in module_pool.values():
-                if hasattr(module_type, location):
+                if hasattr(location, module_type):
                     print(f"'{module_type}' was found in `{location}.")
                     module_type = getattr(location, module_type)
                     is_found = True
