@@ -1,10 +1,9 @@
 import models.heads as TorchHeads
 import models.vision.backbone as CustomModels
 import pytorch_lightning as pl
-from models.vision.backbone.build import (
-    timm_feature_extractor,
-    torchvision_feature_extractor,
-)
+from models.vision.backbone.timm import timm_feature_extractor
+from models.vision.backbone.torchvision import torchvision_feature_extractor
+
 from torch import optim
 from torch.optim import lr_scheduler
 from torch_ema import ExponentialMovingAverage

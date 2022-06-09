@@ -1,1 +1,1 @@
-from . import core, dataset, transforms  # noqa F401
+from . import collate_fn, dataset, transforms  # noqa F401

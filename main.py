@@ -211,6 +211,8 @@ class Experiment:
     def _setup_callbacks(
         self, experiment_name=None, wandb_cfg=None, tensorboard_cfg=None
     ):
+        if tensorboard_cfg is not None:
+            raise NotImplementedError()
         if not experiment_name:
             assert hasattr(self, "experiment_name")
             experiment_name = self.experiment_name

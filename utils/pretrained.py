@@ -5,7 +5,7 @@ import torch
 from tqdm import tqdm
 
 
-def download_model_state_dict(url, name="pretrained.pth"):
+def download_model_state_dict(url, name="./pretrained.pth"):
     if not os.path.exists(os.path.dirname(name)):
         os.makedirs(os.path.dirname(name))
     # download from url
@@ -15,7 +15,7 @@ def download_model_state_dict(url, name="pretrained.pth"):
     return name
 
 
-def load_model_weights(model, model_path="pretrained.pth", url=None):
+def load_model_weights(model, model_path="./pretrained.pth", url=None):
     if url is not None:
         model_path = download_model_state_dict(url=url, name=model_path)
 
