@@ -61,13 +61,15 @@ transform:
   ]
 
 dataloader:
-  collate_fn:
-    images:
+  base_dataloader:
+    collate_fn:
       name: "KeepSequence"
-    boxes:
-      name: "KeepSequence"
-    labels:
-      name: "KeepSequence"
+      args:
+        keys_to_apply: 
+          - "images"
+          - "labels"
+          - "boxes"
+
 model:
   backbone:
     TYPE: "timm"

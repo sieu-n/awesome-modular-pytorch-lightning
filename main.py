@@ -185,24 +185,28 @@ class Experiment:
         val_dataloader_cfg = merge_config(
             dataloader_cfg["base_dataloader"], dataloader_cfg["val"]
         )
-        if "collate_fn" in dataloader_cfg:
-            collate_fn = build_collate_fn(dataloader_cfg["collate_fn"])
-        else:
-            collate_fn = None  # use default collate_fn.
         if not val_batch_size:
             val_batch_size = trn_batch_size
+
+        # collate_fn
+        trn_collate_fn, val_collate_fn = None, None
+        if "collate_fn" in trn_dataloader_cfg:
+            trn_collate_fn = build_collate_fn(trn_dataloader_cfg["collate_fn"])
+        if "collate_fn" in val_dataloader_cfg:
+            val_collate_fn = build_collate_fn(val_dataloader_cfg["collate_fn"])
+
         # dataloader - train
         trn_dataloader = DataLoader(
             trn_dataset,
             batch_size=trn_batch_size,
-            collate_fn=collate_fn,
+            collate_fn=trn_collate_fn,
             **trn_dataloader_cfg,
         )
         # dataloader - val
         val_dataloader = DataLoader(
             val_dataset,
             batch_size=val_batch_size,
-            collate_fn=collate_fn,
+            collate_fn=val_collate_fn,
             **val_dataloader_cfg,
         )
 

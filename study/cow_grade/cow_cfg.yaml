@@ -57,6 +57,10 @@ model:
         num_classes: 5
         return_logits: True # return logits instead of softmax probability.
 
+dataloader:
+  base_dataloader:
+    num_workers: 4  # 4 -> ~43s, 8 -> ~48s
+
 training:
   ID: "ClassificationTrainer"
 
