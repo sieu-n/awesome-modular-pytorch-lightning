@@ -64,9 +64,9 @@ training:
   lr: 0.1
   batch_size: 64
 
-  optimizer: "adamw"
+  optimizer: "sgd"
   optimizer_cfg:
-    betas: [0.9, 0.999]
+    momentum: 0.9
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
