@@ -1,6 +1,7 @@
 import os
-import torch
+
 import requests
+import torch
 from tqdm import tqdm
 
 
@@ -21,18 +22,21 @@ def load_model_weights(model, model_path="pretrained.pth", url=None):
     assert os.path.exists(model_path), "Pre-trained model not found!"
 
     print("Loading model weights")
-    state = torch.load(model_path, map_location='cpu')
+    state = torch.load(model_path, map_location="cpu")
     for key in tqdm(model.state_dict()):
-        if 'num_batches_tracked' in key:
+        if "num_batches_tracked" in key:
             continue
         p = model.state_dict()[key]
-        if key in state['state_dict']:
-            ip = state['state_dict'][key]
+        if key in state["state_dict"]:
+            ip = state["state_dict"][key]
             if p.shape == ip.shape:
                 p.data.copy_(ip.data)  # Copy the data of parameters
             else:
                 print(
-                    'could not load layer: {}, mismatch shape {} ,{}'.format(key, (p.shape), (ip.shape)))
+                    "could not load layer: {}, mismatch shape {} ,{}".format(
+                        key, (p.shape), (ip.shape)
+                    )
+                )
         else:
-            print('could not load layer: {}, not in checkpoint'.format(key))
+            print("could not load layer: {}, not in checkpoint".format(key))
     return model

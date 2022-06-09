@@ -7,8 +7,7 @@ model:
       pretrained: True
     out_features: 768
 
-# this is configured for classification, but please remove the GAP layer for other subtasks.
-model:
+  # head is configured for classification, but please remove the GAP layer for other subtasks.
   heads:
     classifier:
       cfg:

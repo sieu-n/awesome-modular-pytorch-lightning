@@ -7,8 +7,8 @@ from models.vision.backbone.build import (
 )
 from torch import optim
 from torch.optim import lr_scheduler
-from utils.models import get_layer
 from torch_ema import ExponentialMovingAverage
+from utils.models import get_layer
 from utils.pretrained import load_model_weights
 
 
@@ -28,7 +28,9 @@ class _BaseLightningTrainer(pl.LightningModule):
             )
             # load backbone weights from url / filepath
             if "weights" in backbone_cfg:
-                self.backbone = load_model_weights(model=self.backbone, **backbone_cfg["weights"])
+                self.backbone = load_model_weights(
+                    model=self.backbone, **backbone_cfg["weights"]
+                )
         # build heads
         heads = model_cfg.get("heads", {})
         for head_name, head_cfg in heads.items():
@@ -50,7 +52,9 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.EMA = "ema" in training_cfg
         if "ema" in training_cfg:
             ema_cfg = training_cfg["ema"]
-            self.ema_manager = ExponentialMovingAverage(self.parameters(), decay=ema_cfg["decay"])
+            self.ema_manager = ExponentialMovingAverage(
+                self.parameters(), decay=ema_cfg["decay"]
+            )
 
     def build_head(self, module_type, *args, **kwargs):
         if type(module_type) == str:

@@ -3,11 +3,14 @@ transform:
     [
       "trn",
       [
-        { "name": "TorchTransforms", "args": { "NAME": "RandomHorizontalFlip" } },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
         { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
         {
-          "name": "TorchTransforms", 
-          "args": { "NAME": "RandomRotation", "ARGS": {"degrees": [0, 360]} }
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomRotation", "ARGS": { "degrees": [0, 360] } },
         },
         {
           "name": "RandomResizedCropAndInterpolation",
@@ -30,12 +33,7 @@ transform:
         },
       ],
     ],
-    [
-      "trn,val",
-      [
-        { "name": "ClassificationLabelEncoder" },
-      ],
-    ],
+    ["trn,val", [{ "name": "ClassificationLabelEncoder" }]],
 
     [
       "trn,val,pred",
@@ -44,7 +42,11 @@ transform:
         { "name": "ToTensor", "args": {} },
         {
           "name": "Normalize",
-          "args": { "mean": [0.25252014, 0.12918881, 0.12411932], "std": [0.24537923, 0.17195621, 0.17269008] },
+          "args":
+            {
+              "mean": [0.25252014, 0.12918881, 0.12411932],
+              "std": [0.24537923, 0.17195621, 0.17269008],
+            },
         },
       ],
     ],

@@ -13,6 +13,7 @@ class TupleToClassificationData(_BaseTransform):
     """
     initial transforms.
     """
+
     def __call__(self, x, y):
         return {"images": x, "labels": y}
 

@@ -1,12 +1,11 @@
 import os
+from pathlib import Path
 
-import lightning.trainers as trainers
 import pytorch_lightning as pl
 import torch
 from data.collate_fn import build_collate_fn
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
-from pathlib import Path
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
 from utils.experiment import (
@@ -14,9 +13,10 @@ from utils.experiment import (
     build_dataset,
     build_initial_transform,
     build_transforms,
-    initialize_environment as _initialize_environment,
-    print_to_end,
+    find_lighting_module,
 )
+from utils.experiment import initialize_environment as _initialize_environment
+from utils.experiment import print_to_end
 from utils.logging import create_logger
 from utils.visualization.utils import plot_samples_from_dataset
 
@@ -233,7 +233,8 @@ class Experiment:
 
     def _setup_model(self, model_cfg, training_cfg):
         # model
-        model = getattr(trainers, training_cfg["ID"])(model_cfg, training_cfg)
+        lightning_module = find_lighting_module(training_cfg["ID"])
+        model = lightning_module(model_cfg, training_cfg)
 
         if self.cfg_debug and "network_summary" in self.cfg_debug:
             batch_size = 16  # any num:)

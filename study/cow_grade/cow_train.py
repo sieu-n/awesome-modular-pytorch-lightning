@@ -1,15 +1,15 @@
 import os
 import random
 import shutil
-import torch
 from argparse import ArgumentParser
-from PIL import Image
 
 import pandas as pd
+import torch
 from main import Experiment
-from torch.utils.data import Dataset, DataLoader
-from utils.configs import read_configs, merge_config
-from utils.experiment import build_transforms, apply_transforms
+from PIL import Image
+from torch.utils.data import DataLoader, Dataset
+from utils.configs import merge_config, read_configs
+from utils.experiment import apply_transforms, build_transforms
 
 
 class CowDataset(Dataset):
@@ -58,7 +58,7 @@ class CowDataset(Dataset):
 
 def save_predictions_to_csv(image_names, pred, label_map, filename="prediction.csv"):
     grades = [label_map[x] for x in pred]
-    df = pd.DataFrame(data={'id': image_names, 'grade': grades})
+    df = pd.DataFrame(data={"id": image_names, "grade": grades})
     df.to_csv(filename, index=False)
 
 
@@ -72,26 +72,26 @@ if __name__ == "__main__":
 
     # move data
     base_path = "/content/drive/MyDrive/data/cow_classification/"
-    sample_submission = "/content/drive/MyDrive/data/cow_classification/sample_submission.csv"
+    sample_submission = (
+        "/content/drive/MyDrive/data/cow_classification/sample_submission.csv"
+    )
     target_path = "./cow/"
     if not os.path.exists(target_path):
         os.makedirs(target_path)
     for subset in ("train", "test"):
-        shutil.unpack_archive(f"{base_path}{subset}.zip", f"{target_path}{subset}", "zip")
+        shutil.unpack_archive(
+            f"{base_path}{subset}.zip", f"{target_path}{subset}", "zip"
+        )
     shutil.copyfile(sample_submission, "./cow/test_order.csv")
 
     # make dataset
     train_data_dir = "./cow/train/images/"
     train_csv_path = "./cow/train/grade_labels.csv"
     train_dataset = CowDataset(
-        base_dir=train_data_dir,
-        csv_path=train_csv_path,
-        idx_max=9000
+        base_dir=train_data_dir, csv_path=train_csv_path, idx_max=9000
     )
     val_dataset = CowDataset(
-        base_dir=train_data_dir,
-        csv_path=train_csv_path,
-        idx_min=9000
+        base_dir=train_data_dir, csv_path=train_csv_path, idx_min=9000
     )
     # test dataset
     test_dataset = CowDataset(

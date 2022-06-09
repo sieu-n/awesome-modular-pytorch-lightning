@@ -6,6 +6,7 @@ from datetime import datetime
 from pathlib import Path
 
 import data.transforms.vision as DT_V
+import lightning.trainers as trainers
 import yaml
 from data.dataset.util import torchvision_dataset
 from data.transforms.base import ApplyDataTransformations, ComposeTransforms
@@ -16,6 +17,9 @@ from .verbose import set_verbose
 """
 
 
+########################################################################
+# Find transforms and build dataset.
+########################################################################
 def find_transform_from_name(f_name):
     TRANSFORM_DECLARATIONS = [DT_V]  # list of modules to serach for.
     if type(f_name) == str:
@@ -102,6 +106,16 @@ def apply_transforms(dataset, initial_transform=None, transforms=None):
     )
 
 
+########################################################################
+# Pytorch-lightning utils.
+########################################################################
+def find_lighting_module(name):
+    return getattr(trainers, training_cfg["ID"])
+
+
+########################################################################
+# Utility functions for managing filepath and environment variables.
+########################################################################
 def replace_non_json_serializable(cfg):
     def is_jsonable(x):
         try:

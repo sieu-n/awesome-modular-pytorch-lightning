@@ -1,23 +1,23 @@
-# utils
-pre-commit
-PyYAML == 6.0
-wandb
 datetime
-pandas
-tqdm
+inplace-abn
 
 # ml-related
 matplotlib
-pandas
 numpy
 opencv_python
+pandas
+pandas
 Pillow
+# utils
+pre-commit
+pytorch-lightning
+PyYAML == 6.0
+timm
 
 # torch
 torch
-torchinfo
 torch-ema
+torchinfo
 torchmetrics
-pytorch-lightning
-inplace-abn
-timm
+tqdm
+wandb
