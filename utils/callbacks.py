@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 
 def build_callback(callback_cfg):
-    if "name" in callback_cfg:
+    if type(callback_cfg) == dict:
         return _build_callback(
             callback_class=callback_cfg["name"],
             file=callback_cfg.get("file", None),

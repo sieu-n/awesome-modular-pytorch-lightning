@@ -1,4 +1,4 @@
-name: "CowPrediction"
+name: "tresnet-gradclip-bs256-RA-ls"
 
 dataset:
   trn_size: 9000
@@ -68,7 +68,7 @@ training:
 
   epochs: 200
   lr: 0.1
-  batch_size: 64
+  batch_size: 256
   optimizer: "sgd"
   optimizer_cfg:
     momentum: 0.9
@@ -79,7 +79,7 @@ training:
     multiplier: 1
     total_epoch: 5
 validation:
-  batch_size: 64
+  batch_size: 256
   metrics:
 
 debug:
@@ -89,6 +89,7 @@ debug:
 # other useful configs.
 wandb:
   project: "cow_grade_prediction_challenge_2022"
+  group: "tresnetm-ablation"
 
 const:
   task: "image classification"

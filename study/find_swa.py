@@ -11,7 +11,7 @@ if __name__ == "__main__":
     parser.add_argument("--weights", required=True)
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--epochs", type=int, default=20)
-    parser.add_argument("--annealing_epochs", type=int, default=10)
+    parser.add_argument("--annealing_epochs", type=int, default=0)
     parser.add_argument("--annealing_strategy", type=str, default="cos", choices=["cos", "linear"])
     parser.add_argument("--avg_mode", type=str, default="const", choices=["const"])
 
@@ -27,6 +27,7 @@ if __name__ == "__main__":
     print("training.epochs overriden in config file.")
     if args.lr is None:
         args.lr = cfg["training"]["lr"] * 0.3
+        cfg["training"]["lr"] = args.lr
         print(f"initializing swa learning rate to {args.lr}")
     if args.avg_mode == "const":
         avg_fn = None
@@ -39,7 +40,6 @@ if __name__ == "__main__":
         annealing_epochs=args.annealing_epochs,
         annealing_strategy=args.annealing_strategy,
         avg_fn=avg_fn,
-        anneal_epochs=args.anneal_epochs,
     )
     callbacks = cfg.get("callbacks", {})
     callbacks.append(swa_callback)

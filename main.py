@@ -124,6 +124,7 @@ class Experiment:
             )
         if setup_callbacks:
             self._setup_callbacks(
+                callback_cfg_list=cfg.get("callbacks", []),
                 experiment_name=self.experiment_name,
                 wandb_cfg=cfg.get("wandb", None),
                 tensorboard_cfg=cfg.get("tensorboard", None),
@@ -241,7 +242,7 @@ class Experiment:
         self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
 
     def _setup_callbacks(
-        self, experiment_name=None, callback_cfg={}, wandb_cfg=None, tensorboard_cfg=None
+        self, experiment_name=None, callback_cfg_list=[], wandb_cfg=None, tensorboard_cfg=None
     ):
         if tensorboard_cfg is not None:
             raise NotImplementedError()
@@ -262,8 +263,8 @@ class Experiment:
         lr_callback = LearningRateMonitor(logging_interval="epoch")
         callbacks = [checkpoint_callback, lr_callback]
         # callbacks
-        for callback in callback_cfg:
-            callbacks.append(build_callback(callback))
+        for callback_cfg in callback_cfg_list:
+            callbacks.append(build_callback(callback_cfg))
         self.logger_and_callbacks = {
             "logger": logger,
             "callbacks": callbacks,
