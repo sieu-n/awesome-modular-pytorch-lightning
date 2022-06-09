@@ -125,7 +125,7 @@ if __name__ == "__main__":
     )
     test_dataloader = DataLoader(
         test_dataset,
-        batch_size=64,
+        batch_size=cfg["validation"]["batch_size"],
         **val_dataloader_cfg,
     )
     predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])

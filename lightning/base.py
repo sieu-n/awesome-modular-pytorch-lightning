@@ -6,6 +6,7 @@ from torch.optim import lr_scheduler
 from torch_ema import ExponentialMovingAverage
 
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
+from models import catalog as ModelPool
 from models import heads as HeadPool
 from algorithms import loss as LossPool
 from models.vision.backbone.timm import timm_feature_extractor
@@ -97,7 +98,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         elif model_type == "timm":
             backbone = timm_feature_extractor(model_id=name, *args, **kwargs)
         elif model_type == "custom":
-            return getattr(models.catalog, str(name))(**kwargs)
+            return getattr(ModelPool, str(name))(**kwargs)
         else:
             raise ValueError(f"Invalid `model.backbone.TYPE`: `{model_type}")
 

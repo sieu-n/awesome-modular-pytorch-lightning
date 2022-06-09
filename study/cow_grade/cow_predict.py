@@ -61,6 +61,7 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
+    parser.add_argument("--weights", required=True)
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -97,6 +98,8 @@ if __name__ == "__main__":
         subset_keys=["pred"],
     )["pred"]
     test_dataset = apply_transforms(test_dataset, None, transforms)
+
+    cfg["model"]["state_dict_path"] = args.weights
     # train
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg)

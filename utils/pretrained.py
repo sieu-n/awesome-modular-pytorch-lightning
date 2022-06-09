@@ -15,14 +15,14 @@ def download_model_state_dict(url, name="./pretrained.pth"):
     return name
 
 
-def load_model_weights(model, model_path="./pretrained.pth", url=None):
+def load_model_weights(model, state_dict_path="./pretrained.pth", url=None):
     if url is not None:
-        model_path = download_model_state_dict(url=url, name=model_path)
+        state_dict_path = download_model_state_dict(url=url, name=state_dict_path)
 
-    assert os.path.exists(model_path), "Pre-trained model not found!"
+    assert os.path.exists(state_dict_path), "Pre-trained model not found!"
 
     print("Loading model weights")
-    state = torch.load(model_path, map_location="cpu")
+    state = torch.load(state_dict_path, map_location="cpu")
     for key in tqdm(model.state_dict()):
         if "num_batches_tracked" in key:
             continue

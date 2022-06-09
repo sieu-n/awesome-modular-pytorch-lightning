@@ -8,6 +8,8 @@ from data.collate_fn import build_collate_fn
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
+
+from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import (
     apply_transforms,
@@ -19,6 +21,7 @@ from utils.experiment import (
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
 from utils.logging import create_logger
+from utils.pretrained import load_model_weights
 from utils.visualization.utils import plot_samples_from_dataset
 
 
@@ -238,28 +241,32 @@ class Experiment:
         self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
 
     def _setup_callbacks(
-        self, experiment_name=None, wandb_cfg=None, tensorboard_cfg=None
+        self, experiment_name=None, callback_cfg={}, wandb_cfg=None, tensorboard_cfg=None
     ):
         if tensorboard_cfg is not None:
             raise NotImplementedError()
         if not experiment_name:
             assert hasattr(self, "experiment_name")
             experiment_name = self.experiment_name
-        # callbacks
+        # logger
         print_to_end("-")
         logger_cfg = {
             "wandb_cfg": wandb_cfg,
             "tensorboard_cfg": tensorboard_cfg,
         }
         logger = create_logger(experiment_name=self.experiment_name, **logger_cfg)
+        # default callbacks
         checkpoint_callback = ModelCheckpoint(
             monitor="epoch/val_performance", save_last=True, save_top_k=1, mode="max"
         )
         lr_callback = LearningRateMonitor(logging_interval="epoch")
-
+        callbacks = [checkpoint_callback, lr_callback]
+        # callbacks
+        for callback in callback_cfg:
+            callbacks.append(build_callback(callback))
         self.logger_and_callbacks = {
             "logger": logger,
-            "callbacks": [checkpoint_callback, lr_callback],
+            "callbacks": callbacks,
         }
 
     def _setup_model(self, model_cfg, training_cfg):
@@ -278,7 +285,10 @@ class Experiment:
             print_model_summary(model, input_size=input_shape)
         # load model from path if specified.
         if "state_dict_path" in model_cfg:
-            model.load_state_dict(torch.load(model_cfg["state_dict_path"]))
+            load_model_weights(
+                model=model,
+                state_dict_path=model_cfg["state_dict_path"]
+            )
 
         self.model = model
 
