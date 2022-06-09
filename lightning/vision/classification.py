@@ -1,7 +1,6 @@
 import torch
-import torch.nn as nn
 from torchmetrics.functional import accuracy
-from timm.data import Mixup
+from algorithms.data_augmentation.mixup import MixupCutmix
 
 from lightning.base import _BaseLightningTrainer
 
@@ -9,16 +8,14 @@ from lightning.base import _BaseLightningTrainer
 class ClassificationTrainer(_BaseLightningTrainer):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs):
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
-        # define loss function.
-        if "losses" in training_cfg and "label_smoothing" in training_cfg["losses"]:
-            label_smoothing = training_cfg["losses"]["label_smoothing"]
-        else:
-            label_smoothing = 0.0
-        self.loss_fn = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
         # mixup for classification
-        self.mixup = None
+        self.mixup_cutmix = None
         if "mixup_cutmix" in training_cfg:
-            self.mixup = Mixup(**training_cfg["mixup_cutmix"])
+            self.mixup_cutmix = MixupCutmix(**training_cfg["mixup_cutmix"])
+
+        # assert whether all modules are initialized
+        for name in ["loss_fn", "backbone", "classifier"]:
+            assert hasattr(self, name), f"{name} is not initialized! Check the config file."
 
     def forward(self, x):
         feature = self.backbone(x)
@@ -29,8 +26,8 @@ class ClassificationTrainer(_BaseLightningTrainer):
         assert "labels" in batch
 
         x, y = batch["images"], batch["labels"]
-        if self.mixup:
-            x, y = self.mixup(x, y)
+        if self.mixup_cutmix:
+            x, y = self.mixup_cutmix(x, y)
         pred = self(x)
 
         loss = self.loss_fn(pred, y)

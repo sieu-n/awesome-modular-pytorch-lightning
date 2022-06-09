@@ -6,7 +6,7 @@ model:
     cfg:
       pretrained: True
     out_features: 2048
-  heads:
+  modules:
     classifier:
-      cfg:
+      args:
         in_features: 2048

@@ -10,10 +10,8 @@ debug:
     plot_size: 5
 
 trainer:
-  gpus: [0] # [0] for training in Google COLAB.
   accelerator: "dp"
   accumulate_grad_batches: 1
-  sync_batchnorm: True
   check_val_every_n_epoch: 5
   precision: 32
 

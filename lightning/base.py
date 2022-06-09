@@ -1,12 +1,14 @@
-import models
+from collections import OrderedDict
 import pytorch_lightning as pl
-from models.vision.backbone.timm import timm_feature_extractor
-from models.vision.backbone.torchvision import torchvision_feature_extractor
 from torch import optim
+from torch import nn
 from torch.optim import lr_scheduler
 from torch_ema import ExponentialMovingAverage
 
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
+import models
+from models.vision.backbone.timm import timm_feature_extractor
+from models.vision.backbone.torchvision import torchvision_feature_extractor
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
 
@@ -30,13 +32,16 @@ class _BaseLightningTrainer(pl.LightningModule):
                 self.backbone = load_model_weights(
                     model=self.backbone, **backbone_cfg["weights"]
                 )
-        # build heads
-        heads = model_cfg.get("heads", {})
-        for head_name, head_cfg in heads.items():
-            head_module = self.build_head(
-                module_type=head_cfg["ID"], **head_cfg.get("cfg", {})
+        # build modules
+        print("[*] Building modules attached to the backbone model...")
+        modules = model_cfg.get("modules", {})
+        for module_name, module_cfg in modules.items():
+            head_module = self.build_module(
+                module_type=module_cfg["name"],
+                file=module_cfg.get("file", None),
+                **module_cfg.get("args", {}),
             )
-            setattr(self, head_name, head_module)
+            setattr(self, module_name, head_module)
         # setup hooks
         self._hook_cache = {}
         hooks = model_cfg.get("hooks", {})
@@ -55,9 +60,28 @@ class _BaseLightningTrainer(pl.LightningModule):
                 self.parameters(), decay=ema_cfg["decay"]
             )
 
-    def build_head(self, module_type, *args, **kwargs):
-        if type(module_type) == str:
-            module_type = getattr(models.heads, module_type)
+    def build_module(self, module_type, file=None, *args, **kwargs):
+        # build and return any nn.Module that is defined under `module_locations`.
+        module_pool = OrderedDict({
+            "heads": models.heads,
+            "torch.nn": nn,
+        })
+        # if library is specified
+        if file:
+            if type(module_type) == str:
+                module_type = getattr(module_pool[file], module_type)
+            else:
+                raise ValueError("If `to_look_at` is specified, provide the name of the module as a string.")
+        elif type(module_type) == str:
+            is_found = False
+            for location in module_pool.values():
+                if hasattr(module_type, location):
+                    print(f"'{module_type}' was found in `{location}.")
+                    module_type = getattr(location, module_type)
+                    is_found = True
+                    break
+            if not is_found:
+                raise ValueError(f"{module_type} was not found in the pool of modules: {list(module_pool.values())}")
         head = module_type(*args, **kwargs)
         return head
 

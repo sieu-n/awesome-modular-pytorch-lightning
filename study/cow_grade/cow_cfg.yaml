@@ -46,16 +46,18 @@ model:
     cfg:
       pretrained: True
     out_features: 512
-  heads:
+  modules:
     classifier:
-      ID: "ClassificationHead"
+      name: "ClassificationHead"
       input: "output"
-      cfg:
+      args:
         reduction: "gap"
         in_features: 512
         dropout: 0.2
         num_classes: 5
         return_logits: True # return logits instead of softmax probability.
+    loss_fn:
+      name: "CrossEntropyLoss"
 
 dataloader:
   base_dataloader:

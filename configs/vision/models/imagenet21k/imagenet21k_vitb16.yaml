@@ -8,8 +8,8 @@ model:
     out_features: 768
 
   # head is configured for classification, but please remove the GAP layer for other subtasks.
-  heads:
+  modules:
     classifier:
-      cfg:
+      args:
         reduction: "none"
         in_features: 768
