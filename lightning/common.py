@@ -1,9 +1,7 @@
-import models.heads as TorchHeads
-import models.vision.backbone as CustomModels
+import models
 import pytorch_lightning as pl
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
-
 from torch import optim
 from torch.optim import lr_scheduler
 from torch_ema import ExponentialMovingAverage
@@ -57,7 +55,7 @@ class _BaseLightningTrainer(pl.LightningModule):
 
     def build_head(self, module_type, *args, **kwargs):
         if type(module_type) == str:
-            module_type = getattr(TorchHeads, module_type)
+            module_type = getattr(models.heads, module_type)
         head = module_type(*args, **kwargs)
         return head
 
@@ -71,7 +69,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         elif model_type == "timm":
             backbone = timm_feature_extractor(model_id=name, *args, **kwargs)
         elif model_type == "custom":
-            return getattr(CustomModels, str(name))(**kwargs)
+            return getattr(models.catalog, str(name))(**kwargs)
         else:
             raise ValueError(f"Invalid `model.backbone.TYPE`: `{model_type}")
 

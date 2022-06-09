@@ -1,9 +1,10 @@
 import timm
-
 from utils.models import drop_layers_after
 
 
-def timm_feature_extractor(model_id, drop_after=None, reset_classifier=True, *args, **kwargs):
+def timm_feature_extractor(
+    model_id, drop_after=None, reset_classifier=True, *args, **kwargs
+):
     """
     Load model(and pretrained-weights) implemented in `timm`.
 

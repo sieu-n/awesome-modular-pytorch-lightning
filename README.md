@@ -1,8 +1,6 @@
 # LightCollections⚡️: modular-pytorch-lightning-collections
 [WIP] modular-pytorch-lightning, **WARNING: The repository is currently under development, and is unstable.**
 
-If you are interested in participating, please contact `sieunpark77@gmail.com`!!!
-
 What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 - LightCollection aims at extending the features of `pytorch-lightning`. We provide training procedures of various subtasks in Computer Vision with a collection of `LightningModule` and utilities for easily using model architecture, metrics, and dataset.
 - One of the designing principles of `modular-pytorch-lightning` is to make it convinient to be able to use every component(function and classes) independently of the repository. To achive this, I avoided un-essential dependancies on most of the code, by avoiding too much abstraction and subclassing in particular.
@@ -78,4 +76,3 @@ these cascading config files are baked at the start of `train.py`, where configs
 ## About me
 
 - Contact: sieunpark77@gmail.com / sp380@student.london.ac.uk / +82) 10-6651-6432
-- @opentowork, internships oppertunities:)

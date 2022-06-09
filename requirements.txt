@@ -1,20 +1,15 @@
 datetime
 inplace-abn
-
-# ml-related
 matplotlib
 numpy
 opencv_python
 pandas
 pandas
 Pillow
-# utils
 pre-commit
 pytorch-lightning
 PyYAML == 6.0
 timm
-
-# torch
 torch
 torch-ema
 torchinfo
