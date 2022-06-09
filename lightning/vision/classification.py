@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
-from lightning.base import _BaseLightningTrainer
 from torchmetrics.functional import accuracy
+from timm.data import Mixup
+
+from lightning.base import _BaseLightningTrainer
 
 
 class ClassificationTrainer(_BaseLightningTrainer):
@@ -13,6 +15,10 @@ class ClassificationTrainer(_BaseLightningTrainer):
         else:
             label_smoothing = 0.0
         self.loss_fn = nn.CrossEntropyLoss(label_smoothing=label_smoothing)
+        # mixup for classification
+        self.mixup = None
+        if "mixup_cutmix" in training_cfg:
+            self.mixup = Mixup(**training_cfg["mixup_cutmix"])
 
     def forward(self, x):
         feature = self.backbone(x)
@@ -23,6 +29,8 @@ class ClassificationTrainer(_BaseLightningTrainer):
         assert "labels" in batch
 
         x, y = batch["images"], batch["labels"]
+        if self.mixup:
+            x, y = self.mixup(x, y)
         pred = self(x)
 
         loss = self.loss_fn(pred, y)

@@ -46,7 +46,7 @@ def KeepSequence(keys_to_apply=[]):
     return _KeepSequence
 
 
-def FastCollateMixup(**kwargs):
+class FastCollateMixup(_FastCollateMixup):
     """
     https://github.com/rwightman/pytorch-image-models/blob/master/timm/data/mixup.py
     Mixup/Cutmix that applies different params to each element or whole batch
@@ -61,7 +61,11 @@ def FastCollateMixup(**kwargs):
         label_smoothing (float): apply label smoothing to the mixed target tensor
         num_classes (int): number of classes for target
     """
-    return _FastCollateMixup(**kwargs)
+    def __call__(self, batch, _=None):
+        # {"image": }
+        batch = [(x["images"], x["labels"]) for x in batch]
+        images, labels = super().__call__(batch, _)
+        return {"images": images, "labels": labels}
 
 
 collate_fn_list = {

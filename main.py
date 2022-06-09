@@ -189,24 +189,27 @@ class Experiment:
             val_batch_size = trn_batch_size
 
         # collate_fn
-        trn_collate_fn, val_collate_fn = None, None
         if "collate_fn" in trn_dataloader_cfg:
-            trn_collate_fn = build_collate_fn(trn_dataloader_cfg["collate_fn"])
+            trn_dataloader_cfg["collate_fn"] = build_collate_fn(
+                name=trn_dataloader_cfg["collate_fn"]["name"],
+                kwargs=trn_dataloader_cfg["collate_fn"]["args"]
+            )
         if "collate_fn" in val_dataloader_cfg:
-            val_collate_fn = build_collate_fn(val_dataloader_cfg["collate_fn"])
+            val_dataloader_cfg["collate_fn"] = build_collate_fn(
+                name=val_dataloader_cfg["collate_fn"]["name"],
+                kwargs=val_dataloader_cfg["collate_fn"]["args"]
+            )
 
         # dataloader - train
         trn_dataloader = DataLoader(
             trn_dataset,
             batch_size=trn_batch_size,
-            collate_fn=trn_collate_fn,
             **trn_dataloader_cfg,
         )
         # dataloader - val
         val_dataloader = DataLoader(
             val_dataset,
             batch_size=val_batch_size,
-            collate_fn=val_collate_fn,
             **val_dataloader_cfg,
         )
 
@@ -269,6 +272,7 @@ class Experiment:
         # define pl.Trainer
         if not root_dir:
             root_dir = f"{self.exp_dir}/checkpoints"
+        root_dir = os.path.join(root_dir, self.experiment_name)
         if epochs is None:
             epochs = self.model.training_cfg["epochs"]
         if use_existing_trainer:

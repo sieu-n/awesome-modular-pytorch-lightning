@@ -48,7 +48,7 @@ model:
     out_features: 512
   heads:
     classifier:
-      ID: ClassificationHead
+      ID: "ClassificationHead"
       input: "output"
       cfg:
         reduction: "gap"
