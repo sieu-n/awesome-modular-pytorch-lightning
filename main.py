@@ -1,6 +1,7 @@
 import os
+import random
 from pathlib import Path
-
+import numpy as np
 import pytorch_lightning as pl
 import torch
 from data.collate_fn import build_collate_fn
@@ -38,6 +39,27 @@ class Experiment:
         self.exp_dir = f"results/{self.experiment_name}"
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
+        # initialize seed
+        if "seed" in cfg:
+            t = type(cfg["seed"])
+            if t == bool:
+                self.set_seed()
+            elif t == int:
+                self.set_seed(cfg["seed"])
+            else:
+                self.set_seed(int(cfg["seed"]))
+        else:
+            print("For your information, random seed is not set")
+
+    def set_seed(self, seed=3407):
+        """
+        Set seed for reproducibility. By default, set seed to 3407 according to the following paper😅 :
+        Torch.manual_seed(3407) is all you need: On the influence of random seeds in deep learning architectures for
+        computer vision, 2021
+        """
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        random.seed(seed)
 
     def setup_dataset(self, train_dataset, val_dataset, cfg, dataloader=True):
         self._setup_dataset(

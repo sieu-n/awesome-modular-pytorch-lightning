@@ -2,6 +2,7 @@
 name: "default-experiment"
 VERBOSE: "DEFAULT"
 DEBUG_MODE: False
+seed: True
 
 debug:
   view_train_augmentation:

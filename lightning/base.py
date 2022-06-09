@@ -6,7 +6,8 @@ from torch.optim import lr_scheduler
 from torch_ema import ExponentialMovingAverage
 
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
-import models
+from models import heads as HeadPool
+from algorithms import loss as LossPool
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
 from utils.models import get_layer
@@ -63,7 +64,8 @@ class _BaseLightningTrainer(pl.LightningModule):
     def build_module(self, module_type, file=None, *args, **kwargs):
         # build and return any nn.Module that is defined under `module_locations`.
         module_pool = OrderedDict({
-            "heads": models.heads,
+            "heads": HeadPool,
+            "loss": LossPool,
             "torch.nn": nn,
         })
         # if library is specified
