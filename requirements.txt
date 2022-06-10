@@ -16,3 +16,4 @@ torchinfo
 torchmetrics
 tqdm
 wandb
+sklearn

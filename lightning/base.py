@@ -4,6 +4,9 @@ from torch import optim
 from torch import nn
 from torch.optim import lr_scheduler
 import torchmetrics
+import wandb
+import matplotlib.pyplot as plt
+from sklearn.metrics import ConfusionMatrixDisplay
 
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
 from models import catalog as ModelPool
@@ -13,10 +16,10 @@ from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
-
-
 """ Build components for the lightningmodule
 """
+
+
 def build_backbone(
     name, model_type="custom", drop_after=None, *args, **kwargs
 ):
@@ -88,10 +91,11 @@ def build_metric(metric_type, file=None, *args, **kwargs):
 
 
 class _BaseLightningTrainer(pl.LightningModule):
-    def __init__(self, model_cfg, training_cfg, *args, **kwargs) -> None:
+    def __init__(self, model_cfg, training_cfg, const_cfg={}, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         # save training_cfg for defining optimizers when `configure_optimizers` is called.
         self.training_cfg = training_cfg
+        self.const_cfg = const_cfg
         # build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
@@ -149,7 +153,18 @@ class _BaseLightningTrainer(pl.LightningModule):
         for metric_data in self.metrics[subset]:
             metric_name = metric_data["name"]
             res = metric_data["metric"].compute()
-            self.log(f"epoch/{subset}_{metric_name}", res)
+
+            log_key = f"epoch/{subset}_{metric_name}"
+            # special metrics
+            if metric_name == "confusion_matrix":
+                disp = ConfusionMatrixDisplay(confusion_matrix=res.numpy(),
+                                              labels=self.const_cfg.get("label_map", None))
+                if wandb.run is not None:
+                    wandb.log({log_key : plt})
+                else:
+                    self.log(disp)
+            else:
+                self.log(log_key, res)
 
     def setup_hook(self, network, key, layer_name, mode="output", idx=None):
         if not hasattr(self, "_hook_cache"):

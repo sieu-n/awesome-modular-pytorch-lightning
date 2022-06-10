@@ -5,7 +5,6 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 from data.collate_fn import build_collate_fn
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 
@@ -256,13 +255,8 @@ class Experiment:
             "tensorboard_cfg": tensorboard_cfg,
         }
         logger = create_logger(experiment_name=self.experiment_name, **logger_cfg)
-        # default callbacks
-        checkpoint_callback = ModelCheckpoint(
-            monitor="epoch/val_performance", save_last=True, save_top_k=1, mode="max"
-        )
-        lr_callback = LearningRateMonitor(logging_interval="epoch")
-        callbacks = [checkpoint_callback, lr_callback]
         # callbacks
+        callbacks = []
         for callback_cfg in callback_cfg_list:
             callbacks.append(build_callback(callback_cfg))
         self.logger_and_callbacks = {
@@ -273,7 +267,7 @@ class Experiment:
     def _setup_model(self, model_cfg, training_cfg):
         # model
         lightning_module = lightning.get(training_cfg["ID"])
-        model = lightning_module(model_cfg, training_cfg)
+        model = lightning_module(model_cfg, training_cfg, self.const_cfg)
 
         if self.cfg_debug and "network_summary" in self.cfg_debug:
             batch_size = 16  # any num:)

@@ -13,9 +13,45 @@ training:
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
 
+  metrics:
+    loss:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss"
+    confusion_matrix:
+      when: "trn,val,test"
+      name: "ConfusionMatrix"
+      file: "torchmetrics"
+      args:
+        num_classes: 5
+      update:
+        preds: "pred"
+        target: "y"
+    accuracy:
+      when: "trn,val,test"
+      name: "Accuracy"
+      file: "torchmetrics"
+      update:
+        preds: "pred"
+        target: "y"
+
 validation:
   batch_size: 64
-  metrics:
+
+callbacks:
+  - name: ModelCheckpoint
+    file: lightning
+    args:
+      monitor: "epoch/val_accuracy"
+      mode: "max"
+      save_last: True
+      save_top_k: 5
+  - name: "LearningRateMonitor"
+    file: "lightning"
+    args:
+      logging_interval: "epoch"
 
 model:
   backbone:
