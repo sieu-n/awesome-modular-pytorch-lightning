@@ -50,12 +50,15 @@ class ClassificationTrainer(_BaseLightningTrainer):
         x, y = batch["images"], batch["labels"]
         if self.mixup_cutmix:
             x, y = self.mixup_cutmix(x, y)
-        logits = self(x)
+
+        feature = self.backbone(x)
+        logits = self.classifier(feature)
 
         loss = self.classification_loss(logits, y)
         # r-drop
         if hasattr(self, "rdrop") and self.rdrop is True:
-            loss = self.rdrop_forward(x, y, logits, loss)
+            # loss = self.rdrop_forward(x, y, logits, loss)
+            loss = self.fast_rdrop_forward(feature, y, logits, loss)
 
         # knowledge distillation
         if hasattr(self, "kd_teacher_model"):
@@ -67,35 +70,6 @@ class ClassificationTrainer(_BaseLightningTrainer):
         return {
             "pred": logits, "y": y, "loss": loss
         }
-
-    def get_kd_loss(self, logits, x, y):
-        prob_s = F.log_softmax(logits, dim=-1)
-        with torch.no_grad():
-            input_kd = self.kd_teacher_model.normalize_input(x, mean=self.const_cfg["normalization_mean"],
-                                                             std=self.const_cfg["normalization_std"])
-            out_t = self.kd_teacher_model.model(input_kd.detach())
-            prob_t = F.softmax(out_t, dim=-1)
-        return F.kl_div(prob_s, prob_t, reduction='batchmean')
-
-    def classification_loss(self, logits, y):
-        loss = self.loss_fn(logits, y)
-        # add multiple losses defined in `training.loss_fn`
-        for sub_loss_fn, weight, name in self.sub_losses:
-            val = sub_loss_fn(logits, y)
-            self.log(f"step/{name}_loss", val)
-            loss += val * weight
-        return loss
-
-    def rdrop_forward(self, x, y, logits1, loss1):
-        logits2 = self(x)
-        loss2 = self.classification_loss(logits2, y)
-
-        ce_loss = (loss1 + loss2) * 0.5
-        kl_loss = compute_kl_loss(logits1, logits2)
-
-        self.log("step/ce_loss", ce_loss)
-        self.log("step/kl_loss", kl_loss)
-        return ce_loss + self.rdrop_alpha * kl_loss
 
     def evaluate(self, batch, stage=None):
         assert "images" in batch
@@ -114,3 +88,45 @@ class ClassificationTrainer(_BaseLightningTrainer):
         pred = self(x)
         # class_pred = torch.argmax(pred, dim=1)
         return pred
+
+    def classification_loss(self, logits, y):
+        loss = self.loss_fn(logits, y)
+        # add multiple losses defined in `training.loss_fn`
+        for sub_loss_fn, weight, name in self.sub_losses:
+            val = sub_loss_fn(logits, y)
+            self.log(f"step/{name}_loss", val)
+            loss += val * weight
+        return loss
+
+    def get_kd_loss(self, logits, x, y):
+        prob_s = F.log_softmax(logits, dim=-1)
+        with torch.no_grad():
+            input_kd = self.kd_teacher_model.normalize_input(x, mean=self.const_cfg["normalization_mean"],
+                                                             std=self.const_cfg["normalization_std"])
+            out_t = self.kd_teacher_model.model(input_kd.detach())
+            prob_t = F.softmax(out_t, dim=-1)
+        return F.kl_div(prob_s, prob_t, reduction='batchmean')
+
+    def rdrop_forward(self, x, y, logits1, loss1):
+        logits2 = self(x)
+        loss2 = self.classification_loss(logits2, y)
+
+        ce_loss = (loss1 + loss2) * 0.5
+        kl_loss = compute_kl_loss(logits1, logits2)
+
+        self.log("step/ce_loss", ce_loss)
+        self.log("step/kl_loss", kl_loss)
+        return ce_loss + self.rdrop_alpha * kl_loss
+
+    def fast_rdrop_forward(self, feature, y, logits1, loss1):
+        """ Unofficial faster version of R-Drop which shares features.
+        """
+        logits2 = self.classifier(feature)
+        loss2 = self.classification_loss(logits2, y)
+
+        ce_loss = (loss1 + loss2) * 0.5
+        kl_loss = compute_kl_loss(logits1, logits2)
+
+        self.log("step/ce_loss", ce_loss)
+        self.log("step/kl_loss", kl_loss)
+        return ce_loss + self.rdrop_alpha * kl_loss

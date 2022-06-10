@@ -9,7 +9,7 @@ transform:
         {
           "name": "TorchTransforms",
           "args":
-            { "NAME": "RandAugment", "ARGS": { "num_ops": 2, "magnitude": 9 } },
+            { "NAME": "TrivialAugmentWide", "ARGS": { "num_magnitude_bins": 31 } },
         },
         {
           "name": "TorchTransforms",
