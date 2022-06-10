@@ -1,0 +1,42 @@
+transform:
+  [
+    [
+      "trn",
+      [
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomRotation", "ARGS": { "degrees": [0, 360] } },
+        },
+
+        {
+          "name": "TorchTransforms",
+          "args": { 
+              "NAME": "TrivialAugmentWide", 
+              "ARGS": { "num_magnitude_bins": 31, "magnitude": 9 } 
+            },
+        },
+      ],
+    ],
+    ["trn,val", [{ "name": "ClassificationLabelEncoder" }]],
+
+    [
+      "trn,val,pred",
+      [
+        { "name": "Resize", "args": { "size": [224, 224] } },
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": [0.25252014, 0.12918881, 0.12411932],
+              "std": [0.24537923, 0.17195621, 0.17269008],
+            },
+        },
+      ],
+    ],
+  ]
