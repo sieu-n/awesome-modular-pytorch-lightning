@@ -20,8 +20,9 @@ class CowDataset(Dataset):
         keep_order=False,
         has_labels=True,
         idx_min=0,
-        idx_max=-1,
+        idx_max=None,
         shuffle_seed=42,
+        image_name_key="imname",
     ):
         self.base_dir = base_dir
         self.has_labels = has_labels
@@ -30,9 +31,13 @@ class CowDataset(Dataset):
         indicies = list(df.index)
         if has_labels and not keep_order:  # in order to randomly select validation set
             random.Random(shuffle_seed).shuffle(indicies)
-        indicies = indicies[idx_min:idx_max]
 
-        self.image_names = list(df.iloc[indicies]["imname"])
+        if idx_max is None:
+            indicies = indicies[idx_min:]
+        else:
+            indicies = indicies[idx_min:idx_max]
+
+        self.image_names = list(df.iloc[indicies][image_name_key])
         if self.has_labels:
             self.grade = list(df.iloc[indicies]["grade"])
 
@@ -62,12 +67,15 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
     parser.add_argument("--weights", required=True)
-
+    parser.add_argument("--is_ckpt", default=False, action="store_true")
     args = parser.parse_args()
     cfg = read_configs(args.configs)
 
     # move data
     base_path = "/content/drive/MyDrive/data/cow_classification/"
+    sample_submission = (
+        "/content/drive/MyDrive/data/cow_classification/sample_submission.csv"
+    )
     target_path = "./cow/"
     if not os.path.exists(target_path):
         os.makedirs(target_path)
@@ -75,6 +83,7 @@ if __name__ == "__main__":
         shutil.unpack_archive(
             f"{base_path}{subset}.zip", f"{target_path}{subset}", "zip"
         )
+    shutil.copyfile(sample_submission, "./cow/test_order.csv")
 
     # make dataset
     train_data_dir = "./cow/train/images/"
@@ -88,8 +97,9 @@ if __name__ == "__main__":
     # test dataset
     test_dataset = CowDataset(
         base_dir="./cow/test/images/",
-        csv_path="./cow/test/test_images.csv",
+        csv_path="./cow/test_order.csv",
         has_labels=False,
+        image_name_key="id",
     )
     test_image_names = test_dataset.image_names
     transforms = build_transforms(
@@ -100,20 +110,19 @@ if __name__ == "__main__":
     test_dataset = apply_transforms(test_dataset, None, transforms)
 
     cfg["model"]["state_dict_path"] = args.weights
+    cfg["model"]["is_ckpt"] = args.is_ckpt
     # train
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg)
     experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
-    experiment.setup_experiment_from_cfg(
-        cfg, setup_env=False, setup_dataset=False, setup_dataloader=False
-    )
+    experiment.setup_experiment_from_cfg(cfg, setup_env=False, setup_dataset=False)
 
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
     )
     test_dataloader = DataLoader(
         test_dataset,
-        batch_size=64,
+        batch_size=cfg["validation"]["batch_size"],
         **val_dataloader_cfg,
     )
     predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])

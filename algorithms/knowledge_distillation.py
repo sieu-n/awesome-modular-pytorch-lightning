@@ -4,6 +4,7 @@ from utils.pretrained import load_model_weights
 
 class TeacherModelKD:
     def __init__(self, model_cfg, training_cfg, fuse_bn=True):
+        print("[*] Initializing teacher model for knowledge distillation!")
         assert "state_dict_path" in model_cfg, "Teacher model must be initialized with pretrained state_dict."
         lightning_module = lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg)
@@ -20,7 +21,7 @@ class TeacherModelKD:
         # save in Python-native list so model is not added to state_dict of student model.
         self.model = [model]
 
-    def match_normalization(self, x, mean, std):
+    def normalize_input(self, x, mean, std):
         # TODO
         return x
 

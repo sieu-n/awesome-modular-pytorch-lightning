@@ -1,7 +1,9 @@
 training:
   kd:
     alpha: 5.0
-    teacher:
+    teacher_training:
+      ID: "ClassificationTrainer"
+    teacher_model:
       backbone:
         TYPE: "timm"
         ID: "tresnet_m_miil_in21k"

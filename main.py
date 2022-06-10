@@ -294,7 +294,7 @@ class Experiment:
         trainer_cfg={},
         epochs=None,
         root_dir=None,
-        state_dict_path="checkpoints/model_state_dict.pth",
+        save_path="checkpoints/model_state_dict.pth",
         test_after=True,
     ):
         # define pl.Trainer
@@ -334,11 +334,11 @@ class Experiment:
             and "logger" in self.logger_and_callbacks
         ):
             self.logger_and_callbacks["logger"].experiment.finish()
-        if state_dict_path is not None:
-            root_path = os.path.dirname(f"{self.exp_dir}/{state_dict_path}")
+        if save_path is not None:
+            root_path = os.path.dirname(f"{self.exp_dir}/{save_path}")
             if not os.path.exists(root_path):
                 os.makedirs(root_path)
-            torch.save(self.model.state_dict(), f"{self.exp_dir}/{state_dict_path}")
+            torch.save(self.model.state_dict(), f"{self.exp_dir}/{save_path}")
         return res
 
     def predict(

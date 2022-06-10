@@ -15,7 +15,17 @@ class CohenKappaWeight(nn.Module):
             target = torch.argmax(target, dim=1)
 
         cohen_kappa_weights = self.get_cohen_kappa_weights(target)
-        return cohen_kappa_weights * torch.clamp(logits - self.label_smoothing, min=0.0)
+        loss = cohen_kappa_weights * torch.clamp(logits - self.label_smoothing, min=0.0)
+        loss = loss.mean(dim=1)
+
+        if self.reduction == 'mean':
+            return loss.mean()
+        elif self.reduction == "sum":
+            return loss.sum()
+        elif self.reduction == "none":
+            return loss
+        else:
+            raise ValueError()
 
     def get_cohen_kappa_weights(self, y):
         # only works for single label.
