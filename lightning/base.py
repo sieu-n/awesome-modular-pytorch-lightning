@@ -82,6 +82,7 @@ def build_metric(metric_type, file=None, *args, **kwargs):
                 break
         if not is_found:
             raise ValueError(f"{metric_type} was not found in the pool of modules: {list(module_pool.values())}")
+    print(f"Building metric: '{metric_type}'")
     metric = metric_type(*args, **kwargs)
     return metric
 
@@ -141,7 +142,7 @@ class _BaseLightningTrainer(pl.LightningModule):
 
     def update_metrics(self, subset, res):
         for metric_data in self.metrics[subset]:
-            update_kwargs = {key: res[val] for key, val in metric_data["update_keys"].items()}
+            update_kwargs = {key: res[val].cpu() for key, val in metric_data["update_keys"].items()}
             metric_data["metric"].update(**update_kwargs)
 
     def digest_metrics(self, subset):
@@ -181,7 +182,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         device_index = device.index
         return self._hook_cache[device_index][key]
 
-    def train(self, batch, batch_idx):
+    def _training_step(self, batch, batch_idx):
         raise NotImplementedError()
 
     def evaluate(self, batch, stage=None):
@@ -191,7 +192,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         raise NotImplementedError()
 
     def training_step(self, batch, batch_idx):
-        res = self.train(batch, "trn")
+        res = self._training_step(batch, batch_idx)
         self.update_metrics("trn", res)
         return res
 

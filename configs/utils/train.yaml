@@ -14,7 +14,7 @@ trainer:
   accelerator: "dp"
   accumulate_grad_batches: 1
   check_val_every_n_epoch: 5
-  precision: 16
+  precision: 32
 
 dataloader:
   base_dataloader:

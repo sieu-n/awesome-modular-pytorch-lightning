@@ -201,7 +201,7 @@ class BaseFasterRCNN(_BaseLightningTrainer):
             detections_per_img=100,
         )
 
-    def training_step(self, batch, batch_idx):
+    def _traininig_step(self, batch, batch_idx):
         assert "images" in batch
         assert "boxes" in batch
         assert "labels" in batch
@@ -258,7 +258,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
             box_roi_pool=roi_pooler,
         )
 
-    def training_step(self, batch, batch_idx):
+    def _traininig_step(self, batch, batch_idx):
         assert "images" in batch
         assert "boxes" in batch
         assert "labels" in batch

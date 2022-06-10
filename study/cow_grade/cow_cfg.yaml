@@ -85,10 +85,21 @@ training:
       file: "torchmetrics"
       update:
         value: "loss"
+    cohens_kappa:
+      when: "trn,val,test"
+      name: "CohenKappa"
+      file: "torchmetrics"
+      args:
+        num_classes: 5
+      update:
+        preds: "pred"
+        target: "y"
     confusion_matrix:
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"
+      args:
+        num_classes: 5
       update:
         preds: "pred"
         target: "y"
