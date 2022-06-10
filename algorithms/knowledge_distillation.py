@@ -1,11 +1,11 @@
-from utils.experiment import find_lighting_module
+import lightning
 from utils.pretrained import load_model_weights
 
 
 class TeacherModelKD:
     def __init__(self, model_cfg, training_cfg):
         assert "state_dict_path" in model_cfg, "Teacher model must be initialized with pretrained state_dict."
-        lightning_module = find_lighting_module(training_cfg["ID"])
+        lightning_module = lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg)
         if "state_dict_path" in model_cfg:
             load_model_weights(

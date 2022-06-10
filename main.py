@@ -9,6 +9,7 @@ from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 
+import lightning
 from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import (
@@ -16,7 +17,6 @@ from utils.experiment import (
     build_dataset,
     build_initial_transform,
     build_transforms,
-    find_lighting_module,
 )
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
@@ -272,7 +272,7 @@ class Experiment:
 
     def _setup_model(self, model_cfg, training_cfg):
         # model
-        lightning_module = find_lighting_module(training_cfg["ID"])
+        lightning_module = lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg)
 
         if self.cfg_debug and "network_summary" in self.cfg_debug:

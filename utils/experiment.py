@@ -7,7 +7,6 @@ from pathlib import Path
 import yaml
 
 import data.transforms.vision as DT_V
-import lightning.trainers as TRAINERS
 from data.dataset.util import torchvision_dataset
 from data.transforms.base import ApplyDataTransformations, ComposeTransforms
 from .verbose import set_verbose
@@ -103,13 +102,6 @@ def apply_transforms(dataset, initial_transform=None, transforms=None):
         initial_transform=initial_transform,
         transforms=transforms,
     )
-
-
-########################################################################
-# Pytorch-lightning utils.
-########################################################################
-def find_lighting_module(name):
-    return getattr(TRAINERS, name)
 
 
 ########################################################################
