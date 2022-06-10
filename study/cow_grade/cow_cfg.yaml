@@ -78,6 +78,29 @@ training:
   lr_warmup:
     multiplier: 1
     total_epoch: 5
+  metrics:
+    loss:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss"
+    confusion_matrix:
+      when: "trn,val,test"
+      name: "ConfusionMatrix"
+      file: "torchmetrics"
+      update:
+        preds: "pred"
+        target: "y"
+    accuracy:
+      when: "trn,val,test"
+      name: "Accuracy"
+      file: "torchmetrics"
+      update:
+        preds: "pred"
+        target: "y"
+
+
 validation:
   batch_size: 256
   metrics:

@@ -15,7 +15,7 @@ def download_model_state_dict(url, name="./pretrained.pth"):
     return name
 
 
-def load_model_weights(model, state_dict_path="./pretrained.pth", url=None):
+def load_model_weights(model, state_dict_path="./pretrained.pth", url=None, is_ckpt=False):
     if url is not None:
         state_dict_path = download_model_state_dict(url=url, name=state_dict_path)
 
@@ -23,12 +23,14 @@ def load_model_weights(model, state_dict_path="./pretrained.pth", url=None):
 
     print("Loading model weights")
     state = torch.load(state_dict_path, map_location="cpu")
+    if is_ckpt:
+        state = state["state_dict"]
     for key in tqdm(model.state_dict()):
         if "num_batches_tracked" in key:
             continue
         p = model.state_dict()[key]
-        if key in state["state_dict"]:
-            ip = state["state_dict"][key]
+        if key in state:
+            ip = state[key]
             if p.shape == ip.shape:
                 p.data.copy_(ip.data)  # Copy the data of parameters
             else:

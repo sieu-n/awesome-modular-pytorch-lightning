@@ -288,7 +288,8 @@ class Experiment:
         if "state_dict_path" in model_cfg:
             load_model_weights(
                 model=model,
-                state_dict_path=model_cfg["state_dict_path"]
+                state_dict_path=model_cfg["state_dict_path"],
+                is_ckpt=model_cfg.get("is_ckpt", False),
             )
 
         self.model = model

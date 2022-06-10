@@ -3,7 +3,7 @@ import pytorch_lightning as pl
 from torch import optim
 from torch import nn
 from torch.optim import lr_scheduler
-from torch_ema import ExponentialMovingAverage
+import torchmetrics
 
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
 from models import catalog as ModelPool
@@ -15,6 +15,77 @@ from utils.models import get_layer
 from utils.pretrained import load_model_weights
 
 
+""" Build components for the lightningmodule
+"""
+def build_backbone(
+    name, model_type="custom", drop_after=None, *args, **kwargs
+):
+    if model_type == "torchvision":
+        backbone = torchvision_feature_extractor(
+            model_id=name, drop_after=drop_after, *args, **kwargs
+        )
+    elif model_type == "timm":
+        backbone = timm_feature_extractor(model_id=name, *args, **kwargs)
+    elif model_type == "custom":
+        return getattr(ModelPool, str(name))(**kwargs)
+    else:
+        raise ValueError(f"Invalid `model.backbone.TYPE`: `{model_type}")
+
+    return backbone
+
+
+def build_module(module_type, file=None, *args, **kwargs):
+    # build and return any nn.Module that is defined under `module_locations`.
+    module_pool = OrderedDict({
+        "heads": HeadPool,
+        "loss": LossPool,
+        "torch.nn": nn,
+    })
+    # if library is specified
+    if file:
+        if type(module_type) == str:
+            module_type = getattr(module_pool[file], module_type)
+        else:
+            raise ValueError("If `to_look_at` is specified, provide the name of the module as a string.")
+    elif type(module_type) == str:
+        is_found = False
+        for location in module_pool.values():
+            if hasattr(location, module_type):
+                print(f"'{module_type}' was found in `{location}.")
+                module_type = getattr(location, module_type)
+                is_found = True
+                break
+        if not is_found:
+            raise ValueError(f"{module_type} was not found in the pool of modules: {list(module_pool.values())}")
+    head = module_type(*args, **kwargs)
+    return head
+
+
+def build_metric(metric_type, file=None, *args, **kwargs):
+    # build and return any nn.Module that is defined under `module_locations`.
+    metric_pool = OrderedDict({
+        "torchmetrics": torchmetrics,
+    })
+    # if library is specified
+    if file:
+        if type(metric_type) == str:
+            metric_type = getattr(metric_pool[file], metric_type)
+        else:
+            raise ValueError("If `file` is specified, provide the name of the metric_pool as a string.")
+    elif type(metric_type) == str:
+        is_found = False
+        for location in metric_pool.values():
+            if hasattr(location, metric_type):
+                print(f"'{metric_type}' was found in `{location}.")
+                metric_type = getattr(location, metric_type)
+                is_found = True
+                break
+        if not is_found:
+            raise ValueError(f"{metric_type} was not found in the pool of modules: {list(module_pool.values())}")
+    metric = metric_type(*args, **kwargs)
+    return metric
+
+
 class _BaseLightningTrainer(pl.LightningModule):
     def __init__(self, model_cfg, training_cfg, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -23,7 +94,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         # build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
-            self.backbone = self.build_backbone(
+            self.backbone = build_backbone(
                 name=backbone_cfg["ID"],
                 model_type=backbone_cfg["TYPE"],
                 drop_after=backbone_cfg.get("drop_after", None),
@@ -38,12 +109,25 @@ class _BaseLightningTrainer(pl.LightningModule):
         print("[*] Building modules attached to the backbone model...")
         modules = model_cfg.get("modules", {})
         for module_name, module_cfg in modules.items():
-            head_module = self.build_module(
+            head_module = build_module(
                 module_type=module_cfg["name"],
                 file=module_cfg.get("file", None),
                 **module_cfg.get("args", {}),
             )
             setattr(self, module_name, head_module)
+        # set metrics
+        self.metrics = {"trn": [], "val": [], "test": []}
+        metrics = training_cfg.get("metrics", {})
+        for metric_name, metric_cfg in metrics.items():
+            for subset in metric_cfg["when"].split(","):
+                metric = build_metric(
+                    metric_type=metric_cfg["name"],
+                    file=metric_cfg.get("file", None),
+                    **metric_cfg.get("args", {}),
+                )
+                metric_data = {"name": metric_name, "metric": metric, "update_keys": metric_cfg["update"]}
+
+                self.metrics[subset].append(metric_data)
         # setup hooks
         self._hook_cache = {}
         hooks = model_cfg.get("hooks", {})
@@ -54,55 +138,17 @@ class _BaseLightningTrainer(pl.LightningModule):
                 layer_name=hook_cfg["layer_name"],
                 **hook_cfg.get("cfg", {}),
             )
-        # build EMA
-        self.EMA = "ema" in training_cfg
-        if "ema" in training_cfg:
-            ema_cfg = training_cfg["ema"]
-            self.ema_manager = ExponentialMovingAverage(
-                self.parameters(), decay=ema_cfg["decay"]
-            )
 
-    def build_module(self, module_type, file=None, *args, **kwargs):
-        # build and return any nn.Module that is defined under `module_locations`.
-        module_pool = OrderedDict({
-            "heads": HeadPool,
-            "loss": LossPool,
-            "torch.nn": nn,
-        })
-        # if library is specified
-        if file:
-            if type(module_type) == str:
-                module_type = getattr(module_pool[file], module_type)
-            else:
-                raise ValueError("If `to_look_at` is specified, provide the name of the module as a string.")
-        elif type(module_type) == str:
-            is_found = False
-            for location in module_pool.values():
-                if hasattr(location, module_type):
-                    print(f"'{module_type}' was found in `{location}.")
-                    module_type = getattr(location, module_type)
-                    is_found = True
-                    break
-            if not is_found:
-                raise ValueError(f"{module_type} was not found in the pool of modules: {list(module_pool.values())}")
-        head = module_type(*args, **kwargs)
-        return head
+    def update_metrics(self, subset, res):
+        for metric_data in self.metrics[subset]:
+            update_kwargs = {key: res[val] for key, val in metric_data["update_keys"].items()}
+            metric_data["metric"].update(**update_kwargs)
 
-    def build_backbone(
-        self, name, model_type="custom", drop_after=None, *args, **kwargs
-    ):
-        if model_type == "torchvision":
-            backbone = torchvision_feature_extractor(
-                model_id=name, drop_after=drop_after, *args, **kwargs
-            )
-        elif model_type == "timm":
-            backbone = timm_feature_extractor(model_id=name, *args, **kwargs)
-        elif model_type == "custom":
-            return getattr(ModelPool, str(name))(**kwargs)
-        else:
-            raise ValueError(f"Invalid `model.backbone.TYPE`: `{model_type}")
-
-        return backbone
+    def digest_metrics(self, subset):
+        for metric_data in self.metrics[subset]:
+            metric_name = metric_data["name"]
+            res = metric_data["metric"].compute()
+            self.log(f"epoch/{subset}_{metric_name}", res)
 
     def setup_hook(self, network, key, layer_name, mode="output", idx=None):
         if not hasattr(self, "_hook_cache"):
@@ -135,7 +181,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         device_index = device.index
         return self._hook_cache[device_index][key]
 
-    def training_step(self, batch, batch_idx):
+    def train(self, batch, batch_idx):
         raise NotImplementedError()
 
     def evaluate(self, batch, stage=None):
@@ -144,11 +190,20 @@ class _BaseLightningTrainer(pl.LightningModule):
     def predict_step(self, batch, batch_idx):
         raise NotImplementedError()
 
+    def training_step(self, batch, batch_idx):
+        res = self.train(batch, "trn")
+        self.update_metrics("trn", res)
+        return res
+
     def validation_step(self, batch, batch_idx):
-        return self.evaluate(batch, "val")
+        res = self.evaluate(batch, "val")
+        self.update_metrics("val", res)
+        return res
 
     def test_step(self, batch, batch_idx):
-        return self.evaluate(batch, "test")
+        res = self.evaluate(batch, "test")
+        self.update_metrics("test", res)
+        return res
 
     def configure_optimizers(self):
         # optimizer
@@ -198,54 +253,13 @@ class _BaseLightningTrainer(pl.LightningModule):
             config["lr_scheduler"] = scheduler
         return config
 
-    def use_ema_weights(self):
-        if self.EMA is False:
-            raise ValueError()
-        return self.ema_manager.average_parameters()
-
-    def _apply_ema_weights(self):
-        self.ema_manager.store()
-        self.ema_manager.copy_to()
-
-    def _apply_regular_weights(self):
-        self.ema_manager.restore()
-
     def training_epoch_end(self, outputs):
-        # update callbacks
-        if self.EMA:
-            self.ema_manager.update()
         # log epoch-wise metrics
-        total_loss = sum([x["loss"] for x in outputs])
-        total_loss = total_loss / len(outputs)
-        self.log("epoch/trn_loss", float(total_loss.cpu()))
-
-    def validation_epoch_start(self):
-        if self.EMA:
-            self._apply_ema_weights()
+        self.digest_metrics("trn")
 
     def validation_epoch_end(self, validation_step_outputs):
-        # reset EMA
-        if self.EMA:
-            self._apply_regular_weights()
-
         # TODO: make it flexible for more output formats.
-        total_loss, total_performance = map(sum, zip(*validation_step_outputs))
-        total_performance = total_performance / len(validation_step_outputs)
-        total_loss = total_loss / len(validation_step_outputs)
-        self.log("epoch/val_performance", total_performance)
-        self.log("epoch/val_loss", total_loss)
-
-    def test_epoch_start(self, outputs):
-        if self.EMA:
-            self._apply_ema_weights()
+        self.digest_metrics("val")
 
     def test_epoch_end(self, test_step_outputs):
-        # reset EMA
-        if self.EMA:
-            self._apply_regular_weights()
-
-        total_loss, total_performance = map(sum, zip(*test_step_outputs))
-        total_performance = total_performance / len(test_step_outputs)
-        total_loss = total_loss / len(test_step_outputs)
-        self.log("epoch/test_performance", total_performance)
-        self.log("epoch/test_loss", total_loss)
+        self.digest_metrics("test")

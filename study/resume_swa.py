@@ -41,7 +41,7 @@ if __name__ == "__main__":
         annealing_strategy=args.annealing_strategy,
         avg_fn=avg_fn,
     )
-    callbacks = cfg.get("callbacks", {})
+    callbacks = cfg.get("callbacks", [])
     callbacks.append(swa_callback)
     cfg["callbacks"] = callbacks
     # train
