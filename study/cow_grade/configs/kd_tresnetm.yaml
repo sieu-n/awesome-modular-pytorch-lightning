@@ -1,5 +1,6 @@
 training:
   kd:
+    alpha: 5.0
     teacher:
       backbone:
         TYPE: "timm"

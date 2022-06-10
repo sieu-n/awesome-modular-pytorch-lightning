@@ -1,3 +1,7 @@
+import torch
+from torch import nn
+import torch.nn.functional as F
+
 from algorithms.augmentation.mixup import MixupCutmix
 from algorithms.knowledge_distillation import TeacherModelKD
 from lightning.base import _BaseLightningTrainer
@@ -14,16 +18,23 @@ class ClassificationTrainer(_BaseLightningTrainer):
         # knowledge distillation using the method of: Distilling the Knowledge in a Neural Network, 2015
         if "kd" in training_cfg:
             kd_cfg = training_cfg["kd"]
-            if "teacher" in kd_cfg:
-                self.kd_inference = True
-                self.teacher_model = TeacherModelKD(kd_cfg["teacher"])
-            else:
-                # use another way to recieve teacher model predictions.
-                self.kd_inference = False
+            self.kd_alpha = kd_cfg["alpha"]
+            self.kd_teacher_model = TeacherModelKD(kd_cfg["teacher"])
         # rdrop: R-Drop: Regularized Dropout for Neural Networks, NeurIPS-2021
         if "rdrop" in training_cfg:
             self.rdrop = True
             self.rdrop_alpha = training_cfg["rdrop"]["alpha"]
+        # initialize sub-loss functions. These functions must recieve (logits, y).
+        sub_losses = []
+        sub_loss_fns = training_cfg.get("sub_losses", {})
+        for loss_name, loss_cfg in sub_loss_fns.items():
+            loss_module = self.build_module(
+                module_type=loss_cfg["name"],
+                file=loss_cfg.get("file", None),
+                **loss_cfg.get("args", {}),
+            )
+            sub_losses.append((loss_module, loss_cfg["weight"], loss_name))
+        self.sub_losses = nn.ModuleList(sub_losses)
         # assert whether all modules are initialized
         for name in ["loss_fn", "backbone", "classifier"]:
             assert hasattr(self, name), f"{name} is not initialized! Check the config file."
@@ -41,19 +52,43 @@ class ClassificationTrainer(_BaseLightningTrainer):
             x, y = self.mixup_cutmix(x, y)
         logits = self(x)
 
-        loss = self.loss_fn(logits, y)
-
+        loss = self.classification_loss(logits, y)
         # r-drop
         if hasattr(self, "rdrop") and self.rdrop is True:
             loss = self.rdrop_forward(x, y, logits, loss)
+
+        # knowledge distillation
+        if hasattr(self, "kd_teacher_model"):
+            kd_loss = self.get_kd_loss(logits, x)
+            self.log("step/kd_loss", kd_loss)
+            loss += kd_loss * self.kd_alpha
+
         self.log("step/train_loss", loss)
         return {
             "pred": logits, "y": y, "loss": loss
         }
 
+    def get_kd_loss(self, logits, x, y):
+        prob_s = F.log_softmax(logits, dim=-1)
+        with torch.no_grad():
+            input_kd = self.kd_teacher_model.normalize_input(x, mean=self.const_cfg["normalization_mean"],
+                                                             std=self.const_cfg["normalization_std"])
+            out_t = self.kd_teacher_model.model(input_kd.detach())
+            prob_t = F.softmax(out_t, dim=-1)
+        return F.kl_div(prob_s, prob_t, reduction='batchmean')
+
+    def classification_loss(self, logits, y):
+        loss = self.loss_fn(logits, y)
+        # add multiple losses defined in `training.loss_fn`
+        for sub_loss_fn, weight, name in self.sub_losses:
+            val = sub_loss_fn(logits, y)
+            self.log(f"step/{name}_loss", val)
+            loss += val * weight
+        return loss
+
     def rdrop_forward(self, x, y, logits1, loss1):
         logits2 = self(x)
-        loss2 = self.loss_fn(logits2, y)
+        loss2 = self.classification_loss(logits2, y)
 
         ce_loss = (loss1 + loss2) * 0.5
         kl_loss = compute_kl_loss(logits1, logits2)
@@ -68,7 +103,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
 
         x, y = batch["images"], batch["labels"]
         logits = self(x)
-        loss = self.loss_fn(logits, y)
+        loss = self.classification_loss(logits, y)
         return {
             "pred": logits, "y": y, "loss": loss
         }

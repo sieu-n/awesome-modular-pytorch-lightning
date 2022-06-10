@@ -67,7 +67,7 @@ callbacks:
   - name: ModelCheckpoint
     file: lightning
     args:
-      monitor: "epoch/val_accuracy"
+      monitor: "epoch_val/accuracy"
       mode: "max"
       save_last: True
       save_top_k: 5
@@ -128,7 +128,6 @@ training:
 
 validation:
   batch_size: 256
-  metrics:
 
 debug:
   network_summary:

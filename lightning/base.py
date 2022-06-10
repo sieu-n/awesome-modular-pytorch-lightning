@@ -37,33 +37,6 @@ def build_backbone(
     return backbone
 
 
-def build_module(module_type, file=None, *args, **kwargs):
-    # build and return any nn.Module that is defined under `module_locations`.
-    module_pool = OrderedDict({
-        "heads": HeadPool,
-        "loss": LossPool,
-        "torch.nn": nn,
-    })
-    # if library is specified
-    if file:
-        if type(module_type) == str:
-            module_type = getattr(module_pool[file], module_type)
-        else:
-            raise ValueError("If `to_look_at` is specified, provide the name of the module as a string.")
-    elif type(module_type) == str:
-        is_found = False
-        for location in module_pool.values():
-            if hasattr(location, module_type):
-                print(f"'{module_type}' was found in `{location}.")
-                module_type = getattr(location, module_type)
-                is_found = True
-                break
-        if not is_found:
-            raise ValueError(f"{module_type} was not found in the pool of modules: {list(module_pool.values())}")
-    head = module_type(*args, **kwargs)
-    return head
-
-
 def build_metric(metric_type, file=None, *args, **kwargs):
     # build and return any nn.Module that is defined under `module_locations`.
     metric_pool = OrderedDict({
@@ -114,7 +87,7 @@ class _BaseLightningTrainer(pl.LightningModule):
         print("[*] Building modules attached to the backbone model...")
         modules = model_cfg.get("modules", {})
         for module_name, module_cfg in modules.items():
-            head_module = build_module(
+            head_module = self.build_module(
                 module_type=module_cfg["name"],
                 file=module_cfg.get("file", None),
                 **module_cfg.get("args", {}),
@@ -210,6 +183,32 @@ class _BaseLightningTrainer(pl.LightningModule):
     def get_hook(self, key, device=None):
         device_index = device.index
         return self._hook_cache[device_index][key]
+
+    def build_module(self, module_type, file=None, *args, **kwargs):
+        # build and return any nn.Module that is defined under `module_locations`.
+        module_pool = OrderedDict({
+            "heads": HeadPool,
+            "loss": LossPool,
+            "torch.nn": nn,
+        })
+        # if library is specified
+        if file:
+            if type(module_type) == str:
+                module_type = getattr(module_pool[file], module_type)
+            else:
+                raise ValueError("If `to_look_at` is specified, provide the name of the module as a string.")
+        elif type(module_type) == str:
+            is_found = False
+            for location in module_pool.values():
+                if hasattr(location, module_type):
+                    print(f"'{module_type}' was found in `{location}.")
+                    module_type = getattr(location, module_type)
+                    is_found = True
+                    break
+            if not is_found:
+                raise ValueError(f"{module_type} was not found in the pool of modules: {list(module_pool.values())}")
+        head = module_type(*args, **kwargs)
+        return head
 
     def _training_step(self, batch, batch_idx):
         raise NotImplementedError()
