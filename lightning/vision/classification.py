@@ -32,7 +32,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
         feature = self.backbone(x)
         return self.classifier(feature)
 
-    def _traininig_step(self, batch, batch_idx):
+    def _training_step(self, batch, batch_idx):
         assert "images" in batch
         assert "labels" in batch
 

@@ -108,6 +108,7 @@ training:
         preds: "pred"
         target: "y"
     confusion_matrix:
+      frequency: {"trn": 10}
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"

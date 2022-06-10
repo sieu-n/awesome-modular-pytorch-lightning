@@ -130,7 +130,12 @@ class _BaseLightningTrainer(pl.LightningModule):
                     file=metric_cfg.get("file", None),
                     **metric_cfg.get("args", {}),
                 )
-                metric_data = {"name": metric_name, "metric": metric, "update_keys": metric_cfg["update"]}
+                # get log frequency
+                frequency = metric_cfg.get("frequency", 1)
+                if type(frequency) == dict:
+                    frequency = frequency.get(subset, 1)
+                metric_data = {"name": metric_name, "metric": metric, "update_keys": metric_cfg["update"], 
+                               "frequency": frequency, "next_log": 0}
 
                 self.metrics[subset].append(metric_data)
         # setup hooks
@@ -146,23 +151,32 @@ class _BaseLightningTrainer(pl.LightningModule):
 
     def update_metrics(self, subset, res):
         for metric_data in self.metrics[subset]:
+            if metric_data["next_log"] > 0:
+                continue
             update_kwargs = {key: res[val].cpu() for key, val in metric_data["update_keys"].items()}
             metric_data["metric"].update(**update_kwargs)
 
     def digest_metrics(self, subset):
         for metric_data in self.metrics[subset]:
+            if metric_data["next_log"] > 0:
+                continue
+            # skip `frequency` - 1 epochs before logging.
+            metric_data["next_log"] = metric_data["frequency"] - 1
+
             metric_name = metric_data["name"]
             res = metric_data["metric"].compute()
+            metric_data["metric"].reset()
 
-            log_key = f"epoch/{subset}_{metric_name}"
+            log_key = f"epoch_{subset}/{metric_name}"
             # special metrics
             if metric_name == "confusion_matrix":
-                disp = ConfusionMatrixDisplay(confusion_matrix=res.numpy(),
-                                              labels=self.const_cfg.get("label_map", None))
                 if wandb.run is not None:
-                    wandb.log({log_key : plt})
+                    disp = ConfusionMatrixDisplay(confusion_matrix=res.numpy(),
+                                                  display_labels=self.const_cfg.get("label_map", None))             
+                    disp.plot()
+                    wandb.log({log_key: disp.figure_})
                 else:
-                    self.log(disp)
+                    self.log(log_key, res)
             else:
                 self.log(log_key, res)
 
