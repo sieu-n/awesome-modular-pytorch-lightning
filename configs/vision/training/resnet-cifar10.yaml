@@ -25,7 +25,7 @@ training:
       name: "ConfusionMatrix"
       file: "torchmetrics"
       args:
-        num_classes: 5
+        num_classes: 10
       update:
         preds: "pred"
         target: "y"
@@ -44,7 +44,7 @@ callbacks:
   - name: ModelCheckpoint
     file: lightning
     args:
-      monitor: "epoch/val_accuracy"
+      monitor: "epoch_val/accuracy"
       mode: "max"
       save_last: True
       save_top_k: 5
