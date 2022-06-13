@@ -69,7 +69,6 @@ class _BaseLightningTrainer(pl.LightningModule):
         # save training_cfg for defining optimizers when `configure_optimizers` is called.
         self.training_cfg = training_cfg
         self.const_cfg = const_cfg
-        self.register_buffer("const_cfg", const_cfg)
         # build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
