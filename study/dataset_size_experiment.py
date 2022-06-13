@@ -102,7 +102,7 @@ if __name__ == "__main__":
         # control dataset size
         assert (
             "sampler" not in cycle_cfg["dataloader"]["trn"]
-        ), "WARNING! try another way to control dataset size"
+        ), "try another way to control dataset size"
         cycle_cfg["dataset"]["transformations"].append(
             [
                 "trn",

@@ -1,0 +1,5 @@
+training:
+  loss_fn:
+    name: "CrossEntropyLoss"
+    args:
+      label_smoothing: 0.1

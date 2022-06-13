@@ -81,10 +81,10 @@ model:
     rpn:
       model: "backbone"
       layer_name: "layer3"
-  heads:
+  modules:
     rpn:
       ID: "RPNHead"
-      cfg:
+      args:
         d: 256
         n: 3
         k: 9
@@ -92,18 +92,18 @@ model:
 
     roi_pooler:
       ID: "ROIPooler"
-      cfg:
+      args:
         output_size: [7, 7]
 
     anchor_generator:
       ID: "AnchorGenerator"
-      cfg:
+      args:
         sizes: [128, 256, 512]
         aspect_ratios: [0.5, 1.0, 2.0]
 
     classifier:
       ID: ClassificationHead
-      cfg:
+      args:
         reduction: "none"
         dropout: 0.2
         in_features: 128

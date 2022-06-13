@@ -1,0 +1,15 @@
+# use backbone from https://github.com/Alibaba-MIIL/ImageNet21K
+model:
+  backbone:
+    TYPE: "timm"
+    ID: "vit_base_patch16_224_miil_in21k"
+    cfg:
+      pretrained: True
+    out_features: 768
+
+  # head is configured for classification, but please remove the GAP layer for other subtasks.
+  modules:
+    classifier:
+      args:
+        reduction: "none"
+        in_features: 768

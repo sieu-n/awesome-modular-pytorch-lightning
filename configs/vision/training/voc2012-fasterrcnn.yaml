@@ -62,7 +62,6 @@ training:
 
   rpn:
     lambda_reg: 10.0 # approx. (# anchor locations // batch_size)
-  losses: n_
 
 validation:
   batch_size: 1
@@ -75,15 +74,15 @@ model:
   backbone:
     cfg:
       low_res: True
-  heads:
+  modules:
     rpn:
-      ID: "FasterRCNNRPNHead"
-      cfg:
+      name: "FasterRCNNRPNHead"
+      args:
         anchor_k: 9
     classifier:
-      ID: ClassificationHead
+      name: ClassificationHead
       input: "output"
-      cfg:
+      args:
         reduction: "gap"
         dropout: 0.2
         num_classes: 10

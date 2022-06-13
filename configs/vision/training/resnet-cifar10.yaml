@@ -12,26 +12,64 @@ training:
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
-  losses:
+
+  metrics:
+    loss:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss"
+    confusion_matrix:
+      when: "trn,val,test"
+      name: "ConfusionMatrix"
+      file: "torchmetrics"
+      args:
+        num_classes: 10
+      update:
+        preds: "pred"
+        target: "y"
+    accuracy:
+      when: "trn,val,test"
+      name: "Accuracy"
+      file: "torchmetrics"
+      update:
+        preds: "pred"
+        target: "y"
 
 validation:
   batch_size: 64
-  metrics:
+
+callbacks:
+  - name: ModelCheckpoint
+    file: lightning
+    args:
+      monitor: "epoch_val/accuracy"
+      mode: "max"
+      save_last: True
+      save_top_k: 5
+  - name: "LearningRateMonitor"
+    file: "lightning"
+    args:
+      logging_interval: "epoch"
 
 model:
   backbone:
     cfg:
       low_res: True
-  heads:
+  modules:
     classifier:
-      ID: ClassificationHead
+      name: ClassificationHead
       input: "output"
-      cfg:
+      args:
         reduction: "gap"
         in_features: 512
         dropout: 0.2
         num_classes: 10
         return_logits: True # return logits instead of softmax probability.
+    loss_fn:
+      name: "CrossEntropyLoss"
+
 
 wandb:
   project: "CIFAR10-classification"

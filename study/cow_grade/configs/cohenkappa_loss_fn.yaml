@@ -1,0 +1,9 @@
+training:
+  sub_losses:
+    cohens_kappa_weight_loss:
+      weight: 1.0
+      file: "loss"
+      name: "CohenKappaWeight"
+      args:
+        num_classes: 5
+        label_smoothing: 0.1

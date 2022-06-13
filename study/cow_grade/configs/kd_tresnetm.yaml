@@ -1,0 +1,25 @@
+training:
+  kd:
+    alpha: 5.0
+    teacher_training:
+      ID: "ClassificationTrainer"
+    teacher_model:
+      backbone:
+        TYPE: "timm"
+        ID: "tresnet_m_miil_in21k"
+        cfg:
+          pretrained: True
+        out_features: 2048
+      modules:
+        classifier:
+          name: "ClassificationHead"
+          input: "output"
+          args:
+            reduction: "gap"
+            in_features: 2048
+            dropout: 0.2
+            num_classes: 5
+            return_logits: True # return logits instead of softmax probability.
+        loss_fn:
+          name: "CrossEntropyLoss"
+      state_dict_path: "/content/drive/MyDrive/data/cow_classification/teacher_model.pth"

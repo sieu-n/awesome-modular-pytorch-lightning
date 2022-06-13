@@ -12,7 +12,6 @@ training:
     weight_decay: 0.0005
   lr_scheduler: "cosine"
   lr_scheduler_cfg: {}
-  losses:
 
 validation:
   batch_size: 64
@@ -25,12 +24,15 @@ model:
   backbone:
     cfg:
       low_res: True
-  heads:
+  modules:
     classifier:
-      ID: ClassificationHead
+      name: ClassificationHead
       input: "output"
-      cfg:
+      args:
         reduction: "gap"
         dropout: 0.2
         num_classes: 100
         return_logits: True # return logits instead of softmax probability.
+    loss_fn:
+      name: "CrossEntropyLoss"
+

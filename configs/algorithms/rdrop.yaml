@@ -1,0 +1,3 @@
+training:
+  rdrop:
+    alpha: 0.6

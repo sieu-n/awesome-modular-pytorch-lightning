@@ -1,2 +1,9 @@
-from . import build, convmixer, efficientnet, mixer, resnet, vit  # noqa F401
-from .resnet import ResNet, ResNet18, ResNet34, ResNet50, ResNet101  # noqa F401
+from . import (  # noqa F401
+    convmixer,
+    efficientnet,
+    mixer,
+    resnet,
+    timm,
+    torchvision,
+    vit,
+)

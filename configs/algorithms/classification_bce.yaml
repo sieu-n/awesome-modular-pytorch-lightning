@@ -1,0 +1,5 @@
+model:
+  modules:
+    loss_fn:
+      name: "OneToAllBinaryCrossEntropy"
+      file: "loss"

@@ -110,10 +110,16 @@ class DetectionCropToRatio(_BaseTransform):
         # assert "images" in d
         # assert "boxes" in d
         # assert "labels" in d
+        is_removed = [True]
+        cnt = 0
+        while sum(is_removed) == len(is_removed):  # loop until at least one box is left
+            cropped_image, shifted_boxes, is_removed = self.transform(
+                d["images"], d["boxes"]
+            )
+            cnt += 1
+            if cnt == 10:  # give up after 10 iterations.
+                return d
 
-        cropped_image, shifted_boxes, is_removed = self.transform(
-            d["images"], d["boxes"]
-        )
         num_boxes = len(is_removed)
         box_mask = torch.tensor(is_removed) == False  # noqa E712
 

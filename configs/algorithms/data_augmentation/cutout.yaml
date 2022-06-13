@@ -1,0 +1,38 @@
+# default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
+# how to use CutOut in CIFAR-10 dataset, which was proposed in the paper:
+# CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features, 2019
+transform:
+  [
+    [
+      "trn",
+      [
+        {
+          "name": "TorchTransforms",
+          "args":
+            { "NAME": "RandomCrop", "ARGS": { "size": 32, "padding": 4 } },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+        { # CutOut!!
+          "name": "CutOut",
+          "args": { "mask_size": 0.5, "num_masks": 1 }
+        },
+      ],
+    ],
+    [
+      "trn,val",
+      [
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": [0.4914, 0.4822, 0.4465],
+              "std": [0.2023, 0.1994, 0.2010],
+            },
+        },
+      ],
+    ],
+  ]

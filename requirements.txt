@@ -1,13 +1,19 @@
 datetime
+inplace-abn
 matplotlib
-
-# utils
+numpy
+opencv_python
+pandas
+pandas
+Pillow
 pre-commit
 pytorch-lightning
 PyYAML == 6.0
 timm
-
-# torch
 torch
+torch-ema
 torchinfo
+torchmetrics
+tqdm
 wandb
+sklearn

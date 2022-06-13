@@ -15,6 +15,8 @@ if __name__ == "__main__":
     experiment = Experiment(cfg)
     experiment.setup_experiment_from_cfg(cfg)
     result = experiment.train(
-        trainer_cfg=cfg["trainer"], epochs=cfg["training"]["epochs"]
+        trainer_cfg=cfg["trainer"],
+        epochs=cfg["training"]["epochs"],
     )
     print("Result:", result)
+    print("Experiment and log dir:", experiment.get_directory())

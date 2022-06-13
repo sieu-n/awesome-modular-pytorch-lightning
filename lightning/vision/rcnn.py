@@ -3,7 +3,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 import torchvision
-from lightning.common import _BaseLightningTrainer
+from lightning.base import _BaseLightningTrainer
 from models.heads import FastRCNNPredictor, MLPHead, ROIPooler
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.roi_heads import RoIHeads
@@ -201,7 +201,7 @@ class BaseFasterRCNN(_BaseLightningTrainer):
             detections_per_img=100,
         )
 
-    def training_step(self, batch, batch_idx):
+    def _traininig_step(self, batch, batch_idx):
         assert "images" in batch
         assert "boxes" in batch
         assert "labels" in batch
@@ -242,7 +242,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
         # build models and heads defined in `model_cfg`.
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         anchor_generator = AnchorGenerator(
-            sizes=((32, 64, 128, 256),), aspect_ratios=((0.5, 1.0, 2.0),)
+            sizes=((32, 64, 128, 256, 512),), aspect_ratios=((0.5, 1.0, 2.0),)
         )
         # roi_pooler = torchvision.ops.RoIPool(output_size=7, spatial_scale=1.0)
         roi_pooler = torchvision.ops.MultiScaleRoIAlign(
@@ -258,7 +258,7 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
             box_roi_pool=roi_pooler,
         )
 
-    def training_step(self, batch, batch_idx):
+    def _traininig_step(self, batch, batch_idx):
         assert "images" in batch
         assert "boxes" in batch
         assert "labels" in batch
