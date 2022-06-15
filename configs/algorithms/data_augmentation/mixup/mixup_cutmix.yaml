@@ -13,3 +13,7 @@ training:
     correct_lam: True
     label_smoothing: 0.1
     num_classes: 1000
+model:
+  modules:  
+    loss_fn:
+      name: "SoftTargetCrossEntropy"

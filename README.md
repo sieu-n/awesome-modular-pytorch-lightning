@@ -8,9 +8,11 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
   - Network backbones from `timm`. 
   - `inagenet21k` [pretrained weights](https://github.com/Alibaba-MIIL/ImageNet21K) and feature to load model weights from url / `.pth` file.
   - `torch-ema` for saving EMA weights.
+  - `torchmetrics` for logging metrics. For example, see `configs/vision/training/resnet-cifar10.yaml`
   - WIP & future TODO:
-    - `torchmetrics`
-    - `albumentations`
+    - Data augmentation from `albumentations`
+    - TTA and TTAch
+    - 
 
 
 ## How to run experiments

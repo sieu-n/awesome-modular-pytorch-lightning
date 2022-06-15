@@ -1,0 +1,4 @@
+training:
+  lr_warmup:
+    multiplier: 1
+    total_epoch: 5

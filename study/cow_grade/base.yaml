@@ -94,7 +94,7 @@ callbacks:
       monitor: "epoch_val/accuracy"
       mode: "max"
       save_last: True
-      save_top_k: 5
+      save_top_k: 1
   - name: "LearningRateMonitor"
     file: "lightning"
     args:
