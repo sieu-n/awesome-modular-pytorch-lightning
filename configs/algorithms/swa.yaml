@@ -7,8 +7,8 @@ callbacks:
   - name: "StochasticWeightAveraging"
     file: "lightning"
     args:
-      swa_lrs: 0.02  # typicall x0.2 ~ x0.5 of initial lr
+      swa_lrs: 0.02 # typicall x0.2 ~ x0.5 of initial lr
       swa_epoch_start: 0.75
-      annealing_epochs: 5   # smooth the connection between lr schedule and SWA.
+      annealing_epochs: 5 # smooth the connection between lr schedule and SWA.
       annealing_strategy: "cos"
       avg_fn: null

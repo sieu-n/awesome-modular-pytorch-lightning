@@ -15,9 +15,10 @@ transform:
 
         {
           "name": "TorchTransforms",
-          "args": { 
-              "NAME": "TrivialAugmentWide", 
-              "ARGS": { "num_magnitude_bins": 31 } 
+          "args":
+            {
+              "NAME": "TrivialAugmentWide",
+              "ARGS": { "num_magnitude_bins": 31 },
             },
         },
       ],

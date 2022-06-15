@@ -4,7 +4,7 @@ from timm.data.mixup import mixup_target
 
 class MixupCutmix(Mixup):
     def __init__(self, multilabel=True, **kwargs):
-        """ Mixup/Cutmix that applies different params to each element or whole batch
+        """Mixup/Cutmix that applies different params to each element or whole batch
         https://github.com/rwightman/pytorch-image-models/blob/e4360e6125bb0bb4279785810c8eb33b40af3ebd/timm/data/mixup.py#L90
         Args:
             mixup_alpha (float): mixup alpha value, mixup is active if > 0.
@@ -21,14 +21,16 @@ class MixupCutmix(Mixup):
         self.multilabel = multilabel
 
     def __call__(self, x, target):
-        assert len(x) % 2 == 0, 'Batch size should be even when using this'
-        if self.mode == 'elem':
+        assert len(x) % 2 == 0, "Batch size should be even when using this"
+        if self.mode == "elem":
             lam = self._mix_elem(x)
-        elif self.mode == 'pair':
+        elif self.mode == "pair":
             lam = self._mix_pair(x)
         else:
             lam = self._mix_batch(x)
-        target = mixup_target(target, self.num_classes, lam, self.label_smoothing, x.device)
+        target = mixup_target(
+            target, self.num_classes, lam, self.label_smoothing, x.device
+        )
         # if self.multilabel == False:
         #    # returns mixup that sum to 1 instead of multi-label as proposed in timm.
         #    target = target / target.sum(dim=0)

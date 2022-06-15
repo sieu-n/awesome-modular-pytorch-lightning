@@ -5,7 +5,7 @@ transform:
       [
         {
           "name": "CutOut",
-          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 }
+          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 },
         },
 
         {

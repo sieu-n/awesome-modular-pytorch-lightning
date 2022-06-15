@@ -1,3 +1,6 @@
+# Implement R-Drop, proposed in the paper:
+# R-Drop: Regularized Dropout for Neural Networks, NeurlIPS 2021
+
 training:
   rdrop:
     alpha: 0.6

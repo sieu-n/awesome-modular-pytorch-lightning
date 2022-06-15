@@ -1,5 +1,5 @@
-from torch.utils.data._utils.collate import default_collate
 from timm.data import FastCollateMixup as _FastCollateMixup
+from torch.utils.data._utils.collate import default_collate
 
 
 def build_collate_fn(name, kwargs):
@@ -61,6 +61,7 @@ class FastCollateMixup(_FastCollateMixup):
         label_smoothing (float): apply label smoothing to the mixed target tensor
         num_classes (int): number of classes for target
     """
+
     def __call__(self, batch, _=None):
         # {"image": }
         batch = [(x["images"], x["labels"]) for x in batch]

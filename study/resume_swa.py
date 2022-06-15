@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
-from pytorch_lightning.callbacks import StochasticWeightAveraging
 
 from main import Experiment
+from pytorch_lightning.callbacks import StochasticWeightAveraging
 from utils.configs import read_configs
 
 if __name__ == "__main__":
@@ -12,7 +12,9 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--annealing_epochs", type=int, default=0)
-    parser.add_argument("--annealing_strategy", type=str, default="cos", choices=["cos", "linear"])
+    parser.add_argument(
+        "--annealing_strategy", type=str, default="cos", choices=["cos", "linear"]
+    )
     parser.add_argument("--avg_mode", type=str, default="const", choices=["const"])
 
     args = parser.parse_args()

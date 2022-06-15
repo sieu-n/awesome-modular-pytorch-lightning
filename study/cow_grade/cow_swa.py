@@ -1,14 +1,13 @@
-
 import os
 import random
 import shutil
 from argparse import ArgumentParser
-from pytorch_lightning.callbacks import StochasticWeightAveraging
 
 import pandas as pd
 import torch
 from main import Experiment
 from PIL import Image
+from pytorch_lightning.callbacks import StochasticWeightAveraging
 from torch.utils.data import DataLoader, Dataset
 from utils.configs import merge_config, read_configs
 from utils.experiment import apply_transforms, build_transforms
@@ -72,7 +71,9 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--epochs", type=int, default=40)
     parser.add_argument("--annealing_epochs", type=int, default=4)
-    parser.add_argument("--annealing_strategy", type=str, default="cos", choices=["cos", "linear"])
+    parser.add_argument(
+        "--annealing_strategy", type=str, default="cos", choices=["cos", "linear"]
+    )
     parser.add_argument("--avg_mode", type=str, default="const", choices=["const"])
 
     args = parser.parse_args()

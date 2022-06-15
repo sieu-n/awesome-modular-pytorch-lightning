@@ -16,17 +16,14 @@ transform:
 
         {
           "name": "CutOut",
-          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 }
+          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 },
         },
 
         {
           "name": "TorchTransforms",
           "args": { "NAME": "RandomHorizontalFlip" },
         },
-        {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomVerticalFlip" } ,
-        },
+        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
         {
           "name": "TorchTransforms",
           "args": { "NAME": "RandomRotation", "ARGS": { "degrees": [0, 360] } },
@@ -34,9 +31,10 @@ transform:
 
         {
           "name": "TorchTransforms",
-          "args": { 
-              "NAME": "TrivialAugmentWide", 
-              "ARGS": { "num_magnitude_bins": 31 } 
+          "args":
+            {
+              "NAME": "TrivialAugmentWide",
+              "ARGS": { "num_magnitude_bins": 31 },
             },
         },
       ],
@@ -82,10 +80,9 @@ model:
       args:
         label_smoothing: 0.1
 
-
 dataloader:
   base_dataloader:
-    num_workers: 4  # 4 -> ~43s, 8 -> ~48s
+    num_workers: 4 # 4 -> ~43s, 8 -> ~48s
 
 callbacks:
   - name: ModelCheckpoint
@@ -126,7 +123,7 @@ training:
       name: "MeanMetric"
       file: "torchmetrics"
       update:
-        value: "loss"
+        value: "cls_loss"
     cohens_kappa:
       when: "trn,val,test"
       name: "CohenKappa"
@@ -134,26 +131,25 @@ training:
       args:
         num_classes: 5
       update:
-        preds: "pred"
+        preds: "logits"
         target: "y"
     confusion_matrix:
-      frequency: {"trn": 10}
+      frequency: { "trn": 50 }
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"
       args:
         num_classes: 5
       update:
-        preds: "pred"
+        preds: "logits"
         target: "y"
     accuracy:
       when: "trn,val,test"
       name: "Accuracy"
       file: "torchmetrics"
       update:
-        preds: "pred"
+        preds: "logits"
         target: "y"
-
 
 validation:
   batch_size: 256

@@ -35,4 +35,3 @@ model:
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
-

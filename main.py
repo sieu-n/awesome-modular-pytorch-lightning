@@ -1,14 +1,14 @@
 import os
 import random
 from pathlib import Path
+
+import lightning
 import numpy as np
 import pytorch_lightning as pl
 import torch
 from data.collate_fn import build_collate_fn
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
-
-import lightning
 from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import (
@@ -217,12 +217,12 @@ class Experiment:
         if "collate_fn" in trn_dataloader_cfg:
             trn_dataloader_cfg["collate_fn"] = build_collate_fn(
                 name=trn_dataloader_cfg["collate_fn"]["name"],
-                kwargs=trn_dataloader_cfg["collate_fn"]["args"]
+                kwargs=trn_dataloader_cfg["collate_fn"]["args"],
             )
         if "collate_fn" in val_dataloader_cfg:
             val_dataloader_cfg["collate_fn"] = build_collate_fn(
                 name=val_dataloader_cfg["collate_fn"]["name"],
-                kwargs=val_dataloader_cfg["collate_fn"]["args"]
+                kwargs=val_dataloader_cfg["collate_fn"]["args"],
             )
 
         # dataloader - train
@@ -241,7 +241,11 @@ class Experiment:
         self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
 
     def _setup_callbacks(
-        self, experiment_name=None, callback_cfg_list=[], wandb_cfg=None, tensorboard_cfg=None
+        self,
+        experiment_name=None,
+        callback_cfg_list=[],
+        wandb_cfg=None,
+        tensorboard_cfg=None,
     ):
         if tensorboard_cfg is not None:
             raise NotImplementedError()

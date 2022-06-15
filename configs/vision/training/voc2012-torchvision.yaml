@@ -65,7 +65,7 @@ dataloader:
     collate_fn:
       name: "KeepSequence"
       args:
-        keys_to_apply: 
+        keys_to_apply:
           - "images"
           - "labels"
           - "boxes"

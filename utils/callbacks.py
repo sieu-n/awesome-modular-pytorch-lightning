@@ -1,5 +1,6 @@
-from pytorch_lightning import callbacks as PytorchLightningCallbacks
 from collections import OrderedDict
+
+from pytorch_lightning import callbacks as PytorchLightningCallbacks
 
 
 def build_callback(callback_cfg):
@@ -16,15 +17,19 @@ def build_callback(callback_cfg):
 
 def _build_callback(callback_class=None, file=None, **kwargs):
     known_callbacks = {}
-    callback_pool = OrderedDict({
-        "lightning": PytorchLightningCallbacks,
-    })
+    callback_pool = OrderedDict(
+        {
+            "lightning": PytorchLightningCallbacks,
+        }
+    )
     # if library is specified
     if file:
         if type(callback_class) == str:
             callback_class = getattr(callback_pool[file], callback_class)
         else:
-            raise ValueError("If `file` is specified, provide the name of the module as a string.")
+            raise ValueError(
+                "If `file` is specified, provide the name of the module as a string."
+            )
     elif type(callback_class) == str:
         if callback_class in known_callbacks:
             callback_class = known_callbacks[callback_class]
@@ -37,6 +42,8 @@ def _build_callback(callback_class=None, file=None, **kwargs):
                     is_found = True
                     break
             if not is_found:
-                raise ValueError(f"{callback_class} was not found in the pool of modules: {list(callback_pool.values())}")
+                raise ValueError(
+                    f"{callback_class} was not found in the pool of modules: {list(callback_pool.values())}"
+                )
     callback = callback_class(**kwargs)
     return callback
