@@ -9,6 +9,7 @@ Pillow
 pre-commit
 pytorch-lightning
 PyYAML == 6.0
+sklearn
 timm
 torch
 torch-ema
@@ -16,4 +17,3 @@ torchinfo
 torchmetrics
 tqdm
 wandb
-sklearn

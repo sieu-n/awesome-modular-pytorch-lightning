@@ -5,14 +5,14 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 - LightCollection aims at extending the features of `pytorch-lightning`. We aim to provide training procedures of various subtasks in Computer Vision with a collection of `LightningModule` and utilities for easily using model architecture, metrics, dataset, and training algorithms.
 - This repository is designed to utilize many amazing and robust and open-source projects such as `timm`, `torchmetrics`, and more. Currently, the following frameworks are integrated into `LightCollections` and can be easily applied through the config files:
   - `torchvision.models` for models, `torchvision.transforms` for transforms, optimizers and learning rate schedules from `pytorch`.
-  - Network backbones from `timm`. 
+  - Network backbones from `timm`.
   - `inagenet21k` [pretrained weights](https://github.com/Alibaba-MIIL/ImageNet21K) and feature to load model weights from url / `.pth` file.
   - `torch-ema` for saving EMA weights.
   - `torchmetrics` for logging metrics. For example, see `configs/vision/training/resnet-cifar10.yaml`
   - WIP & future TODO:
     - Data augmentation from `albumentations`
     - TTA and TTAch
-    - 
+    -
 
 
 ## How to run experiments

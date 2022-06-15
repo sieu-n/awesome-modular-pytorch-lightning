@@ -1,7 +1,6 @@
 # Implement trivial augmentation from the paper:
 # TrivialAugment: Tuning-free Yet State-of-the-Art Data Augmentation
-transform:
-  [
+transform: [
     [
       "trn",
       [
@@ -9,7 +8,10 @@ transform:
         {
           "name": "TorchTransforms",
           "args":
-            { "NAME": "TrivialAugmentWide", "ARGS": { "num_magnitude_bins": 31 } },
+            {
+              "NAME": "TrivialAugmentWide",
+              "ARGS": { "num_magnitude_bins": 31 },
+            },
         },
         {
           "name": "TorchTransforms",

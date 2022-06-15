@@ -1,1 +1,1 @@
-from . import optimizers, loss, augmentation  # noqa F401
+from . import augmentation, loss, optimizers  # noqa F401

@@ -1,8 +1,7 @@
 # default data augmentation for CIFAR-10 is from https://github.com/kuangliu/pytorch-cifar/blob/master/main.py#L30
 # How to use RandAugment, which was proposed in the paper:
 # RandAugment: Practical automated data augmentation with a reduced search space, 2019
-transform:
-  [
+transform: [
     [
       "trn",
       [

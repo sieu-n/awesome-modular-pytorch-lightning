@@ -4,11 +4,12 @@ import pickle
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import yaml
 
 import data.transforms.vision as DT_V
+import yaml
 from data.dataset.util import torchvision_dataset
 from data.transforms.base import ApplyDataTransformations, ComposeTransforms
+
 from .verbose import set_verbose
 
 """ Implement utilities used in `main.py`.

@@ -3,7 +3,7 @@ from torch import nn
 
 
 class CohenKappaWeight(nn.Module):
-    def __init__(self, num_classes, reduction='mean', label_smoothing=0.0):
+    def __init__(self, num_classes, reduction="mean", label_smoothing=0.0):
         super(CohenKappaWeight, self).__init__()
         self.num_classes = num_classes
         self.reduction = reduction
@@ -18,7 +18,7 @@ class CohenKappaWeight(nn.Module):
         loss = cohen_kappa_weights * torch.clamp(logits - self.label_smoothing, min=0.0)
         loss = loss.mean(dim=1)
 
-        if self.reduction == 'mean':
+        if self.reduction == "mean":
             return loss.mean()
         elif self.reduction == "sum":
             return loss.sum()
@@ -31,5 +31,6 @@ class CohenKappaWeight(nn.Module):
         # only works for single label.
         def f(x):
             return [(i - x) ** 2 for i in range(self.num_classes)]
+
         x = map(f, y)
         return torch.tensor(list(x))

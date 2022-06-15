@@ -1,28 +1,26 @@
 from collections import OrderedDict
 import pytorch_lightning as pl
-from torch import optim
-from torch import nn
-from torch.optim import lr_scheduler
 import torchmetrics
 import wandb
-import matplotlib.pyplot as plt
 from sklearn.metrics import ConfusionMatrixDisplay
+from torch import nn, optim
+from torch.optim import lr_scheduler
 
+from algorithms import loss as LossPool
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
+from algorithms.optimizers.sam import SAM
 from models import catalog as ModelPool
 from models import heads as HeadPool
-from algorithms import loss as LossPool
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
+
 """ Build components for the lightningmodule
 """
 
 
-def build_backbone(
-    name, model_type="custom", drop_after=None, *args, **kwargs
-):
+def build_backbone(name, model_type="custom", drop_after=None, *args, **kwargs):
     if model_type == "torchvision":
         backbone = torchvision_feature_extractor(
             model_id=name, drop_after=drop_after, *args, **kwargs
@@ -39,15 +37,19 @@ def build_backbone(
 
 def build_metric(metric_type, file=None, *args, **kwargs):
     # build and return any nn.Module that is defined under `module_locations`.
-    metric_pool = OrderedDict({
-        "torchmetrics": torchmetrics,
-    })
+    metric_pool = OrderedDict(
+        {
+            "torchmetrics": torchmetrics,
+        }
+    )
     # if library is specified
     if file:
         if type(metric_type) == str:
             metric_type = getattr(metric_pool[file], metric_type)
         else:
-            raise ValueError("If `file` is specified, provide the name of the metric_pool as a string.")
+            raise ValueError(
+                "If `file` is specified, provide the name of the metric_pool as a string."
+            )
     elif type(metric_type) == str:
         is_found = False
         for location in metric_pool.values():
@@ -57,7 +59,9 @@ def build_metric(metric_type, file=None, *args, **kwargs):
                 is_found = True
                 break
         if not is_found:
-            raise ValueError(f"{metric_type} was not found in the pool of modules: {list(module_pool.values())}")
+            raise ValueError(
+                f"{metric_type} was not found in the pool of modules: {list(module_pool.values())}"
+            )
     print(f"Building metric: '{metric_type}'")
     metric = metric_type(*args, **kwargs)
     return metric
@@ -107,8 +111,13 @@ class _BaseLightningTrainer(pl.LightningModule):
                 frequency = metric_cfg.get("frequency", 1)
                 if type(frequency) == dict:
                     frequency = frequency.get(subset, 1)
-                metric_data = {"name": metric_name, "metric": metric, "update_keys": metric_cfg["update"], 
-                               "frequency": frequency, "next_log": 0}
+                metric_data = {
+                    "name": metric_name,
+                    "metric": metric,
+                    "update_keys": metric_cfg["update"],
+                    "frequency": frequency,
+                    "next_log": 0,
+                }
 
                 self.metrics[subset].append(metric_data)
         # setup hooks
@@ -126,7 +135,9 @@ class _BaseLightningTrainer(pl.LightningModule):
         for metric_data in self.metrics[subset]:
             if metric_data["next_log"] > 0:
                 continue
-            update_kwargs = {key: res[val].cpu() for key, val in metric_data["update_keys"].items()}
+            update_kwargs = {
+                key: res[val].cpu() for key, val in metric_data["update_keys"].items()
+            }
             metric_data["metric"].update(**update_kwargs)
 
     def digest_metrics(self, subset):
@@ -144,8 +155,10 @@ class _BaseLightningTrainer(pl.LightningModule):
             # special metrics
             if metric_name == "confusion_matrix":
                 if wandb.run is not None:
-                    disp = ConfusionMatrixDisplay(confusion_matrix=res.numpy(),
-                                                  display_labels=self.const_cfg.get("label_map", None))             
+                    disp = ConfusionMatrixDisplay(
+                        confusion_matrix=res.numpy(),
+                        display_labels=self.const_cfg.get("label_map", None),
+                    )
                     disp.plot()
                     wandb.log({log_key: disp.figure_})
                 else:
@@ -186,17 +199,21 @@ class _BaseLightningTrainer(pl.LightningModule):
 
     def build_module(self, module_type, file=None, *args, **kwargs):
         # build and return any nn.Module that is defined under `module_locations`.
-        module_pool = OrderedDict({
-            "heads": HeadPool,
-            "loss": LossPool,
-            "torch.nn": nn,
-        })
+        module_pool = OrderedDict(
+            {
+                "heads": HeadPool,
+                "loss": LossPool,
+                "torch.nn": nn,
+            }
+        )
         # if library is specified
         if file:
             if type(module_type) == str:
                 module_type = getattr(module_pool[file], module_type)
             else:
-                raise ValueError("If `to_look_at` is specified, provide the name of the module as a string.")
+                raise ValueError(
+                    "If `to_look_at` is specified, provide the name of the module as a string."
+                )
         elif type(module_type) == str:
             is_found = False
             for location in module_pool.values():
@@ -206,7 +223,9 @@ class _BaseLightningTrainer(pl.LightningModule):
                     is_found = True
                     break
             if not is_found:
-                raise ValueError(f"{module_type} was not found in the pool of modules: {list(module_pool.values())}")
+                raise ValueError(
+                    f"{module_type} was not found in the pool of modules: {list(module_pool.values())}"
+                )
         head = module_type(*args, **kwargs)
         return head
 
@@ -220,9 +239,9 @@ class _BaseLightningTrainer(pl.LightningModule):
         raise NotImplementedError()
 
     def training_step(self, batch, batch_idx):
-        res = self._training_step(batch, batch_idx)
+        loss, res = self._training_step(batch, batch_idx)
         self.update_metrics("trn", res)
-        return res
+        return loss
 
     def validation_step(self, batch, batch_idx):
         res = self.evaluate(batch, "val")
@@ -235,6 +254,11 @@ class _BaseLightningTrainer(pl.LightningModule):
         return res
 
     def configure_optimizers(self):
+        """
+        Build optimizer, learning rate scheduler.
+        Support the `lr_warmup` and `sharpness-aware` keywords.
+        Sharpness-aware minimization for efficiently improving generalization, ICLR 2021
+        """
         # optimizer
         optimizer_name = self.training_cfg["optimizer"]
         optimizer_kwargs = self.training_cfg["optimizer_cfg"]
@@ -246,9 +270,21 @@ class _BaseLightningTrainer(pl.LightningModule):
             optimizer_builder = optim.AdamW
         else:
             raise ValueError(f"Invalid value for optimizer: {optimizer_name}")
-        optimizer = optimizer_builder(
-            self.parameters(), lr=self.training_cfg["lr"], **optimizer_kwargs
-        )
+        # apply sharpness-aware minimization
+        if "sharpness-aware" in self.training_cfg:
+            sam_cfg = self.training_cfg["sharpness-aware"]
+            optimizer = SAM(
+                params=self.parameters(),
+                base_optimizer=optimizer_builder,
+                rho=sam_cfg["rho"] if "rho" in sam_cfg else 0.05,
+                lr=self.training_cfg["lr"],
+                **optimizer_kwargs
+            )
+        else:
+            optimizer = optimizer_builder(
+                self.parameters(), lr=self.training_cfg["lr"], **optimizer_kwargs
+            )
+
         config = {"optimizer": optimizer}
         # lr schedule
         if "lr_scheduler" in self.training_cfg:
@@ -271,13 +307,11 @@ class _BaseLightningTrainer(pl.LightningModule):
             else:
                 raise ValueError(f"Invalid value for lr_scheduler: {schedule_name}")
             scheduler = schedule_builder(optimizer, **schedule_kwargs)
-
+            # learning rate warmup
             if "lr_warmup" in self.training_cfg:
                 warmup_cfg = self.training_cfg["lr_warmup"]
                 scheduler = GradualWarmupScheduler(
-                    optimizer=optimizer,
-                    after_scheduler=scheduler,
-                    **warmup_cfg
+                    optimizer=optimizer, after_scheduler=scheduler, **warmup_cfg
                 )
             config["lr_scheduler"] = scheduler
         return config
@@ -287,7 +321,6 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.digest_metrics("trn")
 
     def validation_epoch_end(self, validation_step_outputs):
-        # TODO: make it flexible for more output formats.
         self.digest_metrics("val")
 
     def test_epoch_end(self, test_step_outputs):

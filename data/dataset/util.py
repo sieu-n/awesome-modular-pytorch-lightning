@@ -1,5 +1,6 @@
-import torchvision.datasets as TD
 from copy import deepcopy
+
+import torchvision.datasets as TD
 
 
 def merge_config(cfg_base, cfg_from):

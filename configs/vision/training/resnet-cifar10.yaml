@@ -70,6 +70,5 @@ model:
     loss_fn:
       name: "CrossEntropyLoss"
 
-
 wandb:
   project: "CIFAR10-classification"

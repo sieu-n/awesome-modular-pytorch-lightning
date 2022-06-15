@@ -1,0 +1,5 @@
+# Sharpness-Aware Minimization for Efficiently Improving Generalization, ICLR 2021
+
+training:
+  sharpness-aware:
+    rho: 0.05

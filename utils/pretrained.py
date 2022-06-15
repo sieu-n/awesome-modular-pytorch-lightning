@@ -15,7 +15,9 @@ def download_model_state_dict(url, name="./pretrained.pth"):
     return name
 
 
-def load_model_weights(model, state_dict_path="./pretrained.pth", url=None, is_ckpt=False):
+def load_model_weights(
+    model, state_dict_path="./pretrained.pth", url=None, is_ckpt=False
+):
     if url is not None:
         state_dict_path = download_model_state_dict(url=url, name=state_dict_path)
 
