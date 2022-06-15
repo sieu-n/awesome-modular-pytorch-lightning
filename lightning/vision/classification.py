@@ -66,6 +66,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
         loss = self.classification_loss(logits, y)
         # for logging
         res = {
+            "y": y,
             "logits": logits,
             "prob": pred["prob"],
             "cls_loss": loss,
@@ -99,10 +100,10 @@ class ClassificationTrainer(_BaseLightningTrainer):
 
         loss = self.classification_loss(logits, y)
         return {
-            "pred": logits,
+            "logits": logits,
             "prob": pred["prob"],
             "y": y,
-            "loss": loss,
+            "cls_loss": loss,
         }
 
     def predict_step(self, batch, batch_idx):

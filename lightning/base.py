@@ -70,6 +70,8 @@ def build_metric(metric_type, file=None, *args, **kwargs):
 class _BaseLightningTrainer(pl.LightningModule):
     def __init__(self, model_cfg, training_cfg, const_cfg={}, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        # disable automatic_optimization.
+        self.automatic_optimization = False
         # save training_cfg for defining optimizers when `configure_optimizers` is called.
         self.training_cfg = training_cfg
         self.const_cfg = const_cfg
@@ -239,7 +241,22 @@ class _BaseLightningTrainer(pl.LightningModule):
         raise NotImplementedError()
 
     def training_step(self, batch, batch_idx):
+        optimizer = self.optimizers()
+        optimizer.zero_grad()
+
         loss, res = self._training_step(batch, batch_idx)
+        self.manual_backward(loss)
+
+        if "sharpness-aware" in self.training_cfg:
+            # TODO refactoring based on `step`
+            optimizer.first_step(zero_grad=True)
+
+            loss_2, _ = self._training_step(batch, batch_idx)
+            self.manual_backward(loss_2)
+            optimizer.second_step(zero_grad=True)
+        else:
+            optimizer.step()
+
         self.update_metrics("trn", res)
         return loss
 

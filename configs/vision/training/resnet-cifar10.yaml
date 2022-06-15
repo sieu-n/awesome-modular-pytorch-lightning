@@ -19,7 +19,7 @@ training:
       name: "MeanMetric"
       file: "torchmetrics"
       update:
-        value: "loss"
+        value: "cls_loss"
     confusion_matrix:
       when: "trn,val,test"
       name: "ConfusionMatrix"
@@ -27,14 +27,14 @@ training:
       args:
         num_classes: 10
       update:
-        preds: "pred"
+        preds: "logits"
         target: "y"
     accuracy:
       when: "trn,val,test"
       name: "Accuracy"
       file: "torchmetrics"
       update:
-        preds: "pred"
+        preds: "logits"
         target: "y"
 
 validation:
