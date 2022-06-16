@@ -110,8 +110,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
         assert "images" in batch
         x = batch["images"]
         pred = self(x)
-        # class_pred = torch.argmax(pred, dim=1)
-        return pred
+        return pred["logits"]
 
     def classification_loss(self, logits, y):
         loss = self.loss_fn(logits, y)

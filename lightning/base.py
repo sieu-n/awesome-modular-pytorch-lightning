@@ -73,6 +73,8 @@ class _BaseLightningTrainer(pl.LightningModule):
         # disable automatic_optimization.
         if "sharpness-aware" in training_cfg:
             self.automatic_optimization = False
+            print("Automatic optimization feature of pytorch-lighining is disabled because of `sharpness-aware-minimization`. \
+                   Be aware of unexpected behavior regarding custom learning rate schedule and optimizers.")
         # save training_cfg for defining optimizers when `configure_optimizers` is called.
         self.training_cfg = training_cfg
         self.const_cfg = const_cfg
@@ -245,6 +247,8 @@ class _BaseLightningTrainer(pl.LightningModule):
         optimizer = self.optimizers()
         optimizer.zero_grad()
         self.manual_backward(loss)
+        if "gradient_clip_val" in self.training_cfg:
+            self.clip_gradients(optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"])
 
         if "sharpness-aware" in self.training_cfg:
             # TODO refactoring based on `step`
@@ -252,6 +256,9 @@ class _BaseLightningTrainer(pl.LightningModule):
 
             loss_2, _ = self._training_step(batch, batch_idx)
             self.manual_backward(loss_2)
+            if "gradient_clip_val" in self.training_cfg:
+                self.clip_gradients(optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"])
+
             optimizer.second_step(zero_grad=True)
         else:
             optimizer.step()
