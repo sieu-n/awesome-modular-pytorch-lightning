@@ -241,9 +241,10 @@ class _BaseLightningTrainer(pl.LightningModule):
     def predict_step(self, batch, batch_idx):
         raise NotImplementedError()
 
-    def manual_optimization_step(self, batch, batch_idx):
+    def manual_optimization_step(self, loss, batch, batch_idx):
         optimizer = self.optimizers()
         optimizer.zero_grad()
+        self.manual_backward(loss)
 
         if "sharpness-aware" in self.training_cfg:
             # TODO refactoring based on `step`
@@ -255,16 +256,16 @@ class _BaseLightningTrainer(pl.LightningModule):
         else:
             optimizer.step()
 
+        # custom lr scheduler step
+        for sch in self.trainer.lr_scheduler_configs:
+            if sch.interval == "step":
+                sch.scheduler.step()
+
     def training_step(self, batch, batch_idx):
-        if self.automatic_optimization is False:
-            optimizer = self.optimizers()
-            optimizer.zero_grad()
-
         loss, res = self._training_step(batch, batch_idx)
-        self.manual_backward(loss)
 
         if self.automatic_optimization is False:
-            self.manual_optimization_step(batch, batch_idx)
+            self.manual_optimization_step(loss, batch, batch_idx)
 
         self.update_metrics("trn", res)
         return loss
@@ -314,14 +315,16 @@ class _BaseLightningTrainer(pl.LightningModule):
         config = {"optimizer": optimizer}
         # lr schedule
         if "lr_scheduler" in self.training_cfg:
-            schedule_name = self.training_cfg["lr_scheduler"]
-            schedule_kwargs = self.training_cfg["lr_scheduler_cfg"]
+            scheduler_config = self.training_cfg["lr_scheduler"]
+            schedule_name = scheduler_config["name"]
+            schedule_kwargs = scheduler_config["args"]
             if schedule_name == "const":
                 schedule_builder = lr_scheduler.LambdaLR
                 schedule_kwargs["lr_lambda"] = lambda epoch: 1
             elif schedule_name == "cosine":
                 schedule_builder = lr_scheduler.CosineAnnealingLR
                 schedule_kwargs["T_max"] = self.training_cfg["epochs"]
+                assert "frequency" not in scheduler_config or "frequency" == "epoch"
             elif schedule_name == "exponential":
                 schedule_builder = lr_scheduler.ExponentialLR
             elif schedule_name == "1cycle":
@@ -339,12 +342,23 @@ class _BaseLightningTrainer(pl.LightningModule):
                 scheduler = GradualWarmupScheduler(
                     optimizer=optimizer, after_scheduler=scheduler, **warmup_cfg
                 )
-            config["lr_scheduler"] = scheduler
+            # build scheduler with keys that lightning identifies.
+            scheduler_config = scheduler_config["cfg"]
+            if self.automatic_optimization is False:
+                for k in ["frequency", "monitor", "strict"]:
+                    assert k not in scheduler_config, f"{k} is not yet implemented!!!"
+                assert "frequency" not in scheduler_config or scheduler_config["frequency"] in ["step", "epoch"], \
+                    f"`frequency` should be one of [`step`, `epoch`] but {scheduler_config['frequency']} was given."
+            config["lr_scheduler"] = {**{"scheduler": scheduler}, **scheduler_config}
         return config
 
     def training_epoch_end(self, outputs):
         # log epoch-wise metrics
         self.digest_metrics("trn")
+        # custom lr scheduler step
+        for sch in self.trainer.lr_scheduler_configs:
+            if sch.interval == "epoch":
+                sch.scheduler.step()
 
     def validation_epoch_end(self, validation_step_outputs):
         self.digest_metrics("val")

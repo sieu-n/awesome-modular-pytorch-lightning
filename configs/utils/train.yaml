@@ -11,7 +11,7 @@ debug:
     plot_size: 5
 
 trainer:
-  accelerator: "dp"
+  strategy: "dp"
   accumulate_grad_batches: 1
   check_val_every_n_epoch: 5
   precision: 32

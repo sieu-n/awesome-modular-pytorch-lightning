@@ -111,8 +111,11 @@ training:
   optimizer_cfg:
     momentum: 0.9
     weight_decay: 0.0005
-  lr_scheduler: "cosine"
-  lr_scheduler_cfg: {}
+  lr_scheduler:
+    name: "cosine"
+    args: {}
+    cfg:
+      interval: "epoch"
   lr_warmup:
     multiplier: 1
     total_epoch: 5
