@@ -362,10 +362,12 @@ class _BaseLightningTrainer(pl.LightningModule):
     def training_epoch_end(self, outputs):
         # log epoch-wise metrics
         self.digest_metrics("trn")
-        # custom lr scheduler step
-        for sch in self.trainer.lr_scheduler_configs:
-            if sch.interval == "epoch":
-                sch.scheduler.step()
+
+        if self.automatic_optimization is False:
+            # custom lr scheduler step
+            for sch in self.trainer.lr_scheduler_configs:
+                if sch.interval == "epoch":
+                    sch.scheduler.step()
 
     def validation_epoch_end(self, validation_step_outputs):
         self.digest_metrics("val")
