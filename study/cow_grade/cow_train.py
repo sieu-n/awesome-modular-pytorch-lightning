@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
     parser.add_argument("--name", type=str, default=None)
+    parser.add_argument("--group", type=str, default=None)
     parser.add_argument("--offline", action="store_true", default=False)
     parser.add_argument("--root_dir", type=str, default=None)
 
@@ -75,6 +76,8 @@ if __name__ == "__main__":
 
     if args.name is not None:
         cfg["name"] = args.name
+    if args.group:
+        cfg["wandb"]["group"] = args.group
     if args.offline:
         cfg["wandb"]["offline"] = True
 

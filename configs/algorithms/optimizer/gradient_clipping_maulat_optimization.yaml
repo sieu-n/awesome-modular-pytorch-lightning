@@ -1,0 +1,3 @@
+# when `automatic_optimization` = False
+training:
+  gradient_clip_val: 1.0
