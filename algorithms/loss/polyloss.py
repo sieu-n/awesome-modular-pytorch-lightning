@@ -28,17 +28,20 @@ class PolyLoss(nn.CrossEntropyLoss):
         self.eps = eps
 
     def poly_loss(self, x, target, degree=1):
+        num_classes = x.size()[1]
+        # oh encoding
+        if x.ndim == target.ndim + 1:
+            target = nn.functional.one_hot(target, num_classes)
         # label smoothing
-        num_classes = x.shape[1]
-        smooth_labels = target * (1 - self.label_smoothing) + self.label_smoothing / num_classes
+        target = target * (1 - self.label_smoothing) + self.label_smoothing / num_classes
 
-        pt = (1 - torch.mean(smooth_labels * nn.functional.softmax(x), dim=1)).pow(degree)
+        pt = (1 - torch.sum(target * nn.functional.softmax(x, dim=1), dim=1)).pow(degree)
         if self.reduction == "none":
             return pt
         elif self.reduction == "sum":
-            return torch.sum(pt)
+            return pt.sum()
         elif self.reduction == "mean":
-            return torch.mean(pt)
+            return pt.mean()
         else:
             raise ValueError(f"Invalid reduction value: {self.reduction}")
 
