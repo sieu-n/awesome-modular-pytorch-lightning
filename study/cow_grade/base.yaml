@@ -7,13 +7,17 @@ dataset:
 transform:
   [
     [
-      "trn",
+      "trn,val,pred",
       [
         {
           "name": "TorchTransforms",
           "args": { "NAME": "Pad", "ARGS": { "padding": [24, 0] } },
         },
-
+      ],
+    ],
+    [
+      "trn",
+      [
         {
           "name": "CutOut",
           "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 },
