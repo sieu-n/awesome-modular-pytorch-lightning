@@ -32,7 +32,7 @@ class PolyLoss(nn.CrossEntropyLoss):
         num_classes = x.shape[1]
         smooth_labels = target * (1 - self.label_smoothing) + self.label_smoothing / num_classes
 
-        pt = 1 - torch.mean(smooth_labels * nn.functional.softmax(x), dim=1)
+        pt = (1 - torch.mean(smooth_labels * nn.functional.softmax(x), dim=1)).pow(degree)
         if self.reduction == "none":
             return pt
         elif self.reduction == "sum":

@@ -1,0 +1,7 @@
+model:
+  modules:
+    loss_fn:
+      name: "PolyLoss"
+      file: "loss"
+      args:
+        eps: 2.0
