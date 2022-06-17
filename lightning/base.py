@@ -1,11 +1,8 @@
 from collections import OrderedDict
+
 import pytorch_lightning as pl
 import torchmetrics
 import wandb
-from sklearn.metrics import ConfusionMatrixDisplay
-from torch import nn, optim
-from torch.optim import lr_scheduler
-
 from algorithms import loss as LossPool
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
 from algorithms.optimizers.sam import SAM
@@ -13,6 +10,9 @@ from models import catalog as ModelPool
 from models import heads as HeadPool
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
+from sklearn.metrics import ConfusionMatrixDisplay
+from torch import nn, optim
+from torch.optim import lr_scheduler
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
 
@@ -73,8 +73,10 @@ class _BaseLightningTrainer(pl.LightningModule):
         # disable automatic_optimization.
         if "sharpness-aware" in training_cfg:
             self.automatic_optimization = False
-            print("Automatic optimization feature of pytorch-lighining is disabled because of `sharpness-aware-minimization`. \
-                   Be aware of unexpected behavior regarding custom learning rate schedule and optimizers.")
+            print(
+                "Automatic optimization feature of pytorch-lighining is disabled because of `sharpness-aware-minimization`. \
+                   Be aware of unexpected behavior regarding custom learning rate schedule and optimizers."
+            )
         # save training_cfg for defining optimizers when `configure_optimizers` is called.
         self.training_cfg = training_cfg
         self.const_cfg = const_cfg
@@ -248,7 +250,9 @@ class _BaseLightningTrainer(pl.LightningModule):
         optimizer.zero_grad()
         self.manual_backward(loss)
         if "gradient_clip_val" in self.training_cfg:
-            self.clip_gradients(optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"])
+            self.clip_gradients(
+                optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"]
+            )
 
         if "sharpness-aware" in self.training_cfg:
             # TODO refactoring based on `step`
@@ -257,7 +261,9 @@ class _BaseLightningTrainer(pl.LightningModule):
             loss_2, _ = self._training_step(batch, batch_idx)
             self.manual_backward(loss_2)
             if "gradient_clip_val" in self.training_cfg:
-                self.clip_gradients(optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"])
+                self.clip_gradients(
+                    optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"]
+                )
 
             optimizer.second_step(zero_grad=True)
         else:
@@ -312,7 +318,7 @@ class _BaseLightningTrainer(pl.LightningModule):
                 base_optimizer=optimizer_builder,
                 rho=sam_cfg["rho"] if "rho" in sam_cfg else 0.05,
                 lr=self.training_cfg["lr"],
-                **optimizer_kwargs
+                **optimizer_kwargs,
             )
         else:
             optimizer = optimizer_builder(
@@ -354,8 +360,12 @@ class _BaseLightningTrainer(pl.LightningModule):
             if self.automatic_optimization is False:
                 for k in ["frequency", "monitor", "strict"]:
                     assert k not in scheduler_config, f"{k} is not yet implemented!!!"
-                assert "frequency" not in scheduler_config or scheduler_config["frequency"] in ["step", "epoch"], \
-                    f"`frequency` should be one of [`step`, `epoch`] but {scheduler_config['frequency']} was given."
+                assert "frequency" not in scheduler_config or scheduler_config[
+                    "frequency"
+                ] in [
+                    "step",
+                    "epoch",
+                ], f"`frequency` should be one of [`step`, `epoch`] but {scheduler_config['frequency']} was given."
             config["lr_scheduler"] = {**{"scheduler": scheduler}, **scheduler_config}
         return config
 
