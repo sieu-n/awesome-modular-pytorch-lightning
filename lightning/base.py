@@ -1,21 +1,21 @@
 from collections import OrderedDict
-
+from sklearn.metrics import ConfusionMatrixDisplay
+from torch import nn, optim
+from torch.optim import lr_scheduler
 import pytorch_lightning as pl
 import torchmetrics
 import wandb
+
 from algorithms import loss as LossPool
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
 from algorithms.optimizers.sam import SAM
+import algorithms.tta as TTA_modules
 from models import catalog as ModelPool
 from models import heads as HeadPool
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
-from sklearn.metrics import ConfusionMatrixDisplay
-from torch import nn, optim
-from torch.optim import lr_scheduler
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
-
 """ Build components for the lightningmodule
 """
 
@@ -137,6 +137,28 @@ class _BaseLightningTrainer(pl.LightningModule):
                 layer_name=hook_cfg["layer_name"],
                 **hook_cfg.get("cfg", {}),
             )
+        # tta
+        self.is_tta_enabled = False
+        if "tta" in model_cfg:
+            tta_cfg = model_cfg["tta"]
+            assert "transforms" in tta_cfg, f"TTA transforms must be specified. Recieved: {tta_cfg}"
+            self.is_tta_enabled = True
+            self.TTA_module = getattr(TTA_modules, tta_cfg["name"])(
+                model=self,
+                **tta_cfg["args"]
+            )
+
+    def enable_tta(self, TTA_module=None):
+        if TTA_module is None:
+            assert hasattr(self, "TTA_module"), "TTA_module is not assigned nor provided."
+        else:
+            # assign new tta module
+            self.TTA_module = TTA_module
+
+        self.is_tta_enabled = True
+
+    def disable_tta(self):
+        self.is_tta_enabled = False
 
     def update_metrics(self, subset, res):
         for metric_data in self.metrics[subset]:
@@ -242,7 +264,7 @@ class _BaseLightningTrainer(pl.LightningModule):
     def evaluate(self, batch, stage=None):
         raise NotImplementedError()
 
-    def predict_step(self, batch, batch_idx):
+    def _predict_step(self, batch, batch_idx):
         raise NotImplementedError()
 
     def manual_optimization_step(self, loss, batch, batch_idx):
@@ -289,9 +311,23 @@ class _BaseLightningTrainer(pl.LightningModule):
         return res
 
     def test_step(self, batch, batch_idx):
-        res = self.evaluate(batch, "test")
+        if self.is_tta_enabled:
+            # apply test-time augmentation if specified.
+            pred, res = self.TTA_module(batch)
+        else:
+            res = self.evaluate(batch, "test")
         self.update_metrics("test", res)
         return res
+
+    def predict_step(self, batch, batch_idx):
+        if self.is_tta_enabled:
+            # apply test-time augmentation if specified.
+            pred, res = self.TTA_module(batch)
+        else:
+            pred = self._predict_step(batch, batch_idx)
+
+        pred = self._predict_step(batch, batch_idx)
+        return pred
 
     def configure_optimizers(self):
         """

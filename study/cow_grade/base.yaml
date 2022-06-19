@@ -35,7 +35,7 @@ transform:
 
         {
           "name": "TrivialAugmentWide",
-          "args": {"num_magnitude_bins": 31, "interpolation": "bilinear"},
+          "args": { "num_magnitude_bins": 31, "interpolation": "bilinear" },
         },
       ],
     ],

@@ -15,7 +15,15 @@ class TorchTransforms(_BaseTransform):
 
 
 def str2interpolation(s):
-    assert s in ["nearest", "bilinear", "bicubic", "box", "hamming", "lancoz"]
+    assert s in [
+        "nearest",
+        "bilinear",
+        "bicubic",
+        "box",
+        "hamming",
+        "lancoz",
+    ], f"Expected key to have one of values \
+                in the list, but got {s}"
     conversion_d = {
         "nearest": InterpolationMode.NEAREST,
         "bilinear": InterpolationMode.BILINEAR,

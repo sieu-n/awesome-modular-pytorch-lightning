@@ -1,11 +1,10 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
-
 from algorithms.augmentation.mixup import MixupCutmix
 from algorithms.knowledge_distillation import TeacherModelKD
 from algorithms.rdrop import compute_kl_loss
 from lightning.base import _BaseLightningTrainer
+from torch import nn
 
 
 class ClassificationTrainer(_BaseLightningTrainer):
@@ -53,7 +52,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
             "prob": pred_prob,
         }
 
-    def _training_step(self, batch, batch_idx):
+    def _training_step(self, batch, batch_idx=0):
         assert "images" in batch
         assert "labels" in batch
 
@@ -107,7 +106,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
             "cls_loss": loss,
         }
 
-    def predict_step(self, batch, batch_idx):
+    def _predict_step(self, batch, batch_idx=0):
         assert "images" in batch
         x = batch["images"]
         pred = self(x)

@@ -24,7 +24,9 @@ class PolyLoss(nn.CrossEntropyLoss):
         if type(eps) == float:
             assert n == 1, "If n!=1 provide a list of epsilon values."
             eps = [eps]
-        assert len(eps) == n, f"Expected `eps` to have length n: {n}, but got {len(eps)}."
+        assert (
+            len(eps) == n
+        ), f"Expected `eps` to have length n: {n}, but got {len(eps)}."
         self.eps = eps
 
     def poly_loss(self, x, target, degree=1):
@@ -33,9 +35,13 @@ class PolyLoss(nn.CrossEntropyLoss):
         if x.ndim == target.ndim + 1:
             target = nn.functional.one_hot(target, num_classes)
         # label smoothing
-        target = target * (1 - self.label_smoothing) + self.label_smoothing / num_classes
+        target = (
+            target * (1 - self.label_smoothing) + self.label_smoothing / num_classes
+        )
 
-        pt = (1 - torch.sum(target * nn.functional.softmax(x, dim=1), dim=1)).pow(degree)
+        pt = (1 - torch.sum(target * nn.functional.softmax(x, dim=1), dim=1)).pow(
+            degree
+        )
         if self.reduction == "none":
             return pt
         elif self.reduction == "sum":

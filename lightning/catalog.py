@@ -4,4 +4,3 @@ from .vision.rcnn import (  # noqa E403
     FasterRCNNBaseTrainer,
     TorchVisionFasterRCNN,
 )
-from .tta.wrapper import TTAWrapper # noqa E403

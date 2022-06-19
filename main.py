@@ -362,7 +362,9 @@ class Experiment:
                 **trainer_cfg,
             )
         else:
-            assert "test" in self.trainers, "Please specify the trainer to use for testing such as batch size and root dir."
+            assert (
+                "test" in self.trainers
+            ), "Please specify the trainer to use for testing such as batch size and root dir."
             test_trainer = self.trainers["test"]
         # keep track of trainer
         if not hasattr(self, "trainers"):
