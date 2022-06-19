@@ -16,7 +16,7 @@ class Rotation(DualTransform):
             self.interpolation = str2interpolation(interpolation)
 
     def apply_aug_image(self, image, angle, **kwargs):
-        image = torchvision.transforms.functional.rotate(image, angle=angle)
+        image = torchvision.transforms.functional.rotate(image, angle=angle, interpolation=self.interpolation)
         return image
 
     def apply_deaug_mask(self, mask, apply=False, **kwargs):

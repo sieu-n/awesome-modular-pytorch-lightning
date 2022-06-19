@@ -40,6 +40,10 @@ class TTAWrapper(nn.Module):
         # implement differently based on task, in: batch, out: input for model.__call__
         return x
 
+    def process_augmented(self, x):
+        # implement differently based on task, in: augmented sample
+        return x
+
     def compute_result(self, x, pred):
         # implement differently based on task
         return pred
@@ -50,7 +54,7 @@ class TTAWrapper(nn.Module):
         """
         for transformer in self.transforms:
             augmented_x = transformer.augment_image(self.input_transform(x))
-            augmented_output = self.predict_f(augmented_x)
+            augmented_output = self.predict_f(self.process_augmented(augmented_x))
             if self.output_key is not None:
                 augmented_output = augmented_output[self.output_key]
             deaugmented_output = transformer.deaugment_label(augmented_output)
@@ -62,10 +66,11 @@ class TTAWrapper(nn.Module):
 
 
 class ClassificationTTAWrapper(TTAWrapper):
-    def __init__(self, model, output_label_key="logits", *args, **kwargs):
-        # set default value of `output_key` to "logits"
+    def __init__(self, model, image_shape, output_label_key="logits", *args, **kwargs):
+        # set default value of `output_label_key` to "logits"
         # This TTA wrapper is coupled with `lightning.vision.classification.ClassificationTrainer`
         self.classification_loss = model.classification_loss
+        self.image_shape = image_shape
         super().__init__(
             model=model,
             output_label_key=output_label_key,
