@@ -60,7 +60,7 @@ def build_metric(metric_type, file=None, *args, **kwargs):
                 break
         if not is_found:
             raise ValueError(
-                f"{metric_type} was not found in the pool of modules: {list(module_pool.values())}"
+                f"{metric_type} was not found in the pool of modules: {list(metric_pool.values())}"
             )
     print(f"Building metric: '{metric_type}'")
     metric = metric_type(*args, **kwargs)

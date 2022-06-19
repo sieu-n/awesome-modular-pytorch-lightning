@@ -30,28 +30,41 @@ class TTAWrapper(_BaseLightningTrainer):
         merge_mode="mean",
     ):
         super().__init__()
-        self.register_buffer('model', model)
+        self.model = model
         self.transforms = transforms
         self.merge_mode = merge_mode
+        self.output_key = output_label_key
 
-    def _training_step():
-        raise ValueError("`ClassificationTTAWrapper` should only be used for validation and prediction.")
+        self.merger = Merger(type=self.merge_mode, n=len(self.transforms))
 
-    def forward(
-        self, image: torch.Tensor, *args
-    ):
-        merger = Merger(type=self.merge_mode, n=len(self.transforms))
+    def label_transform(self, label):
+        # implement differently based on task
+        return label
 
+    def forward(self, x):
+        """
+        eval mode of TTA.
+        """
         for transformer in self.transforms:
-            augmented_image = transformer.augment_image(image)
-            augmented_output = self.model(augmented_image, *args)
+            augmented_x = transformer.augment_image(x)
+            augmented_output = self.model(augmented_x)
             if self.output_key is not None:
                 augmented_output = augmented_output[self.output_key]
             deaugmented_output = transformer.deaugment_label(augmented_output)
-            merger.append(deaugmented_output)
+            self.merger.update(deaugmented_output)
 
-        result = merger.result
+        result = self.merger.compute()
+        self.merger.reset()
         if self.output_key is not None:
             result = {self.output_key: result}
 
         return result
+
+
+class ClassificationTTAWrapper(TTAWrapper):
+    def label_transform(self, logits):
+        pred_prob = torch.nn.functional.log_softmax(logits, dim=1)
+        return {
+            "logits": logits,
+            "prob": pred_prob,
+        }

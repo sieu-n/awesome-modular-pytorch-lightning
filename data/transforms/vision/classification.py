@@ -170,6 +170,10 @@ class RandomRotation(torchvision.transforms.RandomRotation):
         if type(interpolation) == str:
             self.interpolation = str2interpolation(self.interpolation)
 
+    def __call__(self, d):
+        d["images"] = self.forward(d["images"])
+        return d
+
 
 class TrivialAugmentWide(torchvision.transforms.TrivialAugmentWide):
     def __init__(
@@ -180,3 +184,7 @@ class TrivialAugmentWide(torchvision.transforms.TrivialAugmentWide):
         super().__init__(**kwargs)
         if type(interpolation) == str:
             self.interpolation = str2interpolation(self.interpolation)
+
+    def __call__(self, d):
+        d["images"] = self.forward(d["images"])
+        return d
