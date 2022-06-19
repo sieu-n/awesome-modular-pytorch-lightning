@@ -79,14 +79,6 @@ model:
       name: "CrossEntropyLoss"
       args:
         label_smoothing: 0.1
-  tta:
-    name: "ClassificationTTAWrapper"
-    args:
-      output_label_key: "logits"
-      merge_mode: "mean"
-      transforms:
-        - name: "HorizontalFlip"
-        - name: "VerticalFlip"
 
 dataloader:
   base_dataloader:

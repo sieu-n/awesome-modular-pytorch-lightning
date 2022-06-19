@@ -29,7 +29,7 @@ class TTAWrapper(nn.Module):
         merge_mode="mean",
     ):
         super().__init__()
-        self.model = model
+        self.predict_f = model.__call__    # don't store model to prevent recursion in state_dict.
         self.transforms = build_transforms(transforms)
         self.merge_mode = merge_mode
         self.output_key = output_label_key
@@ -37,7 +37,7 @@ class TTAWrapper(nn.Module):
         self.merger = Merger(type=self.merge_mode, n=len(self.transforms))
 
     def input_transform(self, x):
-        # implement differently based on task
+        # implement differently based on task, in: batch, out: input for model.__call__
         return x
 
     def compute_result(self, x, pred):
@@ -50,7 +50,7 @@ class TTAWrapper(nn.Module):
         """
         for transformer in self.transforms:
             augmented_x = transformer.augment_image(self.input_transform(x))
-            augmented_output = self.model._predict_step(augmented_x)
+            augmented_output = self.predict_f(augmented_x)
             if self.output_key is not None:
                 augmented_output = augmented_output[self.output_key]
             deaugmented_output = transformer.deaugment_label(augmented_output)
@@ -62,10 +62,19 @@ class TTAWrapper(nn.Module):
 
 
 class ClassificationTTAWrapper(TTAWrapper):
-    def __init__(self, output_key="logits", *args, **kwargs):
+    def __init__(self, model, output_label_key="logits", *args, **kwargs):
         # set default value of `output_key` to "logits"
         # This TTA wrapper is coupled with `lightning.vision.classification.ClassificationTrainer`
-        super().__init__(output_key=output_key, *args, **kwargs)
+        self.classification_loss = model.classification_loss
+        super().__init__(
+            model=model,
+            output_label_key=output_label_key,
+            *args, **kwargs
+        )
+
+    def input_transform(self, x):
+        # implement differently based on task
+        return x["images"]
 
     def compute_result(self, x, logits):
         pred_prob = torch.nn.functional.log_softmax(logits, dim=1)
@@ -76,5 +85,5 @@ class ClassificationTTAWrapper(TTAWrapper):
         if "labels" in x:
             y = x["labels"]
             d["y"] = y
-            d["cls_loss"] = self.model.classification_loss(logits, y)
+            d["cls_loss"] = self.classification_loss(logits, y)
         return d

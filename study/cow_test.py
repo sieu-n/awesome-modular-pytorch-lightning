@@ -7,7 +7,6 @@ import pandas as pd
 import torch
 from main import Experiment
 from PIL import Image
-from pytorch_lightning.callbacks import StochasticWeightAveraging
 from torch.utils.data import DataLoader, Dataset
 from utils.configs import merge_config, read_configs
 from utils.experiment import apply_transforms, build_transforms
@@ -67,67 +66,10 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
-    # essential arguments
     parser.add_argument("--weights", required=True)
     parser.add_argument("--is_ckpt", default=False, action="store_true")
-
-    parser.add_argument("--lr", type=float, default=None)
-    parser.add_argument("--epochs", type=int, default=40)
-    parser.add_argument("--avg_mode", type=str, default="const", choices=["const"])
-
-    # logging
-    parser.add_argument("--name", type=str, default=None)
-    parser.add_argument("--group", type=str, default=None)
-    parser.add_argument("--offline", action="store_true", default=False)
-
-    # configure early lr schedule.
-    parser.add_argument("--init_lr", type=float, default=None)
-    parser.add_argument("--annealing_epochs", type=int, default=4)
-    parser.add_argument(
-        "--annealing_strategy", type=str, default="cos", choices=["cos", "linear"]
-    )
-
     args = parser.parse_args()
     cfg = read_configs(args.configs)
-
-    if args.name is not None:
-        cfg["name"] = args.name
-    if args.group:
-        cfg["wandb"]["group"] = args.group
-    if args.offline:
-        cfg["wandb"]["offline"] = True
-
-    # write configs
-    print("[*] Editing config file.")
-    cfg["model"]["state_dict_path"] = args.weights
-    cfg["model"]["is_ckpt"] = args.is_ckpt
-
-    if cfg["training"].pop("lr_warmup", None):
-        print("warmup removed from config file.")
-    cfg["training"]["epochs"] = args.epochs
-    print("training.epochs overriden in config file.")
-    if args.lr is None:
-        args.lr = cfg["training"]["lr"] * 0.3
-        print(f"initializing swa learning rate to {args.lr}")
-    if args.init_lr:
-        cfg["training"]["lr"] = args.init_lr
-    else:
-        cfg["training"]["lr"] = args.lr
-    if args.avg_mode == "const":
-        avg_fn = None
-    else:
-        raise ValueError("Invalid avg_mode value")
-    # build swa callback
-    swa_callback = StochasticWeightAveraging(
-        swa_lrs=args.lr,
-        swa_epoch_start=0.0,
-        annealing_epochs=args.annealing_epochs,
-        annealing_strategy=args.annealing_strategy,
-        avg_fn=avg_fn,
-    )
-    callbacks = cfg.get("callbacks", [])
-    callbacks.append(swa_callback)
-    cfg["callbacks"] = callbacks
 
     # move data
     base_path = "/content/drive/MyDrive/data/cow_classification/"
@@ -166,19 +108,14 @@ if __name__ == "__main__":
         subset_keys=["pred"],
     )["pred"]
     test_dataset = apply_transforms(test_dataset, None, transforms)
+    cfg["model"]["state_dict_path"] = args.weights
+    cfg["model"]["is_ckpt"] = args.is_ckpt
     # train
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg)
     experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
-    experiment.setup_experiment_from_cfg(cfg, setup_env=False, setup_dataset=False)
+    experiment.setup_experiment_from_cfg(cfg, setup_env=False, setup_dataset=False, setup_callbacks=False)
 
-    result = experiment.train(
-        trainer_cfg=cfg["trainer"],
-        epochs=cfg["training"]["epochs"],
-    )
-
-    print("Result:", result)
-    print("Experiment and log dir:", experiment.get_directory())
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
     )
@@ -187,13 +124,4 @@ if __name__ == "__main__":
         batch_size=cfg["validation"]["batch_size"],
         **val_dataloader_cfg,
     )
-    predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
-    predictions = torch.argmax(torch.cat(predictions), dim=1)
-
-    print("saving file under:", experiment.get_directory() + "prediction.csv")
-    save_predictions_to_csv(
-        image_names=test_image_names,
-        pred=predictions,
-        label_map=cfg["const"]["label_map"],
-        filename=experiment.get_directory() + "/prediction.csv",
-    )
+    res = experiment.test(trainer_cfg=cfg["trainer"])

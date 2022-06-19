@@ -141,7 +141,6 @@ class _BaseLightningTrainer(pl.LightningModule):
         self.is_tta_enabled = False
         if "tta" in model_cfg:
             tta_cfg = model_cfg["tta"]
-            assert "transforms" in tta_cfg, f"TTA transforms must be specified. Recieved: {tta_cfg}"
             self.is_tta_enabled = True
             self.TTA_module = getattr(TTA_modules, tta_cfg["name"])(
                 model=self,

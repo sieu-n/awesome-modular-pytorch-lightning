@@ -128,11 +128,11 @@ class Experiment:
                 wandb_cfg=cfg.get("wandb", None),
                 tensorboard_cfg=cfg.get("tensorboard", None),
             )
+            if "logger" in self.logger_and_callbacks:
+                self.logger_and_callbacks["logger"].log_hyperparams(cfg)
+
         if setup_model:
             self._setup_model(cfg["model"], cfg["training"])
-
-        if "logger" in self.logger_and_callbacks:
-            self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
     def _setup_dataset(
         self, initial_dataset=None, dataset_cfg=None, transform_cfg=None
@@ -347,13 +347,15 @@ class Experiment:
 
     def test(
         self,
+        test_dataloader=None,
         trainer_name=None,
         trainer_cfg=None,
         root_dir=None,
     ):
+        if not test_dataloader:
+            test_dataloader = self.val_dataloader
         if trainer_name:
             test_trainer = self.trainers[trainer_name]
-            raise NotImplementedError()
         elif trainer_cfg:
             if not root_dir:
                 root_dir = f"{self.exp_dir}/checkpoints"
@@ -371,7 +373,7 @@ class Experiment:
             self.trainers = {}
         self.trainers["test"] = test_trainer
 
-        res = test_trainer.test(self.model, self.val_dataloader)
+        res = test_trainer.test(self.model, test_dataloader)
         return res
 
     def predict(
