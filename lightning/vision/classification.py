@@ -1,10 +1,11 @@
 import torch
+from torch import nn
 import torch.nn.functional as F
+
 from algorithms.augmentation.mixup import MixupCutmix
 from algorithms.knowledge_distillation import TeacherModelKD
 from algorithms.rdrop import compute_kl_loss
 from lightning.base import _BaseLightningTrainer
-from torch import nn
 
 
 class ClassificationTrainer(_BaseLightningTrainer):
@@ -114,6 +115,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
 
     def classification_loss(self, logits, y):
         loss = self.loss_fn(logits, y)
+        self.log("step/main_loss", loss)
         # add multiple losses defined in `training.loss_fn`
         for sub_loss_fn, weight, name in self.sub_losses:
             val = sub_loss_fn(logits, y)
@@ -140,8 +142,8 @@ class ClassificationTrainer(_BaseLightningTrainer):
         ce_loss = (loss1 + loss2) * 0.5
         kl_loss = compute_kl_loss(logits1, logits2)
 
-        self.log("step/ce_loss", ce_loss)
-        self.log("step/kl_loss", kl_loss)
+        self.log("step/rdrop_ce_loss", ce_loss)
+        self.log("step/rdrop_kl_loss", kl_loss)
         return ce_loss + self.rdrop_alpha * kl_loss
 
     def fast_rdrop_forward(self, feature, y, logits1, loss1):
@@ -152,6 +154,6 @@ class ClassificationTrainer(_BaseLightningTrainer):
         ce_loss = (loss1 + loss2) * 0.5
         kl_loss = compute_kl_loss(logits1, logits2)
 
-        self.log("step/ce_loss", ce_loss)
-        self.log("step/kl_loss", kl_loss)
+        self.log("step/rdrop_ce_loss", ce_loss)
+        self.log("step/rdrop_kl_loss", kl_loss)
         return ce_loss + self.rdrop_alpha * kl_loss

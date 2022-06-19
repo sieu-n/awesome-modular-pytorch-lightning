@@ -67,17 +67,33 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
+    # essential arguments
     parser.add_argument("--weights", required=True)
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--epochs", type=int, default=40)
+    parser.add_argument("--avg_mode", type=str, default="const", choices=["const"])
+
+    # logging
+    parser.add_argument("--name", type=str, default=None)
+    parser.add_argument("--group", type=str, default=None)
+    parser.add_argument("--offline", action="store_true", default=False)
+
+    # configure early lr schedule.
+    parser.add_argument("--init_lr", type=float, default=None)
     parser.add_argument("--annealing_epochs", type=int, default=4)
     parser.add_argument(
         "--annealing_strategy", type=str, default="cos", choices=["cos", "linear"]
     )
-    parser.add_argument("--avg_mode", type=str, default="const", choices=["const"])
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
+
+    if args.name is not None:
+        cfg["name"] = args.name
+    if args.group:
+        cfg["wandb"]["group"] = args.group
+    if args.offline:
+        cfg["wandb"]["offline"] = True
 
     # write configs
     print("[*] Editing config file.")
@@ -88,8 +104,11 @@ if __name__ == "__main__":
     print("training.epochs overriden in config file.")
     if args.lr is None:
         args.lr = cfg["training"]["lr"] * 0.3
-        cfg["training"]["lr"] = args.lr
         print(f"initializing swa learning rate to {args.lr}")
+    if args.init_lr:
+        cfg["training"]["lr"] = args.init_lr
+    else:
+        cfg["training"]["lr"] = args.lr
     if args.avg_mode == "const":
         avg_fn = None
     else:

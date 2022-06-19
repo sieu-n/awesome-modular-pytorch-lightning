@@ -166,7 +166,10 @@ class Resize(_ImageTransform):
     def __init__(
         self, size, interpolation="bilinear", max_size=None, antialias=None, **kwargs
     ):
-        """Resize image to `size`, `image` should be torch.Tensor of [c, W, H]."""
+        """
+        Resize image to `size`, `image` should be torch.Tensor of [c, W, H].
+        A wrapper of `torchvision.transform.Resize` to specify the `interpolation` value as a string.
+        """
         super().__init__(**kwargs)
         self.size = size
         self.interpolation = interpolation
