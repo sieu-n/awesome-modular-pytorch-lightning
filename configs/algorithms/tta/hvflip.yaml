@@ -1,0 +1,9 @@
+model:
+  tta:
+    name: "ClassificationTTAWrapper"
+    args:
+      output_label_key: "logits"
+      merge_mode: "mean"
+      transforms:
+        - name: "HorizontalFlip"
+        - name: "VerticalFlip"

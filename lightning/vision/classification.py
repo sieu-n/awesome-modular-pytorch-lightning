@@ -52,7 +52,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
             "prob": pred_prob,
         }
 
-    def _training_step(self, batch, batch_idx):
+    def _training_step(self, batch, batch_idx=0):
         assert "images" in batch
         assert "labels" in batch
 
@@ -106,7 +106,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
             "cls_loss": loss,
         }
 
-    def predict_step(self, batch, batch_idx):
+    def _predict_step(self, batch, batch_idx=0):
         assert "images" in batch
         x = batch["images"]
         pred = self(x)
@@ -114,6 +114,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
 
     def classification_loss(self, logits, y):
         loss = self.loss_fn(logits, y)
+        self.log("step/main_loss", loss)
         # add multiple losses defined in `training.loss_fn`
         for sub_loss_fn, weight, name in self.sub_losses:
             val = sub_loss_fn(logits, y)
@@ -140,8 +141,8 @@ class ClassificationTrainer(_BaseLightningTrainer):
         ce_loss = (loss1 + loss2) * 0.5
         kl_loss = compute_kl_loss(logits1, logits2)
 
-        self.log("step/ce_loss", ce_loss)
-        self.log("step/kl_loss", kl_loss)
+        self.log("step/rdrop_ce_loss", ce_loss)
+        self.log("step/rdrop_kl_loss", kl_loss)
         return ce_loss + self.rdrop_alpha * kl_loss
 
     def fast_rdrop_forward(self, feature, y, logits1, loss1):
@@ -152,6 +153,6 @@ class ClassificationTrainer(_BaseLightningTrainer):
         ce_loss = (loss1 + loss2) * 0.5
         kl_loss = compute_kl_loss(logits1, logits2)
 
-        self.log("step/ce_loss", ce_loss)
-        self.log("step/kl_loss", kl_loss)
+        self.log("step/rdrop_ce_loss", ce_loss)
+        self.log("step/rdrop_kl_loss", kl_loss)
         return ce_loss + self.rdrop_alpha * kl_loss

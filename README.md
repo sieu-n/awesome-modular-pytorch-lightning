@@ -2,6 +2,7 @@
 [WIP] modular-pytorch-lightning, **WARNING: The repository is currently under development, and is unstable.**
 
 What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
+- Ever wanted to train `tresnetm50` models and apply TTA(test-time augmentation) or SWA(stocahstic weight averaging) to enhance performance? Apply sharpness-aware minimization to semantic segmentation models and measure the difference in calibration? LightCollections is a framework that utilize and connects existing libraries so experiments can be run effortlessly.
 - LightCollection aims at extending the features of `pytorch-lightning`. We aim to provide training procedures of various subtasks in Computer Vision with a collection of `LightningModule` and utilities for easily using model architecture, metrics, dataset, and training algorithms.
 - This repository is designed to utilize many amazing and robust and open-source projects such as `timm`, `torchmetrics`, and more. Currently, the following frameworks are integrated into `LightCollections` and can be easily applied through the config files:
   - `torchvision.models` for models, `torchvision.transforms` for transforms, optimizers and learning rate schedules from `pytorch`.

@@ -128,11 +128,11 @@ class Experiment:
                 wandb_cfg=cfg.get("wandb", None),
                 tensorboard_cfg=cfg.get("tensorboard", None),
             )
+            if "logger" in self.logger_and_callbacks:
+                self.logger_and_callbacks["logger"].log_hyperparams(cfg)
+
         if setup_model:
             self._setup_model(cfg["model"], cfg["training"])
-
-        if "logger" in self.logger_and_callbacks:
-            self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
     def _setup_dataset(
         self, initial_dataset=None, dataset_cfg=None, transform_cfg=None
@@ -328,7 +328,7 @@ class Experiment:
         # train-test using trainer
         train_trainer.fit(self.model, self.trn_dataloader, self.val_dataloader)
         if test_after:
-            res = train_trainer.test(self.model, self.val_dataloader)
+            res = self.test(trainer_name="train")
         else:
             res = {}
 
@@ -343,6 +343,37 @@ class Experiment:
             if not os.path.exists(root_path):
                 os.makedirs(root_path)
             torch.save(self.model.state_dict(), f"{self.exp_dir}/{save_path}")
+        return res
+
+    def test(
+        self,
+        test_dataloader=None,
+        trainer_name=None,
+        trainer_cfg=None,
+        root_dir=None,
+    ):
+        if not test_dataloader:
+            test_dataloader = self.val_dataloader
+        if trainer_name:
+            test_trainer = self.trainers[trainer_name]
+        elif trainer_cfg:
+            if not root_dir:
+                root_dir = f"{self.exp_dir}/checkpoints"
+            test_trainer = pl.Trainer(
+                default_root_dir=root_dir,
+                **trainer_cfg,
+            )
+        else:
+            assert (
+                "test" in self.trainers
+            ), "Please specify the trainer to use for testing such as batch size and root dir."
+            test_trainer = self.trainers["test"]
+        # keep track of trainer
+        if not hasattr(self, "trainers"):
+            self.trainers = {}
+        self.trainers["test"] = test_trainer
+
+        res = test_trainer.test(self.model, test_dataloader)
         return res
 
     def predict(
