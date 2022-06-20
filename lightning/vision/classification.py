@@ -66,7 +66,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
         loss = self.classification_loss(logits, y)
         # for logging
         res = {
-            "y": y,
+            "y": y if y.ndim == 1 else y.argmax(dim=1),
             "logits": logits,
             "prob": pred["prob"],
             "cls_loss": loss,
