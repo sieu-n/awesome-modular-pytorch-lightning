@@ -69,7 +69,7 @@ if __name__ == "__main__":
     parser.add_argument("--name", type=str, default=None)
     parser.add_argument("--group", type=str, default=None)
     parser.add_argument("--offline", action="store_true", default=False)
-    parser.add_argument("--root_dir", type=str, default=None)
+    parser.add_argument("--root_dir", type=str, default="")
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
