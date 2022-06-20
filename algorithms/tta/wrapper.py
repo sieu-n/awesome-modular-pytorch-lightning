@@ -101,12 +101,11 @@ class ClassificationTTAWrapper(TTAFramework):
     def __init__(self, model, output_label_key="logits", *args, **kwargs):
         # set default value of `output_label_key` to "logits"
         # This TTA wrapper is coupled with `lightning.vision.classification.ClassificationTrainer`
-        self.classification_loss = model.classification_loss
-        self.accuracy = torchmetrics.Accuracy()
-
         super().__init__(
             model=model, output_label_key=output_label_key, *args, **kwargs
         )
+        self.classification_loss = model.classification_loss
+        self.accuracy = torchmetrics.Accuracy()
 
     def input_transform(self, x):
         # implement differently based on task
