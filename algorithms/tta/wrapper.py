@@ -1,12 +1,11 @@
 import torch
-from torch import nn
+from lightning.common import _LightningModule
 
-from .merger import Merger
 from .build import build_transforms
-from lightning.base import _BaseLightningTrainer
+from .merger import Merger
 
 
-class TTAFramework(_BaseLightningTrainer):
+class TTAFramework(_LightningModule):
     """
     Wrap PyTorch nn.Module with test time augmentation transforms. Models can generally (e.g. classification,
     segmentation, ...) be wrapped using `TTAWrapper` assuming correct implementation of transforms.
@@ -28,30 +27,47 @@ class TTAFramework(_BaseLightningTrainer):
     def __init__(
         self,
         model,
+        training_cfg,
+        const_cfg,
         transforms,
         output_label_key=None,
         num_classes=None,
         merge_mode="mean",
     ):
         super().__init__()
-        self.predict_f = model.__call__    # don't store model to prevent recursion in state_dict.
+        self.training_cfg = training_cfg
+        self.const_cfg = const_cfg
+        # set to eval mode
+        model.eval()
+        self.predict_f = (
+            model.__call__
+        )  # don't store model to prevent recursion in state_dict.
         self.transforms = build_transforms(transforms)
         self.merge_mode = merge_mode
         self.output_key = output_label_key
 
-        self.merger = Merger(type=self.merge_mode, n=len(self.transforms), num_classes=num_classes)
+        self.merger = Merger(
+            type=self.merge_mode, n=len(self.transforms), num_classes=num_classes
+        )
 
     def input_transform(self, x):
-        # implement differently based on task, in: batch, out: input for model.__call__
+        # implement differently based on task, 
+        # in: batch; out: input for model.__call__
         return x
 
     def process_augmented(self, x):
-        # implement differently based on task, in: augmented sample
+        # implement differently based on task, 
+        # in: augmented sample
         return x
 
     def compute_result(self, x, pred):
         # implement differently based on task
         return pred
+
+    def get_loss_and_log(self, res):
+        # implement differently based on task
+        # in: dict from `compute_result`; out: loss for training.
+        return res
 
     def forward(self, x):
         """
@@ -70,13 +86,12 @@ class TTAFramework(_BaseLightningTrainer):
         self.merger.reset()
         return agg_pred, self.compute_result(x, agg_pred)
 
-    def _training_step(self, batch, batch_idx=None):
+    def training_step(self, batch, batch_idx=None):
         # train merger.
         agg_pred, res = self(batch)
-        assert "loss" in res, "Loss must be returned to train TTA."
-        return res["loss"], res
+        return self.get_loss_and_log(res)
 
-    def evaluate(self, batch, stage=None):
+    def validation_step(self, batch, batch_idx=None):
         agg_pred, res = self(batch)
         return res
 
@@ -87,9 +102,7 @@ class ClassificationTTAWrapper(TTAFramework):
         # This TTA wrapper is coupled with `lightning.vision.classification.ClassificationTrainer`
         self.classification_loss = model.classification_loss
         super().__init__(
-            model=model,
-            output_label_key=output_label_key,
-            *args, **kwargs
+            model=model, output_label_key=output_label_key, *args, **kwargs
         )
 
     def input_transform(self, x):
@@ -106,5 +119,8 @@ class ClassificationTTAWrapper(TTAFramework):
             y = x["labels"]
             d["y"] = y
             d["cls_loss"] = self.classification_loss(logits, y)
-            d["loss"] = self.classification_loss(logits, y)
         return d
+
+    def get_loss_and_log(self, res):
+        self.log("step/cls_loss", res["cls_loss"])
+        return res["cls_loss"]

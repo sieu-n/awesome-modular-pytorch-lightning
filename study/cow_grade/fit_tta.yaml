@@ -1,0 +1,138 @@
+name: "tresnet-gradclip-bs265-isize248-cutout10-TA-ls-FP16"
+
+dataset:
+  trn_size: 9000
+  val_size: 1000
+
+transform:
+  [
+    [
+      "trn,val,pred",
+      [
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "Pad", "ARGS": { "padding": [24, 0] } },
+        },
+      ],
+    ],
+    [
+      "trn",
+      [
+        {
+          "name": "CutOut",
+          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 },
+        },
+
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
+        {
+          "name": "RandomRotation",
+          "args": { "degrees": [0, 360], "interpolation": "bilinear" },
+        },
+
+        {
+          "name": "TrivialAugmentWide",
+          "args": { "num_magnitude_bins": 31, "interpolation": "bilinear" },
+        },
+      ],
+    ],
+    ["trn,val", [{ "name": "ClassificationLabelEncoder" }]],
+
+    [
+      "trn,val,pred",
+      [
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": [0.25252014, 0.12918881, 0.12411932],
+              "std": [0.24537923, 0.17195621, 0.17269008],
+            },
+        },
+      ],
+    ],
+  ]
+
+# use backbone from https://github.com/Alibaba-MIIL/ImageNet21K
+model:
+  backbone:
+    TYPE: "timm"
+    ID: "tresnet_m_miil_in21k"
+    cfg:
+      pretrained: True
+    out_features: 2048
+  modules:
+    classifier:
+      name: "ClassificationHead"
+      input: "output"
+      args:
+        reduction: "gap"
+        in_features: 2048
+        dropout: 0.2
+        num_classes: 5
+        return_logits: True # return logits instead of softmax probability.
+    loss_fn:
+      name: "CrossEntropyLoss"
+      args:
+        label_smoothing: 0.1
+
+dataloader:
+  base_dataloader:
+    num_workers: 4 # 4 -> ~43s, 8 -> ~48s
+
+callbacks:
+  - name: "LearningRateMonitor"
+    file: "lightning"
+    args:
+      logging_interval: "epoch"
+
+trainer:
+  precision: 16
+  gradient_clip_val: 1.0
+
+training:
+  ID: "ClassificationTrainer"
+
+  epochs: 50
+  lr: 0.01
+  batch_size: 256
+  optimizer: "sgd"
+  optimizer_cfg:
+    momentum: 0.9
+    weight_decay: 0.0005
+  lr_scheduler:
+    name: "cosine"
+    args: {}
+    cfg:
+      interval: "epoch"
+  lr_warmup:
+    multiplier: 1
+    total_epoch: 5
+
+validation:
+  batch_size: 256
+
+debug:
+  network_summary:
+    input_shape: [3, 224, 224]
+
+# other useful configs.
+wandb:
+  project: "cow_grade_prediction_challenge_2022"
+  group: "tresnetm-ablation"
+
+const:
+  task: "image classification"
+  normalization_mean: [0.25252014, 0.12918881, 0.12411932]
+  normalization_std: [0.24537923, 0.17195621, 0.17269008]
+
+  label_map:
+    - "1++"
+    - "1+"
+    - "1"
+    - "2"
+    - "3"

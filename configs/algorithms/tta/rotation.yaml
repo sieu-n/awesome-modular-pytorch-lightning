@@ -6,14 +6,14 @@ model:
       transforms:
         - name: "HorizontalFlip"
         - name: "Rotation"
-          args: 
+          args:
             angles:
               - 0
               - 30
               - 60
               - 90
               - 120
-              - 150 
+              - 150
               - 180
               - 210
               - 240

@@ -2,12 +2,13 @@ import os
 import random
 import shutil
 from argparse import ArgumentParser
-
+import pytorch_lightning as pl
 import pandas as pd
 import torch
 from main import Experiment
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
+
 from utils.configs import merge_config, read_configs
 from utils.experiment import apply_transforms, build_transforms
 
@@ -66,10 +67,25 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
+    parser.add_argument("--name", type=str, default=None)
     parser.add_argument("--weights", required=True)
     parser.add_argument("--is_ckpt", default=False, action="store_true")
+
+    parser.add_argument("--group", type=str, default=None)
+    parser.add_argument("--offline", action="store_true", default=False)
+    parser.add_argument("--root_dir", type=str, default="")
+
     args = parser.parse_args()
     cfg = read_configs(args.configs)
+
+    if args.name is not None:
+        cfg["name"] = args.name
+    if args.group:
+        cfg["wandb"]["group"] = args.group
+    if args.offline:
+        cfg["wandb"]["offline"] = True
+    cfg["model"]["state_dict_path"] = args.weights
+    cfg["model"]["is_ckpt"] = args.is_ckpt
 
     # move data
     base_path = "/content/drive/MyDrive/data/cow_classification/"
@@ -108,17 +124,31 @@ if __name__ == "__main__":
         subset_keys=["pred"],
     )["pred"]
     test_dataset = apply_transforms(test_dataset, None, transforms)
-
-    cfg["model"]["state_dict_path"] = args.weights
-    cfg["model"]["is_ckpt"] = args.is_ckpt
     # train
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg)
     experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
-    experiment.setup_experiment_from_cfg(
-        cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
-    )
+    experiment.setup_experiment_from_cfg(cfg, setup_env=False, setup_dataset=False)
 
+    root_dir = args.root_dir
+    if not root_dir:
+        root_dir = f"{experiment.exp_dir}/checkpoints"
+    tta_trainer = pl.Trainer(
+        max_epochs=cfg["training"]["epochs"],
+        default_root_dir=root_dir,
+        **(
+            experiment.logger_and_callbacks
+            if hasattr(experiment, "logger_and_callbacks")
+            else {}
+        ),
+        **cfg["trainer"],
+    )
+    tta_module = experiment.model.TTA_module
+    tta_trainer.fit(tta_module, experiment.val_dataloader, experiment.val_dataloader)
+    res = tta_trainer.test(tta_module, experiment.val_dataloader)
+
+    print("Result:", res)
+    print("Experiment and log dir:", experiment.get_directory())
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
     )
@@ -130,10 +160,14 @@ if __name__ == "__main__":
     predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
     predictions = torch.argmax(torch.cat(predictions), dim=1)
 
-    print("saving file under:", experiment.get_directory() + "/prediction.csv")
+    print("saving file under:", experiment.get_directory() + "prediction.csv")
     save_predictions_to_csv(
         image_names=test_image_names,
         pred=predictions,
         label_map=cfg["const"]["label_map"],
-        filename=experiment.get_directory() + "/prediction.csv",
+        filename=os.path.join(args.root_dir, "prediction.csv"),
     )
+    root_path = os.path.dirname(f"{experiment.exp_dir}/tta_state_dict.pth")
+    if not os.path.exists(root_path):
+        os.makedirs(root_path)
+    torch.save(experiment.model.state_dict(), f"{experiment.exp_dir}/tta_state_dict.pth")

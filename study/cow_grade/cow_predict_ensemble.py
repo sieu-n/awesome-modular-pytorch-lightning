@@ -66,7 +66,7 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
-    parser.add_argument("--weights", required=True)
+    parser.add_argument("--weights", nargs="+", required=True)
     parser.add_argument("--is_ckpt", default=False, action="store_true")
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -109,16 +109,7 @@ if __name__ == "__main__":
     )["pred"]
     test_dataset = apply_transforms(test_dataset, None, transforms)
 
-    cfg["model"]["state_dict_path"] = args.weights
     cfg["model"]["is_ckpt"] = args.is_ckpt
-    # train
-    experiment = Experiment(cfg)
-    experiment.initialize_environment(cfg)
-    experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
-    experiment.setup_experiment_from_cfg(
-        cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
-    )
-
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
     )
@@ -127,13 +118,27 @@ if __name__ == "__main__":
         batch_size=cfg["validation"]["batch_size"],
         **val_dataloader_cfg,
     )
-    predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
-    predictions = torch.argmax(torch.cat(predictions), dim=1)
 
-    print("saving file under:", experiment.get_directory() + "/prediction.csv")
+    # train
+    experiment = Experiment(cfg)
+    experiment.initialize_environment(cfg)
+    experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
+
+    # ensemble
+    agg_pred = []
+    for state_dict_path in args.weights:
+        cfg["model"]["state_dict_path"] = state_dict_path
+        experiment.setup_experiment_from_cfg(
+            cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
+        )
+
+        predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
+
+    predictions = torch.argmax(torch.cat(predictions), dim=1)
+    print("saving file under: prediction.csv")
     save_predictions_to_csv(
         image_names=test_image_names,
         pred=predictions,
         label_map=cfg["const"]["label_map"],
-        filename=experiment.get_directory() + "/prediction.csv",
+        filename="prediction.csv",
     )

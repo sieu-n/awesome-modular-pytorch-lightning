@@ -1,8 +1,8 @@
 # modification of original Merger from `ttach`:
 # https://github.com/qubvel/ttach/blob/94e579e59a21cbdfbb4f5790502e648008ecf64e/ttach/base.py#L120
-from ttach import functional as F
 import torch
 from torch import nn
+from ttach import functional as F
 
 
 class Merger(nn.Module):
@@ -13,7 +13,7 @@ class Merger(nn.Module):
         num_classes: int = None,
         weight_per_class: bool = False,
     ):
-
+        super(Merger, self).__init__()
         if type not in ["mean", "gmean", "sum", "max", "min", "tsharpen"]:
             raise ValueError("Not correct merge type `{}`.".format(type))
 
@@ -24,7 +24,9 @@ class Merger(nn.Module):
         self.weight_per_class = weight_per_class
         if weight_per_class:
             assert type(num_classes) == int and num_classes > 1
-            self.weights = nn.Parameter(data=torch.ones(n, num_classes), requires_grad=True)
+            self.weights = nn.Parameter(
+                data=torch.ones(n, num_classes), requires_grad=True
+            )
         else:
             self.weights = nn.Parameter(data=torch.ones(n), requires_grad=True)
 
