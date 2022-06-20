@@ -31,7 +31,7 @@ class MixupCutmix(Mixup):
         target = mixup_target(
             target, self.num_classes, lam, self.label_smoothing, x.device
         )
-        # if self.multilabel == False:
-        #    # returns mixup that sum to 1 instead of multi-label as proposed in timm.
-        #    target = target / target.sum(dim=0)
+        if self.multilabel is False:
+            # returns mixup that sum to 1 instead of multi-label as proposed in timm.
+            target = target / target.sum(dim=0)
         return x, target
