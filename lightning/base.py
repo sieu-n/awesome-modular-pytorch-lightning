@@ -1,21 +1,20 @@
 from collections import OrderedDict
-from sklearn.metrics import ConfusionMatrixDisplay
-from torch import nn, optim
-from torch.optim import lr_scheduler
-import pytorch_lightning as pl
+
+import algorithms.tta as TTA_modules
 import torchmetrics
 import wandb
 
+from .common import _LightningModule
 from algorithms import loss as LossPool
-from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
-from algorithms.optimizers.sam import SAM
-import algorithms.tta as TTA_modules
 from models import catalog as ModelPool
 from models import heads as HeadPool
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
+from sklearn.metrics import ConfusionMatrixDisplay
+from torch import nn
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
+
 """ Build components for the lightningmodule
 """
 
@@ -67,7 +66,7 @@ def build_metric(metric_type, file=None, *args, **kwargs):
     return metric
 
 
-class _BaseLightningTrainer(pl.LightningModule):
+class _BaseLightningTrainer(_LightningModule):
     def __init__(self, model_cfg, training_cfg, const_cfg={}, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         # disable automatic_optimization.
@@ -77,9 +76,6 @@ class _BaseLightningTrainer(pl.LightningModule):
                 "Automatic optimization feature of pytorch-lighining is disabled because of `sharpness-aware-minimization`. \
                    Be aware of unexpected behavior regarding custom learning rate schedule and optimizers."
             )
-        # save training_cfg for defining optimizers when `configure_optimizers` is called.
-        self.training_cfg = training_cfg
-        self.const_cfg = const_cfg
         # build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
@@ -144,12 +140,16 @@ class _BaseLightningTrainer(pl.LightningModule):
             self.is_tta_enabled = True
             self.TTA_module = getattr(TTA_modules, tta_cfg["name"])(
                 model=self,
+                training_cfg=training_cfg,
+                const_cfg=const_cfg,
                 **tta_cfg["args"]
             )
 
     def enable_tta(self, TTA_module=None):
         if TTA_module is None:
-            assert hasattr(self, "TTA_module"), "TTA_module is not assigned nor provided."
+            assert hasattr(
+                self, "TTA_module"
+            ), "TTA_module is not assigned nor provided."
         else:
             # assign new tta module
             self.TTA_module = TTA_module
@@ -326,82 +326,6 @@ class _BaseLightningTrainer(pl.LightningModule):
 
         pred = self._predict_step(batch, batch_idx)
         return pred
-
-    def configure_optimizers(self):
-        """
-        Build optimizer, learning rate scheduler.
-        Support the `lr_warmup` and `sharpness-aware` keywords.
-        Sharpness-aware minimization for efficiently improving generalization, ICLR 2021
-        """
-        # optimizer
-        optimizer_name = self.training_cfg["optimizer"]
-        optimizer_kwargs = self.training_cfg["optimizer_cfg"]
-        if optimizer_name == "sgd":
-            optimizer_builder = optim.SGD
-        elif optimizer_name == "adam":
-            optimizer_builder = optim.Adam
-        elif optimizer_name == "adamw":
-            optimizer_builder = optim.AdamW
-        else:
-            raise ValueError(f"Invalid value for optimizer: {optimizer_name}")
-        # apply sharpness-aware minimization
-        if "sharpness-aware" in self.training_cfg:
-            sam_cfg = self.training_cfg["sharpness-aware"]
-            optimizer = SAM(
-                params=self.parameters(),
-                base_optimizer=optimizer_builder,
-                rho=sam_cfg["rho"] if "rho" in sam_cfg else 0.05,
-                lr=self.training_cfg["lr"],
-                **optimizer_kwargs,
-            )
-        else:
-            optimizer = optimizer_builder(
-                self.parameters(), lr=self.training_cfg["lr"], **optimizer_kwargs
-            )
-
-        config = {"optimizer": optimizer}
-        # lr schedule
-        if "lr_scheduler" in self.training_cfg:
-            scheduler_config = self.training_cfg["lr_scheduler"]
-            schedule_name = scheduler_config["name"]
-            schedule_kwargs = scheduler_config["args"]
-            if schedule_name == "const":
-                schedule_builder = lr_scheduler.LambdaLR
-                schedule_kwargs["lr_lambda"] = lambda epoch: 1
-            elif schedule_name == "cosine":
-                schedule_builder = lr_scheduler.CosineAnnealingLR
-                schedule_kwargs["T_max"] = self.training_cfg["epochs"]
-                assert "frequency" not in scheduler_config or "frequency" == "epoch"
-            elif schedule_name == "exponential":
-                schedule_builder = lr_scheduler.ExponentialLR
-            elif schedule_name == "1cycle":
-                schedule_builder = lr_scheduler.OneCycleLR
-            elif schedule_name == "step":
-                schedule_builder = lr_scheduler.StepLR
-            elif schedule_name == "multi-step":
-                schedule_builder = lr_scheduler.MultiStepLR
-            else:
-                raise ValueError(f"Invalid value for lr_scheduler: {schedule_name}")
-            scheduler = schedule_builder(optimizer, **schedule_kwargs)
-            # learning rate warmup
-            if "lr_warmup" in self.training_cfg:
-                warmup_cfg = self.training_cfg["lr_warmup"]
-                scheduler = GradualWarmupScheduler(
-                    optimizer=optimizer, after_scheduler=scheduler, **warmup_cfg
-                )
-            # build scheduler with keys that lightning identifies.
-            scheduler_config = scheduler_config["cfg"]
-            if self.automatic_optimization is False:
-                for k in ["frequency", "monitor", "strict"]:
-                    assert k not in scheduler_config, f"{k} is not yet implemented!!!"
-                assert "frequency" not in scheduler_config or scheduler_config[
-                    "frequency"
-                ] in [
-                    "step",
-                    "epoch",
-                ], f"`frequency` should be one of [`step`, `epoch`] but {scheduler_config['frequency']} was given."
-            config["lr_scheduler"] = {**{"scheduler": scheduler}, **scheduler_config}
-        return config
 
     def training_epoch_end(self, outputs):
         # log epoch-wise metrics

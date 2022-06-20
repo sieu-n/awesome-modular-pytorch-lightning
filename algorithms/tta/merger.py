@@ -1,15 +1,19 @@
 # modification of original Merger from `ttach`:
 # https://github.com/qubvel/ttach/blob/94e579e59a21cbdfbb4f5790502e648008ecf64e/ttach/base.py#L120
+import torch
+from torch import nn
 from ttach import functional as F
 
 
-class Merger:
+class Merger(nn.Module):
     def __init__(
         self,
         type: str = "mean",
         n: int = 1,
+        num_classes: int = None,
+        weight_per_class: bool = False,
     ):
-
+        super(Merger, self).__init__()
         if type not in ["mean", "gmean", "sum", "max", "min", "tsharpen"]:
             raise ValueError("Not correct merge type `{}`.".format(type))
 
@@ -17,7 +21,20 @@ class Merger:
         self.type = type
         self.n = n
 
-    def update(self, x):
+        self.weight_per_class = weight_per_class
+        if weight_per_class:
+            assert type(num_classes) == int and num_classes > 1
+            self.weights = nn.Parameter(
+                data=torch.ones(n, num_classes), requires_grad=True
+            )
+        else:
+            self.weights = nn.Parameter(data=torch.ones(n), requires_grad=True)
+
+    def update(self, x, i=0):
+        if self.weight_per_class:
+            weight = self.weights[i]
+        else:
+            weight = self.weights[i]
 
         if self.type == "tsharpen":
             x = x**0.5
@@ -25,7 +42,7 @@ class Merger:
         if self.output is None:
             self.output = x
         elif self.type in ["mean", "sum", "tsharpen"]:
-            self.output = self.output + x
+            self.output = self.output + x * weight
         elif self.type == "gmean":
             self.output = self.output * x
         elif self.type == "max":

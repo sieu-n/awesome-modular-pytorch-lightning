@@ -15,6 +15,6 @@ torch
 torch-ema
 torchinfo
 torchmetrics
-ttach
 tqdm
+ttach
 wandb

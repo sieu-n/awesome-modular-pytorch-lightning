@@ -115,7 +115,9 @@ if __name__ == "__main__":
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg)
     experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
-    experiment.setup_experiment_from_cfg(cfg, setup_env=False, setup_dataset=False, setup_callbacks=False)
+    experiment.setup_experiment_from_cfg(
+        cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
+    )
 
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]

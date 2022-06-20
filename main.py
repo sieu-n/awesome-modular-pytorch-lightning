@@ -254,11 +254,11 @@ class Experiment:
             experiment_name = self.experiment_name
         # logger
         print_to_end("-")
-        logger_cfg = {
-            "wandb_cfg": wandb_cfg,
-            "tensorboard_cfg": tensorboard_cfg,
-        }
-        logger = create_logger(experiment_name=self.experiment_name, **logger_cfg)
+        logger = create_logger(
+            experiment_name=self.experiment_name,
+            wandb_cfg=wandb_cfg,
+            tensorboard_cfg=tensorboard_cfg
+        )
         # callbacks
         callbacks = []
         for callback_cfg in callback_cfg_list:
@@ -311,7 +311,9 @@ class Experiment:
             train_trainer = self.trainers["train"]
         else:
             if "precision" in trainer_cfg:
-                assert trainer_cfg["precision"] == 32 or self.model.automatic_optimization, "Manual optimization \
+                assert (
+                    trainer_cfg["precision"] == 32 or self.model.automatic_optimization
+                ), "Manual optimization \
                         using amp is not yet supported"
             train_trainer = pl.Trainer(
                 max_epochs=epochs,

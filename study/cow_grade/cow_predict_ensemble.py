@@ -66,20 +66,10 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
-    parser.add_argument("--name", type=str, default=None)
-    parser.add_argument("--group", type=str, default=None)
-    parser.add_argument("--offline", action="store_true", default=False)
-    parser.add_argument("--root_dir", type=str, default="")
-
+    parser.add_argument("--weights", nargs="+", required=True)
+    parser.add_argument("--is_ckpt", default=False, action="store_true")
     args = parser.parse_args()
     cfg = read_configs(args.configs)
-
-    if args.name is not None:
-        cfg["name"] = args.name
-    if args.group:
-        cfg["wandb"]["group"] = args.group
-    if args.offline:
-        cfg["wandb"]["offline"] = True
 
     # move data
     base_path = "/content/drive/MyDrive/data/cow_classification/"
@@ -118,20 +108,8 @@ if __name__ == "__main__":
         subset_keys=["pred"],
     )["pred"]
     test_dataset = apply_transforms(test_dataset, None, transforms)
-    # train
-    experiment = Experiment(cfg)
-    experiment.initialize_environment(cfg)
-    experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
-    experiment.setup_experiment_from_cfg(cfg, setup_env=False, setup_dataset=False)
 
-    result = experiment.train(
-        trainer_cfg=cfg["trainer"],
-        root_dir=args.root_dir,
-        epochs=cfg["training"]["epochs"],
-    )
-
-    print("Result:", result)
-    print("Experiment and log dir:", experiment.get_directory())
+    cfg["model"]["is_ckpt"] = args.is_ckpt
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
     )
@@ -140,13 +118,28 @@ if __name__ == "__main__":
         batch_size=cfg["validation"]["batch_size"],
         **val_dataloader_cfg,
     )
-    predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
-    predictions = torch.argmax(torch.cat(predictions), dim=1)
 
-    print("saving file under:", experiment.get_directory() + "prediction.csv")
+    # train
+    experiment = Experiment(cfg)
+    experiment.initialize_environment(cfg)
+    experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
+
+    # ensemble
+    agg_pred = None
+    for state_dict_path in args.weights:
+        cfg["model"]["state_dict_path"] = state_dict_path
+        experiment.setup_experiment_from_cfg(
+            cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
+        )
+
+        logits = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
+        agg_pred += torch.cat(logits)
+
+    predictions = torch.argmax(agg_pred, dim=1)
+    print("saving file under: prediction.csv")
     save_predictions_to_csv(
         image_names=test_image_names,
         pred=predictions,
         label_map=cfg["const"]["label_map"],
-        filename=os.path.join(args.root_dir, "prediction.csv"),
+        filename="prediction.csv",
     )

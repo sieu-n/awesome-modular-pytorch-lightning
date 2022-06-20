@@ -1,14 +1,17 @@
-from . import layers as TTA_layers
 import ttach
+
+from . import layers as TTA_layers
 
 
 def build_transforms(transforms):
     t = []
     for transform in transforms:
-        t.append(_build_transform(
-            name=transform["name"],
-            **transform.get("args", {}),
-        ))
+        t.append(
+            _build_transform(
+                name=transform["name"],
+                **transform.get("args", {}),
+            )
+        )
     return ttach.Compose(t)
 
 
