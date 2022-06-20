@@ -1,6 +1,7 @@
 import torch
-from lightning.common import _LightningModule
+import torchmetrics
 
+from lightning.common import _LightningModule
 from .build import build_transforms
 from .merger import Merger
 
@@ -101,6 +102,8 @@ class ClassificationTTAWrapper(TTAFramework):
         # set default value of `output_label_key` to "logits"
         # This TTA wrapper is coupled with `lightning.vision.classification.ClassificationTrainer`
         self.classification_loss = model.classification_loss
+        self.accuracy = torchmetrics.Accuracy()
+
         super().__init__(
             model=model, output_label_key=output_label_key, *args, **kwargs
         )
@@ -119,7 +122,12 @@ class ClassificationTTAWrapper(TTAFramework):
             y = x["labels"]
             d["y"] = y
             d["cls_loss"] = self.classification_loss(logits, y)
+            self.accuracy(logits, y)
         return d
+
+    def training_epoch_end(self, outs):
+        # log epoch metric
+        self.log('train_acc_epoch', self.accuracy)
 
     def get_loss_and_log(self, res):
         self.log("step/cls_loss", res["cls_loss"])
