@@ -19,7 +19,8 @@ class SAM(torch.optim.Optimizer):
     def first_step(self, zero_grad=False):
         grad_norm = self._grad_norm()
         for group in self.param_groups:
-            scale = group["rho"] / (grad_norm + 1e-12)
+            # epsilon is increased to 1e-9 so zero-division doesn't happen during FP16 training.
+            scale = group["rho"] / (grad_norm + 1e-9)
 
             for p in group["params"]:
                 if p.grad is None:

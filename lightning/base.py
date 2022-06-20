@@ -270,11 +270,6 @@ class _BaseLightningTrainer(pl.LightningModule):
         optimizer = self.optimizers()
         optimizer.zero_grad()
         self.manual_backward(loss)
-        if "gradient_clip_val" in self.training_cfg:
-            self.clip_gradients(
-                optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"]
-            )
-
         if "sharpness-aware" in self.training_cfg:
             # TODO refactoring based on `step`
             optimizer.first_step(zero_grad=True)
@@ -288,6 +283,10 @@ class _BaseLightningTrainer(pl.LightningModule):
 
             optimizer.second_step(zero_grad=True)
         else:
+            if "gradient_clip_val" in self.training_cfg:
+                self.clip_gradients(
+                    optimizer, gradient_clip_val=self.training_cfg["gradient_clip_val"]
+                )
             optimizer.step()
 
         # custom lr scheduler step

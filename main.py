@@ -310,6 +310,9 @@ class Experiment:
         if use_existing_trainer:
             train_trainer = self.trainers["train"]
         else:
+            if "precision" in trainer_cfg:
+                assert trainer_cfg["precision"] == 32 or self.model.automatic_optimization, "Manual optimization \
+                        using amp is not yet supported"
             train_trainer = pl.Trainer(
                 max_epochs=epochs,
                 default_root_dir=root_dir,
