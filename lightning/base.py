@@ -69,6 +69,8 @@ def build_metric(metric_type, file=None, *args, **kwargs):
 class _BaseLightningTrainer(_LightningModule):
     def __init__(self, model_cfg, training_cfg, const_cfg={}, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.const_cfg = const_cfg
+        self.training_cfg = training_cfg
         # disable automatic_optimization.
         if "sharpness-aware" in training_cfg:
             self.automatic_optimization = False
@@ -323,8 +325,6 @@ class _BaseLightningTrainer(_LightningModule):
             pred, res = self.TTA_module(batch)
         else:
             pred = self._predict_step(batch, batch_idx)
-
-        pred = self._predict_step(batch, batch_idx)
         return pred
 
     def training_epoch_end(self, outputs):
