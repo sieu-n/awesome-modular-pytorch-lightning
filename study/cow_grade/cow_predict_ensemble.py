@@ -125,16 +125,17 @@ if __name__ == "__main__":
     experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
 
     # ensemble
-    agg_pred = []
+    agg_pred = None
     for state_dict_path in args.weights:
         cfg["model"]["state_dict_path"] = state_dict_path
         experiment.setup_experiment_from_cfg(
             cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
         )
 
-        predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
+        logits = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
+        agg_pred += torch.cat(logits)
 
-    predictions = torch.argmax(torch.cat(predictions), dim=1)
+    predictions = torch.argmax(agg_pred, dim=1)
     print("saving file under: prediction.csv")
     save_predictions_to_csv(
         image_names=test_image_names,
