@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
     parser.add_argument("--weights", nargs="+", required=True)
+    parser.add_argument("--tta_state_dict", default=None, type=str)
     parser.add_argument("--is_ckpt", default=False, action="store_true")
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -125,12 +126,15 @@ if __name__ == "__main__":
     experiment.setup_dataset(train_dataset, val_dataset, cfg, dataloader=False)
 
     # ensemble
-    agg_pred = None
+    agg_pred = 0
     for state_dict_path in args.weights:
         cfg["model"]["state_dict_path"] = state_dict_path
         experiment.setup_experiment_from_cfg(
             cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
         )
+        # reset TTA model
+        if args.tta_state_dict:
+            experiment.model.TTA_module.load_state_dict(torch.load(args.tta_state_dict))
 
         logits = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
         agg_pred += torch.cat(logits)
