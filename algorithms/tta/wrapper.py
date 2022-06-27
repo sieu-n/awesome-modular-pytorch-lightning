@@ -1,7 +1,7 @@
 import torch
 import torchmetrics
-
 from lightning.common import _LightningModule
+
 from .build import build_transforms
 from .merger import Merger
 
@@ -127,7 +127,3 @@ class ClassificationTTAWrapper(TTAFramework):
     def training_epoch_end(self, outs):
         # log epoch metric
         self.log('train_acc_epoch', self.accuracy)
-
-    def get_loss_and_log(self, res):
-        self.log("step/cls_loss", res["cls_loss"])
-        return res["cls_loss"]

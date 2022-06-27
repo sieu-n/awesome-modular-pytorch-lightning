@@ -12,3 +12,4 @@ from ttach.transforms import (  # noqa E403; Makes 4 crops for each corner + cen
 
 from .affine import CenterZoom  # noqa E403; Rotate image with arbitrary angles.
 from .affine import Rotation  # noqa E403; Zoom into center of the image.
+from .affine import FiveCrops  # noqa E403; Zoom into center of the image.

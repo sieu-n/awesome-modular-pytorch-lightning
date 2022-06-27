@@ -145,6 +145,7 @@ if __name__ == "__main__":
     )
     tta_module = experiment.model.TTA_module
     tta_trainer.fit(tta_module, experiment.val_dataloader, experiment.val_dataloader)
+
     print("Experiment and log dir:", experiment.get_directory())
     root_path = os.path.dirname(f"{experiment.exp_dir}/tta_state_dict.pth")
     if not os.path.exists(root_path):
