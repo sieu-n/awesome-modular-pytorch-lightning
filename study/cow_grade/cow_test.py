@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
     parser.add_argument("--weights", required=True)
+    parser.add_argument("--tta_state_dict", default=None, type=str)
     parser.add_argument("--is_ckpt", default=False, action="store_true")
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -117,6 +118,9 @@ if __name__ == "__main__":
     experiment.setup_experiment_from_cfg(
         cfg, setup_env=False, setup_dataset=False, setup_callbacks=False
     )
+
+    if args.tta_state_dict:
+        experiment.model.TTA_module.load_state_dict(torch.load(args.tta_state_dict))
 
     val_dataloader_cfg = merge_config(
         cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]

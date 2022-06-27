@@ -15,30 +15,6 @@ transform:
         },
       ],
     ],
-    [
-      "trn",
-      [
-        {
-          "name": "CutOut",
-          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 },
-        },
-
-        {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
-        },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
-        {
-          "name": "RandomRotation",
-          "args": { "degrees": [0, 360], "interpolation": "bilinear" },
-        },
-
-        {
-          "name": "TrivialAugmentWide",
-          "args": { "num_magnitude_bins": 31, "interpolation": "bilinear" },
-        },
-      ],
-    ],
     ["trn,val", [{ "name": "ClassificationLabelEncoder" }]],
 
     [
@@ -97,13 +73,13 @@ trainer:
 training:
   ID: "ClassificationTrainer"
 
-  epochs: 50
+  epochs: 30
   lr: 0.01
-  batch_size: 256
+  batch_size: 32
   optimizer: "sgd"
   optimizer_cfg:
     momentum: 0.9
-    weight_decay: 0.0005
+    weight_decay: 0.0
   lr_scheduler:
     name: "cosine"
     args: {}
@@ -114,7 +90,7 @@ training:
     total_epoch: 5
 
 validation:
-  batch_size: 256
+  batch_size: 32
 
 debug:
   network_summary:

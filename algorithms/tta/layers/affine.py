@@ -50,7 +50,7 @@ class CenterZoom(DualTransform):
             2. resize to original size
         """
         input_size = (image.shape[-2], image.shape[-1])
-        output_size = (image.shape[-2] / ratio, image.shape[-1] / ratio)
+        output_size = (int(image.shape[-2] / ratio), int(image.shape[-1] / ratio))
         image = torchvision.transforms.functional.center_crop(
             image,
             output_size=output_size,

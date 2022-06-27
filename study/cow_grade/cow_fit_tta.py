@@ -145,29 +145,10 @@ if __name__ == "__main__":
     )
     tta_module = experiment.model.TTA_module
     tta_trainer.fit(tta_module, experiment.val_dataloader, experiment.val_dataloader)
-    res = tta_trainer.test(tta_module, experiment.val_dataloader)
 
-    print("Result:", res)
     print("Experiment and log dir:", experiment.get_directory())
-    val_dataloader_cfg = merge_config(
-        cfg["dataloader"]["base_dataloader"], cfg["dataloader"]["val"]
-    )
-    test_dataloader = DataLoader(
-        test_dataset,
-        batch_size=cfg["validation"]["batch_size"],
-        **val_dataloader_cfg,
-    )
-    predictions = experiment.predict(test_dataloader, trainer_cfg=cfg["trainer"])
-    predictions = torch.argmax(torch.cat(predictions), dim=1)
-
-    print("saving file under:", experiment.get_directory() + "prediction.csv")
-    save_predictions_to_csv(
-        image_names=test_image_names,
-        pred=predictions,
-        label_map=cfg["const"]["label_map"],
-        filename=os.path.join(args.root_dir, "prediction.csv"),
-    )
     root_path = os.path.dirname(f"{experiment.exp_dir}/tta_state_dict.pth")
     if not os.path.exists(root_path):
         os.makedirs(root_path)
-    torch.save(experiment.model.state_dict(), f"{experiment.exp_dir}/tta_state_dict.pth")
+    torch.save(tta_module.state_dict(), f"{experiment.exp_dir}/tta_state_dict.pth")
+    print("weight:", tta_module.merger.weights)
