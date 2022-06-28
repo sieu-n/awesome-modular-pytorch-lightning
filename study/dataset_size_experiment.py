@@ -39,6 +39,29 @@ class SubsetDataset(Dataset):
         return self.base_dataset[idx]
 
 
+def get_data_size_schedule(args, num_train_samples):
+    if args.range:
+        init_samples, step = int(args.range[0]), int(args.range[1])
+        if len(args.range) == 2:
+            stop = num_train_samples
+        elif len(args.range) == 3:
+            stop = int(args.range[2])
+        else:
+            raise ValueError(f"Invalid range value: {args.range}")
+        data_size_schedule = list(range(init_samples, stop + 1, step))
+    elif args.range_percent:
+        init_samples = int(float(args.range_percent[0]) * num_train_samples)
+        step = int(float(args.range_percent[1]) * num_train_samples)
+        data_size_schedule = list(range(init_samples, num_train_samples + 1, step))
+    elif args.size_at_cycle:
+        data_size_schedule = [int(n) for n in args.size_at_cycle]
+    elif args.size_at_cycle_percent:
+        data_size_schedule = [
+            int(float(n) * num_train_samples) for n in args.size_at_cycle_percent
+        ]
+    return data_size_schedule
+
+
 if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
@@ -49,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument("--root_dir", type=str, default=None)
 
     parser.add_argument("--seed", type=int, default=None, help="random seed for defining dataset.")
-    parser.add_argument("-r", "--range", nargs=2, help="seed_samples, addendum")
+    parser.add_argument("-r", "--range", nargs="+", help="(start, step) or (start, step, stop)")
     parser.add_argument(
         "-rp", "--range_percent", nargs=2, help="seed_samples_percent, addendum_percent"
     )
@@ -87,21 +110,6 @@ if __name__ == "__main__":
         + (args.size_at_cycle_percent is None)
     ) == 3, "one of `range`, `range_percent`, `size_at_cycle`, or \
             `size_at_cycle_percent` must be specified"
-    num_train_samples = cfg["dataset"]["trn_size"]
-
-    if args.range:
-        init_samples, step = int(args.range[0]), int(args.range[1])
-        data_size_cycle = list(range(init_samples, num_train_samples + 1, step))
-    elif args.range_percent:
-        init_samples = int(float(args.range_percent[0]) * num_train_samples)
-        step = int(float(args.range_percent[1]) * num_train_samples)
-        data_size_cycle = list(range(init_samples, num_train_samples + 1, step))
-    elif args.size_at_cycle:
-        data_size_cycle = [int(n) for n in args.size_at_cycle]
-    elif args.size_at_cycle_percent:
-        data_size_cycle = [
-            int(float(n) * num_train_samples) for n in args.size_at_cycle_percent
-        ]
 
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg=cfg)
@@ -116,10 +124,13 @@ if __name__ == "__main__":
         dataloader_cfg=cfg["dataloader"],
         subset_to_get="val",
     )
+
+    data_size_schedule = get_data_size_schedule(args, len(trn_base_dataset))
+    print("Data size schedule: " + str(data_size_schedule))
     results = []
-    for idx, dataset_size in enumerate(data_size_cycle):
+    for idx, dataset_size in enumerate(data_size_schedule):
         print(
-            f"Cycle # {idx} / {len(data_size_cycle)} | Training data size: {dataset_size}"
+            f"Cycle # {idx} / {len(data_size_schedule)} | Training data size: {dataset_size}"
         )
         # setup environment
         cycle_cfg = deepcopy(cfg)
