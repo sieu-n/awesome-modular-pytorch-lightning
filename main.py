@@ -150,14 +150,15 @@ class Experiment:
                 assert callback_list == []
                 callback_list = cfg["callbacks"]
 
-        self._setup_callbacks(
+        logger_and_callbacks = self._setup_callbacks(
             callback_list=callback_list,
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
             tensorboard_cfg=tensorboard_cfg,
         )
-        if "logger" in self.logger_and_callbacks:
-            self.logger_and_callbacks["logger"].log_hyperparams(cfg)
+        if "logger" in logger_and_callbacks:
+            logger_and_callbacks["logger"].log_hyperparams(cfg)
+        return logger_and_callbacks
 
     def get_base_dataset(
         self,
@@ -281,7 +282,7 @@ class Experiment:
         callbacks = []
         for callback_cfg in callback_list:
             callbacks.append(build_callback(callback_cfg))
-        self.logger_and_callbacks = {
+        return {
             "logger": logger,
             "callbacks": callbacks,
         }
@@ -308,4 +309,4 @@ class Experiment:
                 is_ckpt=model_cfg.get("is_ckpt", False),
             )
 
-        self.model = model
+        return model

@@ -35,12 +35,11 @@ if __name__ == "__main__":
         dataloader_cfg=cfg["dataloader"],
     )
     train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
-    experiment.setup_model(
+    model = experiment.setup_model(
         model_cfg=cfg["model"],
         training_cfg=cfg["training"]
     )
-
-    experiment.setup_experiment_from_cfg(cfg)
+    logger_and_callbacks = experiment.setup_callbacks(cfg=cfg)
 
     # train
     save_path = "checkpoints/model_state_dict.pth",
@@ -54,7 +53,7 @@ if __name__ == "__main__":
         max_epochs=epochs,
         default_root_dir=root_dir,
         **(
-            experiment.logger_and_callbacks
+            logger_and_callbacks
             if hasattr(experiment, "logger_and_callbacks")
             else {}
         ),
@@ -62,7 +61,7 @@ if __name__ == "__main__":
     )
 
     pl_trainer.fit(
-        experiment.model,
+        model,
         train_dataloader,
         val_dataloader,
     )
@@ -70,18 +69,18 @@ if __name__ == "__main__":
     # log results
     if (
         hasattr(experiment, "logger_and_callbacks")
-        and "logger" in experiment.logger_and_callbacks
+        and "logger" in logger_and_callbacks
     ):
-        experiment.logger_and_callbacks["logger"].experiment.finish()
+        logger_and_callbacks["logger"].experiment.finish()
 
     # save weights
     save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
     if not os.path.exists(save_path_root):
         os.makedirs(save_path_root)
-    torch.save(experiment.model.state_dict(), f"{experiment.exp_dir}/{save_path}")
+    torch.save(model.state_dict(), f"{experiment.exp_dir}/{save_path}")
     # test
     res = pl_trainer.test(
-        experiment.model,
+        model,
         val_dataloader
     )
 

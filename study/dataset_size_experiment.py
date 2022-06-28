@@ -1,7 +1,9 @@
 import math
+import os
 import random
 from argparse import ArgumentParser
 from copy import deepcopy
+import pytorch_lightning as pl
 
 from main import Experiment
 from torch.utils.data import Dataset
@@ -10,7 +12,7 @@ from utils.logging import log_to_wandb
 
 
 class SubsetDataset(Dataset):
-    def __init__(self, base_dataset, indices):
+    def __init__(self, base_dataset, indices=None, size=None, seed=None):
         """
         Build dataset that simply adds more data transformations to the original samples.
         Parameters
@@ -19,7 +21,15 @@ class SubsetDataset(Dataset):
             base dataset that is used to get source samples.
         """
         self.base_dataset = base_dataset
-        self.indices = indices
+
+        if indices is not None:
+            self.indices = indices
+        else:
+            if args.seed:
+                random_sampler = random.Random(args.seed).sample
+            else:
+                random_sampler = random.sample
+            self.indices = random_sampler(range(len(base_dataset)), size)
 
     def __len__(self):
         return len(self.indices)
@@ -33,9 +43,12 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
+    parser.add_argument("--name", type=str, default=None)
+    parser.add_argument("--group", type=str, default=None)
+    parser.add_argument("--offline", action="store_true", default=False)
+    parser.add_argument("--root_dir", type=str, default=None)
 
-    parser.add_argument("--seed", type=int, default=None, help="random seed")
-
+    parser.add_argument("--seed", type=int, default=None, help="random seed for defining dataset.")
     parser.add_argument("-r", "--range", nargs=2, help="seed_samples, addendum")
     parser.add_argument(
         "-rp", "--range_percent", nargs=2, help="seed_samples_percent, addendum_percent"
@@ -58,6 +71,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
+
+    if args.name is not None:
+        cfg["name"] = args.name
+    if args.group:
+        cfg["wandb"]["group"] = args.group
+    if args.offline:
+        cfg["wandb"]["offline"] = True
 
     # setup dataset size experiment
     assert (
@@ -83,55 +103,90 @@ if __name__ == "__main__":
             int(float(n) * num_train_samples) for n in args.size_at_cycle_percent
         ]
 
-    if args.seed:
-        random_sampler = random.Random(args.seed).sample
-    else:
-        random_sampler = random.sample
-
     experiment = Experiment(cfg)
+    experiment.initialize_environment(cfg=cfg)
+    datasets = experiment.setup_dataset(
+        dataset_cfg=cfg["dataset"],
+        transform_cfg=cfg["transform"],
+    )
+    trn_base_dataset, val_dataset = datasets["trn"], datasets["val"]
+
+    val_dataloader = experiment.setup_dataloader(
+        datasets=val_dataset,
+        dataloader_cfg=cfg["dataloader"],
+        subset_to_get="val",
+    )
     results = []
     for idx, dataset_size in enumerate(data_size_cycle):
         print(
             f"Cycle # {idx} / {len(data_size_cycle)} | Training data size: {dataset_size}"
         )
-        cycle_cfg = deepcopy(
-            cfg
-        )  # copy and edit config file for dataset size experiment.
-        idx_labeled = random_sampler(range(num_train_samples), dataset_size)
-
-        # control dataset size
-        assert (
-            "sampler" not in cycle_cfg["dataloader"]["trn"]
-        ), "try another way to control dataset size"
-        cycle_cfg["dataset"]["transformations"].append(
-            [
-                "trn",
-                [
-                    {
-                        "name": SubsetDataset,
-                        "args": {"indices": idx_labeled},
-                    }
-                ],
-            ]
-        )
-        cycle_cfg["dataset"]["trn_size"] = len(idx_labeled)
-
-        # control logging
-        if "wandb" in cfg:
-            cycle_cfg["wandb"]["group"] = cfg["name"]
+        # setup environment
+        cycle_cfg = deepcopy(cfg)
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
+        experiment.initialize_environment(cfg=cycle_cfg)
+        if "wandb" in cfg:
+            cycle_cfg["wandb"]["group"] = experiment.experiment_name
 
+        # control dataset size and build train dataloader
+        trn_dataset = SubsetDataset(trn_base_dataset, size=dataset_size, seed=args.seed)
+        trn_dataloader = experiment.setup_dataloader(
+            datasets=trn_dataset,
+            dataloader_cfg=cfg["dataloader"],
+            subset_to_get="trn",
+        )
+
+        # build model and callbacks
+        model = experiment.setup_model(
+            model_cfg=cfg["model"],
+            training_cfg=cfg["training"]
+        )
+        logger_and_callbacks = experiment.setup_callbacks(cfg=cycle_cfg)
+
+        ################################################################
+        # train
+        ################################################################
+        save_path = "checkpoints/model_state_dict.pth",
+        if not args.root_dir:
+            root_dir = os.path.join(f"{experiment.exp_dir}/checkpoints", experiment.experiment_name)
+        else:
+            root_dir = os.path.join(args.root_dir, experiment.experiment_name)
         # compute number of epochs to compensate smaller number of steps.
         epochs = cfg["training"]["epochs"]
         if args.same_steps:
             epochs = math.floor(epochs * (data_size_cycle[-1]) / dataset_size)
             print(f"Increasing training epoch: {cfg['training']['epochs']} -> {epochs}")
-        cfg["training"]["epochs"] = epochs
+        # lightning trainer
+        pl_trainer = pl.Trainer(
+            max_epochs=epochs,
+            default_root_dir=root_dir,
+            **(
+                logger_and_callbacks
+                if hasattr(experiment, "logger_and_callbacks")
+                else {}
+            ),
+            **cfg["trainer"],
+        )
+        # train
+        pl_trainer.fit(
+            model,
+            trn_dataloader,
+            val_dataloader,
+        )
+        # log results
+        if (
+            hasattr(experiment, "logger_and_callbacks")
+            and "logger" in logger_and_callbacks
+        ):
+            logger_and_callbacks["logger"].experiment.finish()
+        # test
+        res = pl_trainer.test(
+            model,
+            val_dataloader
+        )
+        print("Result:", res)
+        results.append(res[0])
 
-        experiment.setup_experiment_from_cfg(cycle_cfg)
-        result = experiment.train(trainer_cfg=cycle_cfg["trainer"], epochs=epochs)
-        print("Result:", result)
-        results.append(result[0])
     print("Final results:", results)
     if "wandb" in cfg:
         log_to_wandb(
