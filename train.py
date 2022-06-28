@@ -20,9 +20,11 @@ if __name__ == "__main__":
         cfg["wandb"]["group"] = args.group
     if args.offline:
         cfg["wandb"]["offline"] = True
-    # train
+    # initialize experiment
     experiment = Experiment(cfg)
+    experiment.initialize_environment(cfg)
     experiment.setup_experiment_from_cfg(cfg)
+    # train
     result = experiment.train(
         trainer_cfg=cfg["trainer"],
         root_dir=args.root_dir,

@@ -26,8 +26,12 @@ from utils.visualization.utils import plot_samples_from_dataset
 
 class Experiment:
     def __init__(self, cfg=None, const_cfg=None, debug_cfg=None):
-        self.const_cfg = cfg["const"] if "const" in cfg else None
-        self.cfg_debug = cfg["debug"] if "debug" in cfg else None
+        if cfg is None:
+            self.const_cfg = cfg["const"] if "const" in cfg else None
+            self.debug_cfg = cfg["debug"] if "debug" in cfg else None
+        else:
+            self.const_cfg = const_cfg
+            self.debug_cfg = debug_cfg
 
     def get_directory(self):
         if not hasattr(self, "experiment_name"):
@@ -90,18 +94,11 @@ class Experiment:
     def setup_experiment_from_cfg(
         self,
         cfg,
-        setup_env=True,
         setup_dataset=True,
         setup_dataloader=True,
         setup_model=True,
         setup_callbacks=True,
     ):
-        self.const_cfg = cfg["const"] if "const" in cfg else None
-        self.cfg_debug = cfg["debug"] if "debug" in cfg else None
-
-        if setup_env:
-            self.initialize_environment(cfg)
-
         if setup_dataset:
             self._setup_dataset(
                 dataset_cfg=cfg["dataset"],
@@ -172,9 +169,9 @@ class Experiment:
         # for now, we mainly consider trn and val subsets.
         trn_dataset, val_dataset = datasets["trn"], datasets["val"]
         # plot samples after data augmentation
-        if self.cfg_debug and "view_train_augmentation" in self.cfg_debug:
+        if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
             save_to = (
-                f"{self.exp_dir}/{self.cfg_debug['view_train_augmentation']['save_to']}"
+                f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
             )
             print(f"[*] Visualizing training samples under `{save_to}")
 
@@ -189,7 +186,7 @@ class Experiment:
                 label_map=self.const_cfg["label_map"]
                 if "label_map" in self.const_cfg
                 else None,
-                **self.cfg_debug["view_train_augmentation"],
+                **self.debug_cfg["view_train_augmentation"],
             )
 
         self.trn_dataset, self.val_dataset = trn_dataset, val_dataset
@@ -273,11 +270,11 @@ class Experiment:
         lightning_module = lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg, self.const_cfg)
 
-        if self.cfg_debug and "network_summary" in self.cfg_debug:
+        if self.debug_cfg and "network_summary" in self.debug_cfg:
             batch_size = 16  # any num:)
             print(f"[*] Model backbone summary(when bs={batch_size}):")
 
-            input_shape = [batch_size] + self.cfg_debug["network_summary"][
+            input_shape = [batch_size] + self.debug_cfg["network_summary"][
                 "input_shape"
             ]
 
