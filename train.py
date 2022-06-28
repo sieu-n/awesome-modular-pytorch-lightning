@@ -35,11 +35,19 @@ if __name__ == "__main__":
         dataloader_cfg=cfg["dataloader"],
     )
     train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
+    experiment.setup_model(
+        model_cfg=cfg["model"],
+        training_cfg=cfg["training"]
+    )
+
     experiment.setup_experiment_from_cfg(cfg)
 
     # train
     save_path = "checkpoints/model_state_dict.pth",
-    root_dir = os.path.join(args.root_dir, experiment.experiment_name)
+    if not args.root_dir:
+        root_dir = os.path.join(f"{experiment.exp_dir}/checkpoints", experiment.experiment_name)
+    else:
+        root_dir = os.path.join(args.root_dir, experiment.experiment_name)
     epochs = cfg["training"]["epochs"]
 
     pl_trainer = pl.Trainer(

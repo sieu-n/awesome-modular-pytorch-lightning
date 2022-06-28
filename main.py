@@ -132,24 +132,32 @@ class Experiment:
         else:
             return datasets[subset_to_get]
 
-    def setup_experiment_from_cfg(
+    def setup_callbacks(
         self,
-        cfg,
-        setup_model=True,
-        setup_callbacks=True,
+        cfg=None,
+        callback_list=[],
+        wandb_cfg=None,
+        tensorboard_cfg=None,
     ):
-        if setup_callbacks:
-            self._setup_callbacks(
-                callback_cfg_list=cfg.get("callbacks", []),
-                experiment_name=self.experiment_name,
-                wandb_cfg=cfg.get("wandb", None),
-                tensorboard_cfg=cfg.get("tensorboard", None),
-            )
-            if "logger" in self.logger_and_callbacks:
-                self.logger_and_callbacks["logger"].log_hyperparams(cfg)
+        if cfg is not None:
+            if "wandb" in cfg:
+                assert wandb_cfg == {}
+                wandb_cfg = cfg
+            if "tensorboard" in cfg:
+                assert tensorboard_cfg == {}
+                tensorboard_cfg = cfg
+            if "callbacks" in cfg:
+                assert callback_list == []
+                callback_list = cfg["callbacks"]
 
-        if setup_model:
-            self._setup_model(cfg["model"], cfg["training"])
+        self._setup_callbacks(
+            callback_list=callback_list,
+            experiment_name=self.experiment_name,
+            wandb_cfg=wandb_cfg,
+            tensorboard_cfg=tensorboard_cfg,
+        )
+        if "logger" in self.logger_and_callbacks:
+            self.logger_and_callbacks["logger"].log_hyperparams(cfg)
 
     def get_base_dataset(
         self,
@@ -227,6 +235,7 @@ class Experiment:
         else:
             assert isinstance(datasets, torch.utils.data.Dataset)
             it = [(subset_to_get, datasets)]
+        # build dataloader for each subset and apply to the dataset object.
         for subset, dataset in it:
             # build configs.
             print("[*] Creating PyTorch `DataLoader`.")
@@ -240,10 +249,10 @@ class Experiment:
                     kwargs=dataloader_cfg["collate_fn"]["args"],
                 )
             # build dataloader
-            dataloaders.append(DataLoader(
+            dataloaders[subset] = DataLoader(
                 dataset,
                 **dataloader_cfg,
-            ))
+            )
         if subset_to_get is None:
             return dataloaders
         else:
@@ -252,7 +261,7 @@ class Experiment:
     def _setup_callbacks(
         self,
         experiment_name=None,
-        callback_cfg_list=[],
+        callback_list=[],
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
@@ -270,14 +279,14 @@ class Experiment:
         )
         # callbacks
         callbacks = []
-        for callback_cfg in callback_cfg_list:
+        for callback_cfg in callback_list:
             callbacks.append(build_callback(callback_cfg))
         self.logger_and_callbacks = {
             "logger": logger,
             "callbacks": callbacks,
         }
 
-    def _setup_model(self, model_cfg, training_cfg):
+    def setup_model(self, model_cfg, training_cfg):
         # model
         lightning_module = lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg, self.const_cfg)
@@ -300,117 +309,3 @@ class Experiment:
             )
 
         self.model = model
-
-    def train(
-        self,
-        use_existing_trainer=False,
-        trainer_cfg={},
-        epochs=None,
-        root_dir=None,
-        save_path="checkpoints/model_state_dict.pth",
-        test_after=True,
-    ):
-        # define pl.Trainer
-        if not root_dir:
-            root_dir = f"{self.exp_dir}/checkpoints"
-        root_dir = os.path.join(root_dir, self.experiment_name)
-        if epochs is None:
-            epochs = self.model.training_cfg["epochs"]
-        if use_existing_trainer:
-            train_trainer = self.trainers["train"]
-        else:
-            if "precision" in trainer_cfg:
-                assert (
-                    trainer_cfg["precision"] == 32 or self.model.automatic_optimization
-                ), "Manual optimization \
-                        using amp is not yet supported"
-            train_trainer = pl.Trainer(
-                max_epochs=epochs,
-                default_root_dir=root_dir,
-                **(
-                    self.logger_and_callbacks
-                    if hasattr(self, "logger_and_callbacks")
-                    else {}
-                ),
-                **trainer_cfg,
-            )
-        # keep track of trainer
-        if not hasattr(self, "trainers"):
-            self.trainers = {}
-        self.trainers["train"] = train_trainer
-
-        # train-test using trainer
-        train_trainer.fit(self.model, self.trn_dataloader, self.val_dataloader)
-        if test_after:
-            res = self.test(trainer_name="train")
-        else:
-            res = {}
-
-        # finish experiment
-        if (
-            hasattr(self, "logger_and_callbacks")
-            and "logger" in self.logger_and_callbacks
-        ):
-            self.logger_and_callbacks["logger"].experiment.finish()
-        if save_path is not None:
-            root_path = os.path.dirname(f"{self.exp_dir}/{save_path}")
-            if not os.path.exists(root_path):
-                os.makedirs(root_path)
-            torch.save(self.model.state_dict(), f"{self.exp_dir}/{save_path}")
-        return res
-
-    def test(
-        self,
-        test_dataloader=None,
-        trainer_name=None,
-        trainer_cfg=None,
-        root_dir=None,
-    ):
-        if not test_dataloader:
-            test_dataloader = self.val_dataloader
-        if trainer_name:
-            test_trainer = self.trainers[trainer_name]
-        elif trainer_cfg:
-            if not root_dir:
-                root_dir = f"{self.exp_dir}/checkpoints"
-            test_trainer = pl.Trainer(
-                default_root_dir=root_dir,
-                **trainer_cfg,
-            )
-        else:
-            assert (
-                "test" in self.trainers
-            ), "Please specify the trainer to use for testing such as batch size and root dir."
-            test_trainer = self.trainers["test"]
-        # keep track of trainer
-        if not hasattr(self, "trainers"):
-            self.trainers = {}
-        self.trainers["test"] = test_trainer
-
-        res = test_trainer.test(self.model, test_dataloader)
-        return res
-
-    def predict(
-        self,
-        x,
-        use_existing_trainer=False,
-        trainer_cfg={},
-        root_dir=None,
-    ):
-        if use_existing_trainer:
-            pred_trainer = self.trainers["pred"]
-            raise NotImplementedError()
-        else:
-            if not root_dir:
-                root_dir = f"{self.exp_dir}/checkpoints"
-            pred_trainer = pl.Trainer(
-                default_root_dir=root_dir,
-                **trainer_cfg,
-            )
-        # keep track of trainer
-        if not hasattr(self, "trainers"):
-            self.trainers = {}
-        self.trainers["pred"] = pred_trainer
-
-        pred = pred_trainer.predict(model=self.model, dataloaders=x)
-        return pred
