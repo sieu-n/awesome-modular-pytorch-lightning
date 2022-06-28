@@ -1,21 +1,20 @@
 import os
 import random
-from pathlib import Path
-
 import lightning
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from data.collate_fn import build_collate_fn
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
+
+from data.collate_fn import build_collate_fn
 from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import (
     apply_transforms,
-    build_dataset,
-    build_initial_transform,
-    build_transforms,
+    build_dataset as _build_dataset,
+    build_initial_transform as _build_initial_transform,
+    build_transforms as _build_transforms,
 )
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
@@ -27,11 +26,11 @@ from utils.visualization.utils import plot_samples_from_dataset
 class Experiment:
     def __init__(self, cfg=None, const_cfg=None, debug_cfg=None):
         if cfg is None:
-            self.const_cfg = cfg["const"] if "const" in cfg else None
-            self.debug_cfg = cfg["debug"] if "debug" in cfg else None
-        else:
             self.const_cfg = const_cfg
             self.debug_cfg = debug_cfg
+        else:
+            self.const_cfg = cfg["const"] if "const" in cfg else None
+            self.debug_cfg = cfg["debug"] if "debug" in cfg else None
 
     def get_directory(self):
         if not hasattr(self, "experiment_name"):
@@ -67,44 +66,72 @@ class Experiment:
         torch.manual_seed(seed)
         random.seed(seed)
 
-    def setup_dataset(self, train_dataset, val_dataset, cfg, dataloader=True):
-        self._setup_dataset(
-            initial_dataset={
-                "trn": train_dataset,
-                "val": val_dataset,
-            },
-            dataset_cfg=cfg["dataset"],
-            transform_cfg=cfg["transform"],
+    def setup_dataset(self, dataset_cfg, transform_cfg, const_cfg=None):
+        if const_cfg is None:
+            const_cfg = self.const_cfg
+
+        # 1. build initial dataset that read data.
+        datasets = self.get_base_dataset(
+            dataset_cfg=dataset_cfg,
+            subset=None,
         )
 
-        if dataloader:
-            val_batch_size = (
-                cfg["validation"]["batch_size"]
-                if ("validation" in cfg and "batch_size" in cfg["validation"])
-                else cfg["training"]["batch_size"]
+        # 2. build initial transformation to convert raw data into dictionary.
+        if "initial_transform" in dataset_cfg:
+            initial_transform_cfg = dataset_cfg["initial_transform"]
+            initial_transform = self.get_initial_transform(
+                initial_transform_cfg=initial_transform_cfg,
+                const_cfg=const_cfg,
             )
-            self._setup_dataloader(
-                self.trn_dataset,
-                self.val_dataset,
-                cfg["dataloader"],
-                trn_batch_size=cfg["training"]["batch_size"],
-                val_batch_size=val_batch_size,
+        else:
+            initial_transform = None
+
+        # 3. build transformations such as normalization and data augmentation.
+        transforms = self.get_transform(
+            transform_cfg,
+            subset=None,    # generate all subsets by default.
+            const_cfg=const_cfg,
+        )
+
+        # 4. actually apply transformations.
+        subsets = datasets.keys()
+        datasets = {
+            subset: apply_transforms(
+                datasets[subset], initial_transform, transforms[subset]
             )
+            for subset in subsets
+        }
+
+        # plot samples after data augmentation
+        if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
+            save_to = (
+                f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
+            )
+            print(f"[*] Visualizing training samples under `{save_to}")
+
+            plot_samples_from_dataset(
+                datasets["trn"],
+                task=self.const_cfg["task"],
+                image_tensor_to_numpy=True,
+                unnormalize=True,
+                normalization_mean=self.const_cfg["normalization_mean"],
+                normalization_std=self.const_cfg["normalization_std"],
+                root_dir=self.exp_dir,
+                label_map=self.const_cfg["label_map"]
+                if "label_map" in self.const_cfg
+                else None,
+                **self.debug_cfg["view_train_augmentation"],
+            )
+
+        return datasets
 
     def setup_experiment_from_cfg(
         self,
         cfg,
-        setup_dataset=True,
         setup_dataloader=True,
         setup_model=True,
         setup_callbacks=True,
     ):
-        if setup_dataset:
-            self._setup_dataset(
-                dataset_cfg=cfg["dataset"],
-                transform_cfg=cfg["transform"],
-            )
-
         if setup_dataloader:
             val_batch_size = (
                 cfg["validation"]["batch_size"]
@@ -131,65 +158,67 @@ class Experiment:
         if setup_model:
             self._setup_model(cfg["model"], cfg["training"])
 
-    def _setup_dataset(
-        self, initial_dataset=None, dataset_cfg=None, transform_cfg=None
+    def get_base_dataset(
+        self,
+        dataset_cfg,
+        subset=None,
     ):
-        # load data
+        """
+        Build torch.utils.data.Dataset objects based on cfg["dataset"]
+        Parameters
+        ----------
+        dataset_cfg: dict
+            The value of cfg["dataset"] is expected to be passed to the constructor.
+        base_dataset: torch.utils.data.Dataset, default=None
+        subset: str, default=None
+        Returns
+        -------
+        dict[str: torch.utils.data.Dataset], torch.utils.data.Dataset:
+            Returns dictionary containing the torch.utils.data.Dataset objects for each subset. If a value for `subset`
+            is provided, a single dataset corresponding to the subset value is returned.
+        """
         print_to_end("-")
         print("[*] Start loading dataset")
-        # 1. build initial dataset to read data.
-        if initial_dataset is None:
-            datasets = build_dataset(dataset_cfg)
-        else:
-            datasets = initial_dataset
-        # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+        # build initial dataset to read data.
+        datasets = _build_dataset(dataset_cfg)
 
-        # 2. build initial transformation to convert raw data into dictionary.
-        if "initial_transform" in dataset_cfg:
-            initial_transform = build_initial_transform(
-                initial_transform_cfg=dataset_cfg["initial_transform"],
-                const_cfg=self.const_cfg,
-            )
+        # return every subset as a dictionary if `subset` is None
+        if subset is None:
+            # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+            return datasets
         else:
-            initial_transform = None
-        # 3. build list of transformations using `transform` defined in config.
-        transforms = build_transforms(
-            transform_cfg=transform_cfg,
-            const_cfg=self.const_cfg,
-            subset_keys=datasets.keys(),
+            return datasets[subset]
+
+    def get_initial_transform(
+        self,
+        initial_transform_cfg,
+        const_cfg={},
+    ):
+        """
+        Build initial transformation to convert raw data into dictionary.
+        """
+        return _build_initial_transform(
+            initial_transform_cfg=initial_transform_cfg,
+            const_cfg=const_cfg,
         )
-        # 4. actually apply transformations.
-        subsets = datasets.keys()
-        datasets = {
-            subset: apply_transforms(
-                datasets[subset], initial_transform, transforms[subset]
-            )
-            for subset in subsets
-        }
-        # for now, we mainly consider trn and val subsets.
-        trn_dataset, val_dataset = datasets["trn"], datasets["val"]
-        # plot samples after data augmentation
-        if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
-            save_to = (
-                f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
-            )
-            print(f"[*] Visualizing training samples under `{save_to}")
 
-            plot_samples_from_dataset(
-                trn_dataset,
-                task=self.const_cfg["task"],
-                image_tensor_to_numpy=True,
-                unnormalize=True,
-                normalization_mean=self.const_cfg["normalization_mean"],
-                normalization_std=self.const_cfg["normalization_std"],
-                root_dir=self.exp_dir,
-                label_map=self.const_cfg["label_map"]
-                if "label_map" in self.const_cfg
-                else None,
-                **self.debug_cfg["view_train_augmentation"],
-            )
-
-        self.trn_dataset, self.val_dataset = trn_dataset, val_dataset
+    def get_transform(
+        self,
+        transform_cfg,
+        subset=None,
+        const_cfg={},
+    ):
+        # build list of transformations using arguments of cfg["transform"]
+        transforms = _build_transforms(
+            transform_cfg=transform_cfg,
+            const_cfg=const_cfg,
+        )
+        # return every subset as a dictionary if `subset` is None
+        if subset is None:
+            # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+            return transforms
+        else:
+            return transforms[subset]
 
     def _setup_dataloader(
         self,

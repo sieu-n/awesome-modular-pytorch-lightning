@@ -22,8 +22,13 @@ if __name__ == "__main__":
         cfg["wandb"]["offline"] = True
     # initialize experiment
     experiment = Experiment(cfg)
-    experiment.initialize_environment(cfg)
+    experiment.initialize_environment(cfg=cfg)
+    experiment.setup_dataset(
+        dataset_cfg=cfg["dataset"],
+        transform_cfg=cfg["transform"],
+    )
     experiment.setup_experiment_from_cfg(cfg)
+
     # train
     result = experiment.train(
         trainer_cfg=cfg["trainer"],

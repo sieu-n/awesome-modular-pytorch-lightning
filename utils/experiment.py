@@ -62,9 +62,9 @@ def build_dataset(dataset_cfg):
         raise ValueError(f"Invalid dataset type: `{dataset_mode}`")
 
 
-def build_transforms(transform_cfg, const_cfg, subset_keys):
+def build_transforms(transform_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
-    transforms = {subset: [] for subset in subset_keys}
+    transforms = {}
     for subsets, t_configs in transform_cfg:
         t = []
         # for each element of transforms,
@@ -77,8 +77,8 @@ def build_transforms(transform_cfg, const_cfg, subset_keys):
             t.append(transform_f(**kwargs))
 
         for subset in subsets.split(","):
-            if subset in subset_keys:
-                transforms[subset] += t
+            # add single transform
+            transforms[subset] = transforms.get(subset, []) + t
     composed = {
         subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
     }
