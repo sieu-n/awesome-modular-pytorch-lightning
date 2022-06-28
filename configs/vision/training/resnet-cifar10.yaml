@@ -1,10 +1,14 @@
 name: "CIFAR10-ResNet"
+
+dataloader:
+  base_dataloader:
+    batch_size: 64
+
 training:
   ID: "ClassificationTrainer"
 
   epochs: 200
   lr: 0.1
-  batch_size: 64
 
   optimizer: "sgd"
   optimizer_cfg:
@@ -39,9 +43,6 @@ training:
       update:
         preds: "logits"
         target: "y"
-
-validation:
-  batch_size: 64
 
 callbacks:
   - name: ModelCheckpoint

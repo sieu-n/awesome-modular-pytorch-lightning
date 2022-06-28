@@ -1,5 +1,6 @@
 import os
 import random
+import re
 import lightning
 import numpy as np
 import pytorch_lightning as pl
@@ -134,23 +135,9 @@ class Experiment:
     def setup_experiment_from_cfg(
         self,
         cfg,
-        setup_dataloader=True,
         setup_model=True,
         setup_callbacks=True,
     ):
-        if setup_dataloader:
-            val_batch_size = (
-                cfg["validation"]["batch_size"]
-                if ("validation" in cfg and "batch_size" in cfg["validation"])
-                else cfg["training"]["batch_size"]
-            )
-            self._setup_dataloader(
-                self.trn_dataset,
-                self.val_dataset,
-                cfg["dataloader"],
-                trn_batch_size=cfg["training"]["batch_size"],
-                val_batch_size=val_batch_size,
-            )
         if setup_callbacks:
             self._setup_callbacks(
                 callback_cfg_list=cfg.get("callbacks", []),
@@ -235,11 +222,11 @@ class Experiment:
         dataloaders = {}
 
         base_dataloader_cfg = dataloader_cfg["base_dataloader"]
-        if subset_to_get:
+        if subset_to_get is None:
+            it = datasets.items()
+        else:
             assert isinstance(datasets, torch.utils.data.Dataset)
             it = [(subset_to_get, datasets)]
-        else:
-            it = datasets.items()
         for subset, dataset in it:
             # build configs.
             print("[*] Creating PyTorch `DataLoader`.")
@@ -257,7 +244,10 @@ class Experiment:
                 dataset,
                 **dataloader_cfg,
             ))
-        return dataloaders
+        if subset_to_get is None:
+            return dataloaders
+        else:
+            return dataloaders[subset_to_get]
 
     def _setup_callbacks(
         self,

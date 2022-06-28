@@ -1,4 +1,7 @@
 from argparse import ArgumentParser
+import os
+import torch
+import pytorch_lightning as pl
 
 from main import Experiment
 from utils.configs import read_configs
@@ -27,13 +30,52 @@ if __name__ == "__main__":
         dataset_cfg=cfg["dataset"],
         transform_cfg=cfg["transform"],
     )
+    dataloaders = experiment.setup_dataloader(
+        datasets=datasets,
+        dataloader_cfg=cfg["dataloader"],
+    )
+    train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
     experiment.setup_experiment_from_cfg(cfg)
 
     # train
-    result = experiment.train(
-        trainer_cfg=cfg["trainer"],
-        root_dir=args.root_dir,
-        epochs=cfg["training"]["epochs"],
+    save_path = "checkpoints/model_state_dict.pth",
+    root_dir = os.path.join(args.root_dir, experiment.experiment_name)
+    epochs = cfg["training"]["epochs"]
+
+    pl_trainer = pl.Trainer(
+        max_epochs=epochs,
+        default_root_dir=root_dir,
+        **(
+            experiment.logger_and_callbacks
+            if hasattr(experiment, "logger_and_callbacks")
+            else {}
+        ),
+        **cfg["trainer"],
     )
-    print("Result:", result)
+
+    pl_trainer.fit(
+        experiment.model,
+        train_dataloader,
+        val_dataloader,
+    )
+
+    # log results
+    if (
+        hasattr(experiment, "logger_and_callbacks")
+        and "logger" in experiment.logger_and_callbacks
+    ):
+        experiment.logger_and_callbacks["logger"].experiment.finish()
+
+    # save weights
+    save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
+    if not os.path.exists(save_path_root):
+        os.makedirs(save_path_root)
+    torch.save(experiment.model.state_dict(), f"{experiment.exp_dir}/{save_path}")
+    # test
+    res = pl_trainer.test(
+        experiment.model,
+        val_dataloader
+    )
+
+    print("Result:", res)
     print("Experiment and log dir:", experiment.get_directory())
