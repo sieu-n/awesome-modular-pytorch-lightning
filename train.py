@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # initialize experiment
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg=cfg)
-    experiment.setup_dataset(
+    datasets = experiment.setup_dataset(
         dataset_cfg=cfg["dataset"],
         transform_cfg=cfg["transform"],
     )

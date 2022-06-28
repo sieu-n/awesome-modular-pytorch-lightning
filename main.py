@@ -66,7 +66,7 @@ class Experiment:
         torch.manual_seed(seed)
         random.seed(seed)
 
-    def setup_dataset(self, dataset_cfg, transform_cfg, const_cfg=None):
+    def setup_dataset(self, dataset_cfg, transform_cfg, const_cfg=None, subset_to_get=None):
         if const_cfg is None:
             const_cfg = self.const_cfg
 
@@ -104,26 +104,32 @@ class Experiment:
 
         # plot samples after data augmentation
         if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
-            save_to = (
-                f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
-            )
-            print(f"[*] Visualizing training samples under `{save_to}")
+            if "trn" in datasets:
+                save_to = (
+                    f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
+                )
+                print(f"[*] Visualizing training samples under `{save_to}")
 
-            plot_samples_from_dataset(
-                datasets["trn"],
-                task=self.const_cfg["task"],
-                image_tensor_to_numpy=True,
-                unnormalize=True,
-                normalization_mean=self.const_cfg["normalization_mean"],
-                normalization_std=self.const_cfg["normalization_std"],
-                root_dir=self.exp_dir,
-                label_map=self.const_cfg["label_map"]
-                if "label_map" in self.const_cfg
-                else None,
-                **self.debug_cfg["view_train_augmentation"],
-            )
+                plot_samples_from_dataset(
+                    datasets["trn"],
+                    task=self.const_cfg["task"],
+                    image_tensor_to_numpy=True,
+                    unnormalize=True,
+                    normalization_mean=self.const_cfg["normalization_mean"],
+                    normalization_std=self.const_cfg["normalization_std"],
+                    root_dir=self.exp_dir,
+                    label_map=self.const_cfg["label_map"]
+                    if "label_map" in self.const_cfg
+                    else None,
+                    **self.debug_cfg["view_train_augmentation"],
+                )
+            else:
+                print("the 'trn' subset is not defined in the dataset, so `view_train_augmentation` is disabled.")
 
-        return datasets
+        if subset_to_get is None:
+            return datasets
+        else:
+            return datasets[subset_to_get]
 
     def setup_experiment_from_cfg(
         self,
@@ -220,51 +226,38 @@ class Experiment:
         else:
             return transforms[subset]
 
-    def _setup_dataloader(
+    def setup_dataloader(
         self,
-        trn_dataset,
-        val_dataset,
+        datasets,
         dataloader_cfg,
-        trn_batch_size,
-        val_batch_size=None,
+        subset_to_get=None,
     ):
-        # build configs.
-        print("[*] Creating PyTorch `DataLoader`.")
-        trn_dataloader_cfg = merge_config(
-            dataloader_cfg["base_dataloader"], dataloader_cfg["trn"]
-        )
-        val_dataloader_cfg = merge_config(
-            dataloader_cfg["base_dataloader"], dataloader_cfg["val"]
-        )
-        if not val_batch_size:
-            val_batch_size = trn_batch_size
+        dataloaders = {}
 
-        # collate_fn
-        if "collate_fn" in trn_dataloader_cfg:
-            trn_dataloader_cfg["collate_fn"] = build_collate_fn(
-                name=trn_dataloader_cfg["collate_fn"]["name"],
-                kwargs=trn_dataloader_cfg["collate_fn"]["args"],
+        base_dataloader_cfg = dataloader_cfg["base_dataloader"]
+        if subset_to_get:
+            assert isinstance(datasets, torch.utils.data.Dataset)
+            it = [(subset_to_get, datasets)]
+        else:
+            it = datasets.items()
+        for subset, dataset in it:
+            # build configs.
+            print("[*] Creating PyTorch `DataLoader`.")
+            dataloader_cfg = merge_config(
+                base_dataloader_cfg, dataloader_cfg.get(subset, {})
             )
-        if "collate_fn" in val_dataloader_cfg:
-            val_dataloader_cfg["collate_fn"] = build_collate_fn(
-                name=val_dataloader_cfg["collate_fn"]["name"],
-                kwargs=val_dataloader_cfg["collate_fn"]["args"],
-            )
-
-        # dataloader - train
-        trn_dataloader = DataLoader(
-            trn_dataset,
-            batch_size=trn_batch_size,
-            **trn_dataloader_cfg,
-        )
-        # dataloader - val
-        val_dataloader = DataLoader(
-            val_dataset,
-            batch_size=val_batch_size,
-            **val_dataloader_cfg,
-        )
-
-        self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
+            # build collate_fn
+            if "collate_fn" in dataloader_cfg:
+                dataloader_cfg["collate_fn"] = build_collate_fn(
+                    name=dataloader_cfg["collate_fn"]["name"],
+                    kwargs=dataloader_cfg["collate_fn"]["args"],
+                )
+            # build dataloader
+            dataloaders.append(DataLoader(
+                dataset,
+                **dataloader_cfg,
+            ))
+        return dataloaders
 
     def _setup_callbacks(
         self,
