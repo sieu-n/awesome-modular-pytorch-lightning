@@ -28,11 +28,12 @@ training:
       update:
         value: "cls_loss"
     confusion_matrix:
+      frequency: { "trn": 50 }
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"
       args:
-        num_classes: 10
+        num_classes: 5
       update:
         preds: "logits"
         target: "y"

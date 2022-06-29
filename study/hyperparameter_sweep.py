@@ -99,7 +99,7 @@ if __name__ == "__main__":
         experiment = Experiment(cycle_cfg)
         experiment.initialize_environment(cfg=cycle_cfg)
         if "wandb" in cycle_cfg and args.set_same_group:
-            cycle_cfg["wandb"]["group"] = experiment.experiment_name
+            cycle_cfg["wandb"]["group"] = cfg["name"]
 
         datasets = experiment.setup_dataset(
             dataset_cfg=cycle_cfg["dataset"],
@@ -130,11 +130,7 @@ if __name__ == "__main__":
         pl_trainer = pl.Trainer(
             max_epochs=epochs,
             default_root_dir=root_dir,
-            **(
-                logger_and_callbacks
-                if hasattr(experiment, "logger_and_callbacks")
-                else {}
-            ),
+            **logger_and_callbacks,
             **cycle_cfg["trainer"],
         )
         # train

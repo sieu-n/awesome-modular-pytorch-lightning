@@ -51,7 +51,7 @@ if __name__ == "__main__":
     pl_trainer = pl.Trainer(
         max_epochs=epochs,
         default_root_dir=root_dir,
-        **(logger_and_callbacks if hasattr(experiment, "logger_and_callbacks") else {}),
+        **logger_and_callbacks,
         **cfg["trainer"],
     )
 

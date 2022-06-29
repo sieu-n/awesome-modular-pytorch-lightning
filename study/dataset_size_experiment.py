@@ -140,20 +140,20 @@ if __name__ == "__main__":
         cycle_cfg = deepcopy(cfg)
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
         experiment.initialize_environment(cfg=cycle_cfg)
-        if "wandb" in cfg:
-            cycle_cfg["wandb"]["group"] = experiment.experiment_name
+        if "wandb" in cycle_cfg and args.set_same_group and args.set_same_group:
+            cycle_cfg["wandb"]["group"] = cfg["name"]
 
         # control dataset size and build train dataloader
         trn_dataset = SubsetDataset(trn_base_dataset, size=dataset_size, seed=args.seed)
         trn_dataloader = experiment.setup_dataloader(
             datasets=trn_dataset,
-            dataloader_cfg=cfg["dataloader"],
+            dataloader_cfg=cycle_cfg["dataloader"],
             subset_to_get="trn",
         )
 
         # build model and callbacks
         model = experiment.setup_model(
-            model_cfg=cfg["model"], training_cfg=cfg["training"]
+            model_cfg=cycle_cfg["model"], training_cfg=cfg["training"]
         )
         logger_and_callbacks = experiment.setup_callbacks(cfg=cycle_cfg)
 
@@ -168,20 +168,16 @@ if __name__ == "__main__":
         else:
             root_dir = os.path.join(args.root_dir, experiment.experiment_name)
         # compute number of epochs to compensate smaller number of steps.
-        epochs = cfg["training"]["epochs"]
+        epochs = cycle_cfg["training"]["epochs"]
         if args.same_steps:
             epochs = math.floor(epochs * len(trn_base_dataset) / dataset_size)
-            print(f"Increasing training epoch: {cfg['training']['epochs']} -> {epochs}")
+            print(f"Increasing training epoch: {cycle_cfg['training']['epochs']} -> {epochs}")
         # lightning trainer
         pl_trainer = pl.Trainer(
             max_epochs=epochs,
             default_root_dir=root_dir,
-            **(
-                logger_and_callbacks
-                if hasattr(experiment, "logger_and_callbacks")
-                else {}
-            ),
-            **cfg["trainer"],
+            **logger_and_callbacks,
+            **cycle_cfg["trainer"],
         )
         # train
         pl_trainer.fit(
