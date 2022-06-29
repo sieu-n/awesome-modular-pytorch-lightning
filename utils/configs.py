@@ -1,4 +1,5 @@
 from copy import deepcopy
+from operator import is_
 
 import yaml
 
@@ -166,9 +167,12 @@ def compute_links(cfg):
                 parsed_cfg, is_compiled = compile_str(parsed_cfg)
             return parsed_cfg, is_compiled
 
+        is_something_compiled = False
         for k in it:
-            parsed_cfg[k] = recurse_iter(parsed_cfg[k])
-        return parsed_cfg
+            parsed_cfg[k], is_compiled = recurse_iter(parsed_cfg[k])
+            if is_compiled:
+                is_something_compiled = True
+        return parsed_cfg, is_something_compiled
 
     is_compiled = True
     compiled_cfg = deepcopy(cfg)

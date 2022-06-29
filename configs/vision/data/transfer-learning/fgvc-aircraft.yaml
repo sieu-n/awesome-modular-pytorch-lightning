@@ -1,0 +1,88 @@
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.FGVCAircraft.html#torchvision.datasets.FGVCAircraft
+# The dataset contains 10,000 images of aircraft, with 100 images for each of 100 different aircraft model variants, 
+# most of which are airplanes. Aircraft models are organized in a three-levels hierarchy. The three levels, from finer 
+# to coarser, are:
+#   - variant, e.g. Boeing 737-700. A variant collapses all the models that are visually indistinguishable into one
+#     class. The dataset comprises 100 different variants.
+#   - family, e.g. Boeing 737. The dataset comprises 70 different families.
+#   - manufacturer, e.g. Boeing. The dataset comprises 30 different manufacturers.
+
+dataset:
+  MODE: "torchvision"
+  NAME: "FGVCAircraft"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./FGVCAircraft"
+    annotation_level: "variant"
+  dataset_subset_cfg:
+    trn:
+      download: True
+      split: "train"
+    val:
+      split: "val"
+  initial_transform:
+    name: "TupleToClassificationData"
+
+transform:
+  [
+    [
+      "trn",
+      [
+        {
+          "name": "RandomResizedCropAndInterpolation",
+          "args":
+            {
+              "size": 224,
+              "scale": [0.08, 1.0],
+              "ratio": [0.75, 1.3333],
+              "interpolation": "random",
+            },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+    [
+      # standard approach to use images cropped to the central 87.5% for validation
+      "val,test",
+      [
+        {
+          "name": "Resize",
+          "args":
+            {
+              "size": [256, 256],
+              "interpolation": "bilinear",
+            },
+        },
+        {
+          "name": "CenterCrop",
+          "args": { "NAME": "RandomHorizontalFlip", "ARGS": {"size": [224, 224]} },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+    [
+      "trn,val,test",
+      [
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+            },
+        },
+      ],
+    ],
+  ]
+
+const:
+  task: "image classification"
+  # do nothing.
+  normalization_mean: [0, 0, 0]
+  normalization_std: [1, 1, 1]
+  num_classes: 100

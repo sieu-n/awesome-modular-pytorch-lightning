@@ -1,27 +1,31 @@
-name: "CIFAR10-ResNet"
+name: "RandomInitialization-ResNet18"
 
 dataloader:
   base_dataloader:
-    batch_size: 64
+    batch_size: 256
+
+trainer:
+  max_steps: 20000
 
 training:
   ID: "ClassificationTrainer"
 
-  epochs: 200
-  lr: 0.1
+  epochs: null
+  lr: 0.01
 
   optimizer: "sgd"
   optimizer_cfg:
     lr: "{training.lr}"
+    nesterov: True
     momentum: 0.9
-    weight_decay: 0.0005
+    weight_decay: "{training.lr}*0.00001"
 
   lr_scheduler:
     name: "cosine"
     args:
-      T_max: "{training.epochs}"
+      T_max: "{trainer.max_steps}"
     cfg:
-      interval: "epoch"
+      interval: "step"
 
   metrics:
     loss:
@@ -72,11 +76,10 @@ model:
       args:
         reduction: "gap"
         in_features: "{model.backbone.out_features}"
-        dropout: 0.2
         num_classes: "{const.num_classes}"
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
 
 wandb:
-  project: "CIFAR10-classification"
+  project: "Transfer-learning-classification"
