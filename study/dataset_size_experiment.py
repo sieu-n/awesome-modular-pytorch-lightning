@@ -190,11 +190,7 @@ if __name__ == "__main__":
             val_dataloader,
         )
         # log results
-        if (
-            hasattr(experiment, "logger_and_callbacks")
-            and "logger" in logger_and_callbacks
-        ):
-            logger_and_callbacks["logger"].experiment.finish()
+        experiment.finish()
         # test
         res = pl_trainer.test(model, val_dataloader)
         print("Result:", res)

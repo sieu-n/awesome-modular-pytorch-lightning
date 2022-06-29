@@ -1,43 +1,11 @@
-from email.policy import default
-import math
 import os
-import random
 from argparse import ArgumentParser
 from copy import deepcopy
 
 import pytorch_lightning as pl
 from main import Experiment
-from torch.utils.data import Dataset
 from utils.configs import read_configs, merge_config
 from utils.logging import log_to_wandb
-
-
-class SubsetDataset(Dataset):
-    def __init__(self, base_dataset, indices=None, size=None, seed=None):
-        """
-        Build dataset that simply adds more data transformations to the original samples.
-        Parameters
-        ----------
-        base_dataset: torch.utils.data.Dataset
-            base dataset that is used to get source samples.
-        """
-        self.base_dataset = base_dataset
-
-        if indices is not None:
-            self.indices = indices
-        else:
-            if args.seed:
-                random_sampler = random.Random(args.seed).sample
-            else:
-                random_sampler = random.sample
-            self.indices = random_sampler(range(len(base_dataset)), size)
-
-    def __len__(self):
-        return len(self.indices)
-
-    def __getitem__(self, idx):
-        idx = self.indices[idx]
-        return self.base_dataset[idx]
 
 
 def set_key_to(d, key, value):
@@ -51,8 +19,8 @@ def set_key_to(d, key, value):
         _d_to_push = _d_to_push[k]
     # fill in 0.01: d_to_push = { "training": { "optimizer": { "lr": 0.01 } } }
     _d_to_push[key.split(".")[-1]] = value
-
-    return merge_config(cfg_base=d, cfg_from=d_to_push)
+    merged = merge_config(cfg_base=d, cfg_from=d_to_push)
+    return merged
 
 
 def get_data_size_schedule(args, num_train_samples):
@@ -88,13 +56,13 @@ if __name__ == "__main__":
     parser.add_argument("--root_dir", type=str, default=None)
     parser.add_argument("--set_same_group", default=False, action="store_true")
     parser.add_argument(
-        "-v", "--value", nargs="+", help="list of values"
+        "-v", "--value", nargs="+", help="list of values", required=True,
     )
     parser.add_argument(
-        "-k", "--key", type=str
+        "-k", "--key", type=str, required=True,
     )
     parser.add_argument(
-        "-t", "--dtype", type="str", choices=["str", "int", "float"]
+        "-t", "--dtype", default="str", type=str, choices=["str", "int", "float"]
     )
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -112,7 +80,7 @@ if __name__ == "__main__":
         "float": float,
         "str": str,
     }
-    values = list(map(args.value, dtype_map[args.dtype]))
+    values = list(map(dtype_map[args.dtype], args.value))
     print("Hparam schedule: " + str(values))
 
     results = []
@@ -124,30 +92,29 @@ if __name__ == "__main__":
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{args.key}_{value}"
 
         # set `args.key` in config to `value`
-        set_key_to(cycle_cfg, args.key, value)
+        cycle_cfg = set_key_to(cycle_cfg, args.key, value)
         ################################################################
         # build experiment
         ################################################################
-        experiment = Experiment(cfg)
-        experiment.initialize_environment(cfg=cfg)
-        if "wandb" in cfg and args.set_same_group:
+        experiment = Experiment(cycle_cfg)
+        experiment.initialize_environment(cfg=cycle_cfg)
+        if "wandb" in cycle_cfg and args.set_same_group:
             cycle_cfg["wandb"]["group"] = experiment.experiment_name
 
         datasets = experiment.setup_dataset(
-            dataset_cfg=cfg["dataset"],
-            transform_cfg=cfg["transform"],
+            dataset_cfg=cycle_cfg["dataset"],
+            transform_cfg=cycle_cfg["transform"],
         )
         dataloaders = experiment.setup_dataloader(
             datasets=datasets,
-            dataloader_cfg=cfg["dataloader"],
+            dataloader_cfg=cycle_cfg["dataloader"],
         )
         train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
         # build model and callbacks
         model = experiment.setup_model(
-            model_cfg=cfg["model"], training_cfg=cfg["training"]
+            model_cfg=cycle_cfg["model"], training_cfg=cycle_cfg["training"]
         )
         logger_and_callbacks = experiment.setup_callbacks(cfg=cycle_cfg)
-
         ################################################################
         # train
         ################################################################
@@ -158,7 +125,7 @@ if __name__ == "__main__":
             )
         else:
             root_dir = os.path.join(args.root_dir, experiment.experiment_name)
-        epochs = cfg["training"]["epochs"]
+        epochs = cycle_cfg["training"]["epochs"]
         # lightning trainer
         pl_trainer = pl.Trainer(
             max_epochs=epochs,
@@ -168,7 +135,7 @@ if __name__ == "__main__":
                 if hasattr(experiment, "logger_and_callbacks")
                 else {}
             ),
-            **cfg["trainer"],
+            **cycle_cfg["trainer"],
         )
         # train
         pl_trainer.fit(
@@ -177,11 +144,7 @@ if __name__ == "__main__":
             val_dataloader,
         )
         # log results
-        if (
-            hasattr(experiment, "logger_and_callbacks")
-            and "logger" in logger_and_callbacks
-        ):
-            logger_and_callbacks["logger"].experiment.finish()
+        experiment.finish()
         # test
         res = pl_trainer.test(model, val_dataloader)
         res[0][args.key] = value

@@ -310,3 +310,10 @@ class Experiment:
             )
 
         return model
+
+    def finish(self):
+        if (
+            hasattr(self, "logger_and_callbacks")
+            and "logger" in self.logger_and_callbacks
+        ):
+            self.logger_and_callbacks["logger"].experiment.finish()

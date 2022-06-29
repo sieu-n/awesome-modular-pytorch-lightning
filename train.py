@@ -62,9 +62,7 @@ if __name__ == "__main__":
     )
 
     # log results
-    if hasattr(experiment, "logger_and_callbacks") and "logger" in logger_and_callbacks:
-        logger_and_callbacks["logger"].experiment.finish()
-
+    experiment.finish()
     # save weights
     save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
     if not os.path.exists(save_path_root):
