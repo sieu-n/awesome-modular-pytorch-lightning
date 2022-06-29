@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 from main import Experiment
-from utils.configs import merge_config, read_configs
+from utils.configs import merge_config, read_configs, compute_links
 from utils.logging import log_to_wandb
 
 
@@ -100,6 +100,7 @@ if __name__ == "__main__":
 
         # set `args.key` in config to `value`
         cycle_cfg = set_key_to(cycle_cfg, args.key, value)
+        cycle_cfg = compute_links(cycle_cfg)
         ################################################################
         # build experiment
         ################################################################

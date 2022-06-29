@@ -6,8 +6,6 @@ debug:
 dataset:
   MODE: "torchvision"
   NAME: "CIFAR10"
-  trn_size: 50000
-  val_size: 10000
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     root: "./cifar10"
@@ -45,8 +43,8 @@ transform:
           "name": "Normalize",
           "args":
             {
-              "mean": [0.4914, 0.4822, 0.4465],
-              "std": [0.2023, 0.1994, 0.2010],
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
             },
         },
       ],
@@ -57,6 +55,7 @@ const:
   task: "image classification"
   normalization_mean: [0.4914, 0.4822, 0.4465]
   normalization_std: [0.2023, 0.1994, 0.2010]
+  num_classes: 10
   label_map:
     - "airplane"
     - "automobile"

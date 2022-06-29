@@ -12,11 +12,14 @@ training:
 
   optimizer: "sgd"
   optimizer_cfg:
+    lr: "{training.lr}"
     momentum: 0.9
     weight_decay: 0.0005
+
   lr_scheduler:
     name: "cosine"
-    args: {}
+    args:
+      T_max: "{training.epochs}"
     cfg:
       interval: "epoch"
 
@@ -33,7 +36,7 @@ training:
       name: "ConfusionMatrix"
       file: "torchmetrics"
       args:
-        num_classes: 10
+        num_classes: "{const.num_classes}"
       update:
         preds: "logits"
         target: "y"
@@ -68,9 +71,9 @@ model:
       input: "output"
       args:
         reduction: "gap"
-        in_features: 512
+        in_features: "{model.backbone.out_features}"
         dropout: 0.2
-        num_classes: 10
+        num_classes: "{const.num_classes}"
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"

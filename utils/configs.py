@@ -84,4 +84,94 @@ def read_configs(yaml_paths):
     for yaml_path in yaml_paths[::-1]:
         new_cfg = read_yaml(yaml_path)
         cfg = merge_config(cfg, new_cfg)
-    return cfg
+    return compute_links(cfg)
+
+
+def compute_links(cfg):
+    """
+    Computes `links` in config file that can be defined using curly brackets. For example,
+
+    ```
+    metrics:
+        ConfusionMatrix:
+            args:
+                num_classes: "{config.const.num_classes}"   <-- This will reference cfg["const"]["num_classes"]
+                ...
+    const:
+        num_classes: 10
+    ```
+
+    Since the python `eval` function computes the results, we can also apply simple arithmetics. For example, the
+    weight decay value is often set proportional to the learning rate. The recursive search works when each config is a
+    dictionary, list, tuple with index, or an object with the property.
+
+    ```
+    training:
+        learning_rate: 0.01
+        optimizer: "adamw"
+        optimizer_cfg:
+            weight_decay: "{training.learning_rate}*0.001"  <-- learning_rate * 0.001
+    ```
+
+    However as more complex objects might also be inside config and the logic of 1) converting them into string,
+    2) using `eval` to original form, could destruct the data. Therefore as an exception if the entire string is
+    defined as a link, that object is returned directly.
+    """
+
+    def recursive_search(s):
+        _cfg = cfg
+        for k in s.split("."):
+            if type(_cfg) == dict:
+                _cfg = _cfg[k]
+            elif type(_cfg) == list or type(_cfg) == tuple:
+                _cfg = _cfg[int(k)]
+            else:
+                _cfg = getattr(_cfg, k)
+        return _cfg
+
+    def compile_str(query):
+        left, cursor = -1, 0
+        is_compiled = False
+        _query = deepcopy(query)
+        while cursor < len(_query):
+            if _query[cursor] == "{":
+                assert left == -1, f"Two consecutive opening brackets found. query: {query}"
+                is_compiled = True
+                left = cursor
+            if _query[cursor] == "}":
+                assert left != -1, f"Closing bracket found but was never opened. query: {query}"
+                obj = recursive_search(_query[left + 1:cursor])
+                if cursor == len(query) - 1 and left == 0:
+                    print(f"Compiled {query} := {obj}")
+                    return obj, True
+
+                _query = _query.replace(_query[left:cursor + 1], str(obj))
+                left = -1
+            cursor += 1
+        if is_compiled:
+            assert left == -1, f"Brackets was opened but not close. query: {query}"
+            print(f"Compiled {query} := {_query}")
+            return eval(_query), True
+        else:
+            return query, False
+
+    def recurse_iter(parsed_cfg):
+        if type(parsed_cfg) == dict:
+            it = parsed_cfg.keys()
+        elif type(parsed_cfg) == list or type(parsed_cfg) == tuple:
+            it = range(len(parsed_cfg))
+        else:
+            is_compiled = False
+            if type(parsed_cfg) == str:
+                parsed_cfg, is_compiled = compile_str(parsed_cfg)
+            return parsed_cfg, is_compiled
+
+        for k in it:
+            parsed_cfg[k] = recurse_iter(parsed_cfg[k])
+        return parsed_cfg
+
+    is_compiled = True
+    compiled_cfg = deepcopy(cfg)
+    while is_compiled:
+        compiled_cfg, is_compiled = recurse_iter(compiled_cfg)
+    return compiled_cfg
