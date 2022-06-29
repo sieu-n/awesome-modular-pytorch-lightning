@@ -78,6 +78,7 @@ if __name__ == "__main__":
     parser.add_argument("--group", type=str, default=None)
     parser.add_argument("--offline", action="store_true", default=False)
     parser.add_argument("--root_dir", type=str, default=None)
+    parser.add_argument("--set_same_group", default=False, action="store_true")
 
     parser.add_argument(
         "--seed", type=int, default=None, help="random seed for defining dataset."
@@ -140,7 +141,7 @@ if __name__ == "__main__":
         cycle_cfg = deepcopy(cfg)
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
         experiment.initialize_environment(cfg=cycle_cfg)
-        if "wandb" in cycle_cfg and args.set_same_group and args.set_same_group:
+        if "wandb" in cycle_cfg and args.set_same_group:
             cycle_cfg["wandb"]["group"] = cfg["name"]
 
         # control dataset size and build train dataloader
