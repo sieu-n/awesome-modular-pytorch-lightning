@@ -33,7 +33,7 @@ training:
       name: "ConfusionMatrix"
       file: "torchmetrics"
       args:
-        num_classes: 5
+        num_classes: 10
       update:
         preds: "logits"
         target: "y"
