@@ -144,10 +144,11 @@ if __name__ == "__main__":
             train_dataloader,
             val_dataloader,
         )
-        # log results
-        logger_and_callbacks["logger"].experiment.finish()
         # test
         res = pl_trainer.test(model, val_dataloader)
+        # log results
+        logger_and_callbacks["logger"].experiment.finish()
+
         res[0][args.key] = value
         print("Result:", res)
         results.append(res[0])

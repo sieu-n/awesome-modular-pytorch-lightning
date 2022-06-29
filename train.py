@@ -61,8 +61,6 @@ if __name__ == "__main__":
         val_dataloader,
     )
 
-    # log results
-    logger_and_callbacks["logger"].experiment.finish()
     # save weights
     save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
     if not os.path.exists(save_path_root):
@@ -70,6 +68,9 @@ if __name__ == "__main__":
     torch.save(model.state_dict(), f"{experiment.exp_dir}/{save_path}")
     # test
     res = pl_trainer.test(model, val_dataloader)
+
+    # log results
+    logger_and_callbacks["logger"].experiment.finish()
 
     print("Result:", res)
     print("Experiment and log dir:", experiment.get_directory())
