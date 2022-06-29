@@ -1,24 +1,22 @@
 # https://pytorch.org/vision/stable/generated/torchvision.datasets.StanfordCars.html#torchvision.datasets.StanfordCars
-# The Cars dataset contains 
-#   - 16,185 images of 
-#   - 196 classes of cars. 
-#   - split into 8,144 training images and 8,041 testing images, where each class has been split roughly in a 50-50 split
-
+# Oxford 102 Flower is an image classification dataset consisting of 
+#   - 102 flower categories.
+#   - Each class consists of between 40 and 258 images.
 
 dataset:
   MODE: "torchvision"
-  NAME: "StanfordCars"
+  NAME: "Flowers102"
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    root: "./StanfordCars"
+    root: "./Flowers102"
   dataset_subset_cfg:
     trn:
       download: True
       split: "train"
     val:
-      split: "test"
+      split: "val"
   initial_transform:
     name: "TupleToClassificationData"
 
 const:
-  num_classes: 101
+  num_classes: 102

@@ -1,8 +1,3 @@
-debug:
-  view_train_augmentation:
-    resize_to: [256, 256] # resize so class text is displayed.
-  network_summary:
-    input_shape: [3, 224, 224]
 dataset:
   MODE: "torchvision"
   NAME: "CIFAR10"
@@ -22,21 +17,41 @@ dataset:
 transform:
   [
     [
+      "trn,val,test",
+      [
+        { "name": "Resize", "args": {} },
+        {
+          "name": "Resize",
+          "args":
+            {
+              "size": [224, 224],
+              "interpolation": "bilinear",
+            },
+        },
+      ],
+    ],
+    [
       "trn",
       [
         {
-          "name": "TorchTransforms",
+          "name": "RandomResizedCropAndInterpolation",
           "args":
-            { "NAME": "RandomCrop", "ARGS": { "size": 32, "padding": 4 } },
+            {
+              "size": 224,
+              "scale": [0.08, 1.0],
+              "ratio": [0.75, 1.3333],
+              "interpolation": "random",
+            },
         },
         {
           "name": "TorchTransforms",
           "args": { "NAME": "RandomHorizontalFlip" },
         },
+        # more data augmentation (rand augment, auto augment, ...)
       ],
     ],
     [
-      "trn,val",
+      "trn,val,test",
       [
         { "name": "ToTensor", "args": {} },
         {
