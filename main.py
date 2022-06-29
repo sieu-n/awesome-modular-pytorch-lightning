@@ -1,6 +1,6 @@
 import os
 import random
-from pathlib import Path
+import re
 
 import lightning
 import numpy as np
@@ -11,12 +11,11 @@ from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.callbacks import build_callback
 from utils.configs import merge_config
-from utils.experiment import (
-    apply_transforms,
-    build_dataset,
-    build_initial_transform,
-    build_transforms,
-)
+from utils.experiment import apply_transforms
+from utils.experiment import build_dataset as _build_dataset
+from utils.experiment import build_dataset_mapping as _build_dataset_mapping
+from utils.experiment import build_initial_transform as _build_initial_transform
+from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
 from utils.logging import create_logger
@@ -26,8 +25,12 @@ from utils.visualization.utils import plot_samples_from_dataset
 
 class Experiment:
     def __init__(self, cfg=None, const_cfg=None, debug_cfg=None):
-        self.const_cfg = cfg["const"] if "const" in cfg else None
-        self.cfg_debug = cfg["debug"] if "debug" in cfg else None
+        if cfg is None:
+            self.const_cfg = const_cfg
+            self.debug_cfg = debug_cfg
+        else:
+            self.const_cfg = cfg["const"] if "const" in cfg else None
+            self.debug_cfg = cfg["debug"] if "debug" in cfg else None
 
     def get_directory(self):
         if not hasattr(self, "experiment_name"):
@@ -63,187 +66,236 @@ class Experiment:
         torch.manual_seed(seed)
         random.seed(seed)
 
-    def setup_dataset(self, train_dataset, val_dataset, cfg, dataloader=True):
-        self._setup_dataset(
-            initial_dataset={
-                "trn": train_dataset,
-                "val": val_dataset,
-            },
-            dataset_cfg=cfg["dataset"],
-            transform_cfg=cfg["transform"],
+    def setup_dataset(
+        self, dataset_cfg, transform_cfg, const_cfg=None, subset_to_get=None
+    ):
+        if const_cfg is None:
+            const_cfg = self.const_cfg
+
+        # 1. build initial dataset that read data.
+        datasets = self.get_base_dataset(
+            dataset_cfg=dataset_cfg,
+            subset=None,
         )
-
-        if dataloader:
-            val_batch_size = (
-                cfg["validation"]["batch_size"]
-                if ("validation" in cfg and "batch_size" in cfg["validation"])
-                else cfg["training"]["batch_size"]
-            )
-            self._setup_dataloader(
-                self.trn_dataset,
-                self.val_dataset,
-                cfg["dataloader"],
-                trn_batch_size=cfg["training"]["batch_size"],
-                val_batch_size=val_batch_size,
-            )
-
-    def setup_experiment_from_cfg(
-        self,
-        cfg,
-        setup_env=True,
-        setup_dataset=True,
-        setup_dataloader=True,
-        setup_model=True,
-        setup_callbacks=True,
-    ):
-        self.const_cfg = cfg["const"] if "const" in cfg else None
-        self.cfg_debug = cfg["debug"] if "debug" in cfg else None
-
-        if setup_env:
-            self.initialize_environment(cfg)
-
-        if setup_dataset:
-            self._setup_dataset(
-                dataset_cfg=cfg["dataset"],
-                transform_cfg=cfg["transform"],
-            )
-
-        if setup_dataloader:
-            val_batch_size = (
-                cfg["validation"]["batch_size"]
-                if ("validation" in cfg and "batch_size" in cfg["validation"])
-                else cfg["training"]["batch_size"]
-            )
-            self._setup_dataloader(
-                self.trn_dataset,
-                self.val_dataset,
-                cfg["dataloader"],
-                trn_batch_size=cfg["training"]["batch_size"],
-                val_batch_size=val_batch_size,
-            )
-        if setup_callbacks:
-            self._setup_callbacks(
-                callback_cfg_list=cfg.get("callbacks", []),
-                experiment_name=self.experiment_name,
-                wandb_cfg=cfg.get("wandb", None),
-                tensorboard_cfg=cfg.get("tensorboard", None),
-            )
-            if "logger" in self.logger_and_callbacks:
-                self.logger_and_callbacks["logger"].log_hyperparams(cfg)
-
-        if setup_model:
-            self._setup_model(cfg["model"], cfg["training"])
-
-    def _setup_dataset(
-        self, initial_dataset=None, dataset_cfg=None, transform_cfg=None
-    ):
-        # load data
-        print_to_end("-")
-        print("[*] Start loading dataset")
-        # 1. build initial dataset to read data.
-        if initial_dataset is None:
-            datasets = build_dataset(dataset_cfg)
-        else:
-            datasets = initial_dataset
-        # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
 
         # 2. build initial transformation to convert raw data into dictionary.
         if "initial_transform" in dataset_cfg:
-            initial_transform = build_initial_transform(
-                initial_transform_cfg=dataset_cfg["initial_transform"],
-                const_cfg=self.const_cfg,
+            initial_transform_cfg = dataset_cfg["initial_transform"]
+            initial_transform = self.get_initial_transform(
+                initial_transform_cfg=initial_transform_cfg,
+                const_cfg=const_cfg,
             )
         else:
             initial_transform = None
-        # 3. build list of transformations using `transform` defined in config.
-        transforms = build_transforms(
-            transform_cfg=transform_cfg,
-            const_cfg=self.const_cfg,
-            subset_keys=datasets.keys(),
+
+        # 3. build transformations such as normalization and data augmentation.
+        transforms = self.get_transform(
+            transform_cfg,
+            subset=None,  # generate all subsets by default.
+            const_cfg=const_cfg,
         )
-        # 4. actually apply transformations.
+
+        # 4. apply dataset wrappers such as "SubsetDataset"
         subsets = datasets.keys()
+        dataset_mapping = self.get_dataset_mapping(
+            mapping_cfg=dataset_cfg.get("mapping", {}), subset_list=subsets
+        )
+
+        # 5. actually apply transformations.
         datasets = {
             subset: apply_transforms(
                 datasets[subset], initial_transform, transforms[subset]
             )
             for subset in subsets
         }
-        # for now, we mainly consider trn and val subsets.
-        trn_dataset, val_dataset = datasets["trn"], datasets["val"]
+        datasets = {subset: dataset_mapping[subset](datasets[subset]) for subset in subsets}
+
         # plot samples after data augmentation
-        if self.cfg_debug and "view_train_augmentation" in self.cfg_debug:
-            save_to = (
-                f"{self.exp_dir}/{self.cfg_debug['view_train_augmentation']['save_to']}"
-            )
-            print(f"[*] Visualizing training samples under `{save_to}")
+        if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
+            if "trn" in datasets:
+                save_to = f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
+                print(f"[*] Visualizing training samples under `{save_to}")
 
-            plot_samples_from_dataset(
-                trn_dataset,
-                task=self.const_cfg["task"],
-                image_tensor_to_numpy=True,
-                unnormalize=True,
-                normalization_mean=self.const_cfg["normalization_mean"],
-                normalization_std=self.const_cfg["normalization_std"],
-                root_dir=self.exp_dir,
-                label_map=self.const_cfg["label_map"]
-                if "label_map" in self.const_cfg
-                else None,
-                **self.cfg_debug["view_train_augmentation"],
-            )
+                plot_samples_from_dataset(
+                    datasets["trn"],
+                    task=self.const_cfg["task"],
+                    image_tensor_to_numpy=True,
+                    unnormalize=True,
+                    normalization_mean=self.const_cfg["normalization_mean"],
+                    normalization_std=self.const_cfg["normalization_std"],
+                    root_dir=self.exp_dir,
+                    label_map=self.const_cfg["label_map"]
+                    if "label_map" in self.const_cfg
+                    else None,
+                    **self.debug_cfg["view_train_augmentation"],
+                )
+            else:
+                print(
+                    "the 'trn' subset is not defined in the dataset, so `view_train_augmentation` is disabled."
+                )
 
-        self.trn_dataset, self.val_dataset = trn_dataset, val_dataset
+        if subset_to_get is None:
+            return datasets
+        else:
+            return datasets[subset_to_get]
 
-    def _setup_dataloader(
+    def setup_callbacks(
         self,
-        trn_dataset,
-        val_dataset,
-        dataloader_cfg,
-        trn_batch_size,
-        val_batch_size=None,
+        cfg=None,
+        callback_list=[],
+        wandb_cfg=None,
+        tensorboard_cfg=None,
     ):
-        # build configs.
-        print("[*] Creating PyTorch `DataLoader`.")
-        trn_dataloader_cfg = merge_config(
-            dataloader_cfg["base_dataloader"], dataloader_cfg["trn"]
-        )
-        val_dataloader_cfg = merge_config(
-            dataloader_cfg["base_dataloader"], dataloader_cfg["val"]
-        )
-        if not val_batch_size:
-            val_batch_size = trn_batch_size
+        if cfg is not None:
+            if "wandb" in cfg:
+                assert wandb_cfg is None
+                wandb_cfg = cfg["wandb"]
+            if "tensorboard" in cfg:
+                assert tensorboard_cfg is None
+                tensorboard_cfg = cfg["tensorboard"]
+            if "callbacks" in cfg:
+                assert callback_list == []
+                callback_list = cfg["callbacks"]
 
-        # collate_fn
-        if "collate_fn" in trn_dataloader_cfg:
-            trn_dataloader_cfg["collate_fn"] = build_collate_fn(
-                name=trn_dataloader_cfg["collate_fn"]["name"],
-                kwargs=trn_dataloader_cfg["collate_fn"]["args"],
+        logger_and_callbacks = self._setup_callbacks(
+            callback_list=callback_list,
+            experiment_name=self.experiment_name,
+            wandb_cfg=wandb_cfg,
+            tensorboard_cfg=tensorboard_cfg,
+        )
+        if "logger" in logger_and_callbacks:
+            logger_and_callbacks["logger"].log_hyperparams(cfg)
+        return logger_and_callbacks
+
+    def get_base_dataset(
+        self,
+        dataset_cfg,
+        subset=None,
+    ):
+        """
+        Build torch.utils.data.Dataset objects based on cfg["dataset"]
+        Parameters
+        ----------
+        dataset_cfg: dict
+            The value of cfg["dataset"] is expected to be passed to the constructor.
+        base_dataset: torch.utils.data.Dataset, default=None
+        subset: str, default=None
+        Returns
+        -------
+        dict[str: torch.utils.data.Dataset], torch.utils.data.Dataset:
+            Returns dictionary containing the torch.utils.data.Dataset objects for each subset. If a value for `subset`
+            is provided, a single dataset corresponding to the subset value is returned.
+        """
+        print_to_end("-")
+        print("[*] Start loading dataset")
+        # build initial dataset to read data.
+        datasets = _build_dataset(dataset_cfg)
+
+        # return every subset as a dictionary if `subset` is None
+        if subset is None:
+            # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+            return datasets
+        else:
+            return datasets[subset]
+
+    def get_initial_transform(
+        self,
+        initial_transform_cfg,
+        const_cfg={},
+    ):
+        """
+        Build initial transformation to convert raw data into dictionary.
+        """
+        return _build_initial_transform(
+            initial_transform_cfg=initial_transform_cfg,
+            const_cfg=const_cfg,
+        )
+
+    def get_dataset_mapping(
+        self,
+        mapping_cfg,
+        subset=None,
+        subset_list=None,
+        const_cfg={},
+    ):
+        # build list of transformations using arguments of cfg["transform"]
+        dataset_mapper = _build_dataset_mapping(
+            mapping_cfg=mapping_cfg,
+            const_cfg=const_cfg,
+        )
+        if subset_list:
+            dataset_mapper = {
+                subset: dataset_mapper[subset]
+                if subset in dataset_mapper
+                else lambda x: x
+                for subset in subset_list
+            }
+        # return every subset as a dictionary if `subset` is None
+        if subset is None:
+            # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+            return dataset_mapper
+        else:
+            return dataset_mapper[subset]
+
+    def get_transform(
+        self,
+        transform_cfg,
+        subset=None,
+        const_cfg={},
+    ):
+        # build list of transformations using arguments of cfg["transform"]
+        transforms = _build_transforms(
+            transform_cfg=transform_cfg,
+            const_cfg=const_cfg,
+        )
+        # return every subset as a dictionary if `subset` is None
+        if subset is None:
+            # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+            return transforms
+        else:
+            return transforms[subset]
+
+    def setup_dataloader(
+        self,
+        datasets,
+        dataloader_cfg,
+        subset_to_get=None,
+    ):
+        dataloaders = {}
+
+        base_dataloader_cfg = dataloader_cfg["base_dataloader"]
+        if subset_to_get is None:
+            it = datasets.items()
+        else:
+            assert isinstance(datasets, torch.utils.data.Dataset)
+            it = [(subset_to_get, datasets)]
+        # build dataloader for each subset and apply to the dataset object.
+        for subset, dataset in it:
+            # build configs.
+            print("[*] Creating PyTorch `DataLoader`.")
+            dataloader_cfg = merge_config(
+                base_dataloader_cfg, dataloader_cfg.get(subset, {})
             )
-        if "collate_fn" in val_dataloader_cfg:
-            val_dataloader_cfg["collate_fn"] = build_collate_fn(
-                name=val_dataloader_cfg["collate_fn"]["name"],
-                kwargs=val_dataloader_cfg["collate_fn"]["args"],
+            # build collate_fn
+            if "collate_fn" in dataloader_cfg:
+                dataloader_cfg["collate_fn"] = build_collate_fn(
+                    name=dataloader_cfg["collate_fn"]["name"],
+                    kwargs=dataloader_cfg["collate_fn"]["args"],
+                )
+            # build dataloader
+            dataloaders[subset] = DataLoader(
+                dataset,
+                **dataloader_cfg,
             )
-
-        # dataloader - train
-        trn_dataloader = DataLoader(
-            trn_dataset,
-            batch_size=trn_batch_size,
-            **trn_dataloader_cfg,
-        )
-        # dataloader - val
-        val_dataloader = DataLoader(
-            val_dataset,
-            batch_size=val_batch_size,
-            **val_dataloader_cfg,
-        )
-
-        self.trn_dataloader, self.val_dataloader = trn_dataloader, val_dataloader
+        if subset_to_get is None:
+            return dataloaders
+        else:
+            return dataloaders[subset_to_get]
 
     def _setup_callbacks(
         self,
         experiment_name=None,
-        callback_cfg_list=[],
+        callback_list=[],
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
@@ -257,27 +309,27 @@ class Experiment:
         logger = create_logger(
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
-            tensorboard_cfg=tensorboard_cfg
+            tensorboard_cfg=tensorboard_cfg,
         )
         # callbacks
         callbacks = []
-        for callback_cfg in callback_cfg_list:
+        for callback_cfg in callback_list:
             callbacks.append(build_callback(callback_cfg))
-        self.logger_and_callbacks = {
+        return {
             "logger": logger,
             "callbacks": callbacks,
         }
 
-    def _setup_model(self, model_cfg, training_cfg):
+    def setup_model(self, model_cfg, training_cfg):
         # model
         lightning_module = lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg, self.const_cfg)
 
-        if self.cfg_debug and "network_summary" in self.cfg_debug:
+        if self.debug_cfg and "network_summary" in self.debug_cfg:
             batch_size = 16  # any num:)
             print(f"[*] Model backbone summary(when bs={batch_size}):")
 
-            input_shape = [batch_size] + self.cfg_debug["network_summary"][
+            input_shape = [batch_size] + self.debug_cfg["network_summary"][
                 "input_shape"
             ]
 
@@ -290,118 +342,4 @@ class Experiment:
                 is_ckpt=model_cfg.get("is_ckpt", False),
             )
 
-        self.model = model
-
-    def train(
-        self,
-        use_existing_trainer=False,
-        trainer_cfg={},
-        epochs=None,
-        root_dir=None,
-        save_path="checkpoints/model_state_dict.pth",
-        test_after=True,
-    ):
-        # define pl.Trainer
-        if not root_dir:
-            root_dir = f"{self.exp_dir}/checkpoints"
-        root_dir = os.path.join(root_dir, self.experiment_name)
-        if epochs is None:
-            epochs = self.model.training_cfg["epochs"]
-        if use_existing_trainer:
-            train_trainer = self.trainers["train"]
-        else:
-            if "precision" in trainer_cfg:
-                assert (
-                    trainer_cfg["precision"] == 32 or self.model.automatic_optimization
-                ), "Manual optimization \
-                        using amp is not yet supported"
-            train_trainer = pl.Trainer(
-                max_epochs=epochs,
-                default_root_dir=root_dir,
-                **(
-                    self.logger_and_callbacks
-                    if hasattr(self, "logger_and_callbacks")
-                    else {}
-                ),
-                **trainer_cfg,
-            )
-        # keep track of trainer
-        if not hasattr(self, "trainers"):
-            self.trainers = {}
-        self.trainers["train"] = train_trainer
-
-        # train-test using trainer
-        train_trainer.fit(self.model, self.trn_dataloader, self.val_dataloader)
-        if test_after:
-            res = self.test(trainer_name="train")
-        else:
-            res = {}
-
-        # finish experiment
-        if (
-            hasattr(self, "logger_and_callbacks")
-            and "logger" in self.logger_and_callbacks
-        ):
-            self.logger_and_callbacks["logger"].experiment.finish()
-        if save_path is not None:
-            root_path = os.path.dirname(f"{self.exp_dir}/{save_path}")
-            if not os.path.exists(root_path):
-                os.makedirs(root_path)
-            torch.save(self.model.state_dict(), f"{self.exp_dir}/{save_path}")
-        return res
-
-    def test(
-        self,
-        test_dataloader=None,
-        trainer_name=None,
-        trainer_cfg=None,
-        root_dir=None,
-    ):
-        if not test_dataloader:
-            test_dataloader = self.val_dataloader
-        if trainer_name:
-            test_trainer = self.trainers[trainer_name]
-        elif trainer_cfg:
-            if not root_dir:
-                root_dir = f"{self.exp_dir}/checkpoints"
-            test_trainer = pl.Trainer(
-                default_root_dir=root_dir,
-                **trainer_cfg,
-            )
-        else:
-            assert (
-                "test" in self.trainers
-            ), "Please specify the trainer to use for testing such as batch size and root dir."
-            test_trainer = self.trainers["test"]
-        # keep track of trainer
-        if not hasattr(self, "trainers"):
-            self.trainers = {}
-        self.trainers["test"] = test_trainer
-
-        res = test_trainer.test(self.model, test_dataloader)
-        return res
-
-    def predict(
-        self,
-        x,
-        use_existing_trainer=False,
-        trainer_cfg={},
-        root_dir=None,
-    ):
-        if use_existing_trainer:
-            pred_trainer = self.trainers["pred"]
-            raise NotImplementedError()
-        else:
-            if not root_dir:
-                root_dir = f"{self.exp_dir}/checkpoints"
-            pred_trainer = pl.Trainer(
-                default_root_dir=root_dir,
-                **trainer_cfg,
-            )
-        # keep track of trainer
-        if not hasattr(self, "trainers"):
-            self.trainers = {}
-        self.trainers["pred"] = pred_trainer
-
-        pred = pred_trainer.predict(model=self.model, dataloaders=x)
-        return pred
+        return model

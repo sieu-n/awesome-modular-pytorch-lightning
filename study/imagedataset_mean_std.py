@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 
 def count_dataset_stats(base_train_dataset, nc=3, scale_fn=lambda x: x, key=None):
-    # https://bit.ly/3xuGOkN
+    # reference: https://bit.ly/3xuGOkN
     # placeholders
     psum = np.zeros(nc)
     psum_sq = np.zeros(nc)

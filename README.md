@@ -20,7 +20,7 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 1. Run experiments using `train.py`
 
 - CIFAR10 image classification with ResNet18``.
-```
+```shell
 !python train.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml configs/utils/train.yaml
 ```
 
@@ -32,7 +32,7 @@ For example, please have a look at the `study/dataset_size_experiment.py`.
 
 Training involves many configs. `LightCollections` implements a cascading config system where we use multiple layers of config
 files to define differnt parts of the experiment. For example, in the CIFAR10 example above, we use 5 config files.
-```
+```shell
 configs/vision/training/resnet-cifar10.yaml
 configs/vision/models/resnet/resnet18-custom.yaml
 configs/vision/data/cifar10.yaml
@@ -40,7 +40,7 @@ configs/utils/wandb.yaml
 configs/utils/train.yaml
 ```
 here, if we want to log to `TensorBoard` instead of `wandb`, you may replace
-```
+```shell
 configs/utils/wandb.yaml
 -> configs/utils/tensorboard.yaml
 ```

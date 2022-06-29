@@ -1,5 +1,8 @@
+import os
 from argparse import ArgumentParser
 
+import pytorch_lightning as pl
+import torch
 from main import Experiment
 from utils.configs import read_configs
 
@@ -20,13 +23,54 @@ if __name__ == "__main__":
         cfg["wandb"]["group"] = args.group
     if args.offline:
         cfg["wandb"]["offline"] = True
-    # train
+    # initialize experiment
     experiment = Experiment(cfg)
-    experiment.setup_experiment_from_cfg(cfg)
-    result = experiment.train(
-        trainer_cfg=cfg["trainer"],
-        root_dir=args.root_dir,
-        epochs=cfg["training"]["epochs"],
+    experiment.initialize_environment(cfg=cfg)
+    datasets = experiment.setup_dataset(
+        dataset_cfg=cfg["dataset"],
+        transform_cfg=cfg["transform"],
     )
-    print("Result:", result)
+    dataloaders = experiment.setup_dataloader(
+        datasets=datasets,
+        dataloader_cfg=cfg["dataloader"],
+    )
+    train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
+    model = experiment.setup_model(model_cfg=cfg["model"], training_cfg=cfg["training"])
+    logger_and_callbacks = experiment.setup_callbacks(cfg=cfg)
+
+    # train
+    save_path = ("checkpoints/model_state_dict.pth",)
+    if not args.root_dir:
+        root_dir = os.path.join(
+            f"{experiment.exp_dir}/checkpoints", experiment.experiment_name
+        )
+    else:
+        root_dir = os.path.join(args.root_dir, experiment.experiment_name)
+    epochs = cfg["training"]["epochs"]
+
+    pl_trainer = pl.Trainer(
+        max_epochs=epochs,
+        default_root_dir=root_dir,
+        **logger_and_callbacks,
+        **cfg["trainer"],
+    )
+
+    pl_trainer.fit(
+        model,
+        train_dataloader,
+        val_dataloader,
+    )
+
+    # save weights
+    save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
+    if not os.path.exists(save_path_root):
+        os.makedirs(save_path_root)
+    torch.save(model.state_dict(), f"{experiment.exp_dir}/{save_path}")
+    # test
+    res = pl_trainer.test(model, val_dataloader)
+
+    # log results
+    logger_and_callbacks["logger"].experiment.finish()
+
+    print("Result:", res)
     print("Experiment and log dir:", experiment.get_directory())

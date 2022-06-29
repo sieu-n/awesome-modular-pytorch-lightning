@@ -52,12 +52,12 @@ class TTAFramework(_LightningModule):
         )
 
     def input_transform(self, x):
-        # implement differently based on task, 
+        # implement differently based on task,
         # in: batch; out: input for model.__call__
         return x
 
     def process_augmented(self, x):
-        # implement differently based on task, 
+        # implement differently based on task,
         # in: augmented sample
         return x
 
@@ -126,4 +126,4 @@ class ClassificationTTAWrapper(TTAFramework):
 
     def training_epoch_end(self, outs):
         # log epoch metric
-        self.log('train_acc_epoch', self.accuracy)
+        self.log("train_acc_epoch", self.accuracy)

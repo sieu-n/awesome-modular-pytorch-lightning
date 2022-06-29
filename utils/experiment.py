@@ -5,6 +5,7 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
+import data.dataset.mapping as DM
 import data.transforms.vision as DT_V
 import yaml
 from data.dataset.util import torchvision_dataset
@@ -37,8 +38,8 @@ def find_transform_from_name(f_name):
         return f_name
 
 
-def find_dataset_from_name(d_name):
-    DATASET_DECLARATIONS = []  # list of modules to serach for.
+def find_dataset_mapper_from_name(d_name):
+    DATASET_DECLARATIONS = [DM]  # list of modules to serach for.
     if type(d_name) == str:
         # find transform name that matches `name` from TRANSFORM_DECLARATIONS
         is_name_in = [hasattr(file, d_name) for file in DATASET_DECLARATIONS]
@@ -62,9 +63,39 @@ def build_dataset(dataset_cfg):
         raise ValueError(f"Invalid dataset type: `{dataset_mode}`")
 
 
-def build_transforms(transform_cfg, const_cfg, subset_keys):
+def build_dataset_mapping(mapping_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
-    transforms = {subset: [] for subset in subset_keys}
+    mappings = {}
+    for subsets, d_configs in mapping_cfg:
+        t = []
+        # for each element of transforms,
+        for d_config in d_configs:
+            f_name, kwargs = d_config["name"], d_config.get("args", {})
+            # find transform from name
+            data_mapper = find_dataset_mapper_from_name(f_name)
+            # build transform using arguments.
+            kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
+            t.append(lambda base_dataset: data_mapper(base_dataset, **kwargs))
+
+        for subset in subsets.split(","):
+            # add single transform
+            mappings[subset] = mappings.get(subset, []) + t
+
+    def group(mapping_list):
+        def apply_mapping(base_dataset):
+            dataset = base_dataset
+            for build_mapping in mapping_list:
+                dataset = build_mapping(dataset)
+            return dataset
+
+        return apply_mapping
+
+    return {subset: group(mappings[subset]) for subset in mappings.keys()}
+
+
+def build_transforms(transform_cfg, const_cfg):
+    # returns: dict{subset_key: [t1, t2, ...], ...}
+    transforms = {}
     for subsets, t_configs in transform_cfg:
         t = []
         # for each element of transforms,
@@ -77,8 +108,8 @@ def build_transforms(transform_cfg, const_cfg, subset_keys):
             t.append(transform_f(**kwargs))
 
         for subset in subsets.split(","):
-            if subset in subset_keys:
-                transforms[subset] += t
+            # add single transform
+            transforms[subset] = transforms.get(subset, []) + t
     composed = {
         subset: ComposeTransforms(transforms[subset]) for subset in transforms.keys()
     }
