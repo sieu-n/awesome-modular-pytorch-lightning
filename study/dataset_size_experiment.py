@@ -40,6 +40,14 @@ class SubsetDataset(Dataset):
 
 
 def get_data_size_schedule(args, num_train_samples):
+    assert (
+        (args.range is None)
+        + (args.range_percent is None)
+        + (args.size_at_cycle is None)
+        + (args.size_at_cycle_percent is None)
+    ) == 3, "one of `range`, `range_percent`, `size_at_cycle`, or \
+            `size_at_cycle_percent` must be specified"
+
     if args.range:
         init_samples, step = int(args.range[0]), int(args.range[1])
         if len(args.range) == 2:
@@ -106,15 +114,6 @@ if __name__ == "__main__":
     if args.offline:
         cfg["wandb"]["offline"] = True
 
-    # setup dataset size experiment
-    assert (
-        (args.range is None)
-        + (args.range_percent is None)
-        + (args.size_at_cycle is None)
-        + (args.size_at_cycle_percent is None)
-    ) == 3, "one of `range`, `range_percent`, `size_at_cycle`, or \
-            `size_at_cycle_percent` must be specified"
-
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg=cfg)
     datasets = experiment.setup_dataset(
@@ -129,6 +128,7 @@ if __name__ == "__main__":
         subset_to_get="val",
     )
 
+    # setup dataset size experiment
     data_size_schedule = get_data_size_schedule(args, len(trn_base_dataset))
     print("Data size schedule: " + str(data_size_schedule))
     results = []
