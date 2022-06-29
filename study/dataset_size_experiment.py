@@ -83,6 +83,8 @@ if __name__ == "__main__":
         cfg["name"] = args.name
     if args.group:
         cfg["wandb"]["group"] = args.group
+    if args.set_same_group:
+        cfg["wandb"]["group"] = cfg["name"]
     if args.offline:
         cfg["wandb"]["offline"] = True
 
@@ -112,8 +114,6 @@ if __name__ == "__main__":
         cycle_cfg = deepcopy(cfg)
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{dataset_size}_samples"
         experiment.initialize_environment(cfg=cycle_cfg)
-        if "wandb" in cycle_cfg and args.set_same_group:
-            cycle_cfg["wandb"]["group"] = cfg["name"]
 
         # control dataset size and build train dataloader
         trn_dataset = SubsetDataset(trn_base_dataset, size=dataset_size, seed=args.seed)
@@ -164,6 +164,7 @@ if __name__ == "__main__":
         # log results
         logger_and_callbacks["logger"].experiment.finish()
 
+        res[0]["dataset size"] = dataset_size
         print("Result:", res)
         results.append(res[0])
 

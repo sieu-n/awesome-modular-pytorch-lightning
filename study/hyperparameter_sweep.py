@@ -78,6 +78,8 @@ if __name__ == "__main__":
         cfg["name"] = args.name
     if args.group:
         cfg["wandb"]["group"] = args.group
+    if args.set_same_group:
+        cfg["wandb"]["group"] = cfg["name"]
     if args.offline:
         cfg["wandb"]["offline"] = True
 
@@ -103,8 +105,6 @@ if __name__ == "__main__":
         ################################################################
         experiment = Experiment(cycle_cfg)
         experiment.initialize_environment(cfg=cycle_cfg)
-        if "wandb" in cycle_cfg and args.set_same_group:
-            cycle_cfg["wandb"]["group"] = cfg["name"]
 
         datasets = experiment.setup_dataset(
             dataset_cfg=cycle_cfg["dataset"],
@@ -157,7 +157,7 @@ if __name__ == "__main__":
     if "wandb" in cfg:
         log_to_wandb(
             results,
-            exp_name=f"dataset-size-experiment-{cfg['name']}",
+            exp_name=f"final-results-{cfg['name']}",
             group=cfg["wandb"].get("group", None),
             project=cfg["wandb"].get("project", None),
         )
