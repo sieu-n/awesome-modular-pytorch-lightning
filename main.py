@@ -98,7 +98,7 @@ class Experiment:
         # 4. apply dataset wrappers such as "SubsetDataset"
         subsets = datasets.keys()
         dataset_mapping = self.get_dataset_mapping(
-            mapping_cfg=dataset_cfg["mapping"], subset_list=subsets
+            mapping_cfg=dataset_cfg.get("mapping", {}), subset_list=subsets
         )
 
         # 5. actually apply transformations.
@@ -108,7 +108,7 @@ class Experiment:
             )
             for subset in subsets
         }
-        datasets = {subset: dataset_mapping(datasets[subset]) for subset in subsets}
+        datasets = {subset: dataset_mapping[subset](datasets[subset]) for subset in subsets}
 
         # plot samples after data augmentation
         if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
