@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 from main import Experiment
-from utils.configs import read_configs, merge_config
+from utils.configs import merge_config, read_configs
 from utils.logging import log_to_wandb
 
 
@@ -56,10 +56,17 @@ if __name__ == "__main__":
     parser.add_argument("--root_dir", type=str, default=None)
     parser.add_argument("--set_same_group", default=False, action="store_true")
     parser.add_argument(
-        "-v", "--value", nargs="+", help="list of values", required=True,
+        "-v",
+        "--value",
+        nargs="+",
+        help="list of values",
+        required=True,
     )
     parser.add_argument(
-        "-k", "--key", type=str, required=True,
+        "-k",
+        "--key",
+        type=str,
+        required=True,
     )
     parser.add_argument(
         "-t", "--dtype", default="str", type=str, choices=["str", "int", "float"]
@@ -85,9 +92,7 @@ if __name__ == "__main__":
 
     results = []
     for idx, value in enumerate(values):
-        print(
-            f"Cycle # {idx} / {len(values)} | {args.key}: {value}"
-        )
+        print(f"Cycle # {idx} / {len(values)} | {args.key}: {value}")
         cycle_cfg = deepcopy(cfg)
         cycle_cfg["name"] = f"{cycle_cfg['name']}-cycle_{idx}-{args.key}_{value}"
 
@@ -140,7 +145,7 @@ if __name__ == "__main__":
             val_dataloader,
         )
         # log results
-        experiment.finish()
+        logger_and_callbacks["logger"].experiment.finish()
         # test
         res = pl_trainer.test(model, val_dataloader)
         res[0][args.key] = value

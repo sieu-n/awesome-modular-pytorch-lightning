@@ -17,7 +17,6 @@ dataset:
       train: True
     val:
       train: False
-  transformations: [] # same format with `transform`.
   initial_transform:
     name: "TupleToClassificationData"
 

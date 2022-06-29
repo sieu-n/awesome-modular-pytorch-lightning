@@ -13,6 +13,7 @@ from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import apply_transforms
 from utils.experiment import build_dataset as _build_dataset
+from utils.experiment import build_dataset_mapping as _build_dataset_mapping
 from utils.experiment import build_initial_transform as _build_initial_transform
 from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
@@ -94,14 +95,20 @@ class Experiment:
             const_cfg=const_cfg,
         )
 
-        # 4. actually apply transformations.
+        # 4. apply dataset wrappers such as "SubsetDataset"
         subsets = datasets.keys()
+        dataset_mapping = self.get_dataset_mapping(
+            mapping_cfg=dataset_cfg["mapping"], subset_list=subsets
+        )
+
+        # 5. actually apply transformations.
         datasets = {
             subset: apply_transforms(
                 datasets[subset], initial_transform, transforms[subset]
             )
             for subset in subsets
         }
+        datasets = {subset: dataset_mapping(datasets[subset]) for subset in subsets}
 
         # plot samples after data augmentation
         if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
@@ -203,6 +210,32 @@ class Experiment:
             initial_transform_cfg=initial_transform_cfg,
             const_cfg=const_cfg,
         )
+
+    def get_dataset_mapping(
+        self,
+        mapping_cfg,
+        subset=None,
+        subset_list=None,
+        const_cfg={},
+    ):
+        # build list of transformations using arguments of cfg["transform"]
+        dataset_mapper = _build_dataset_mapping(
+            mapping_cfg=mapping_cfg,
+            const_cfg=const_cfg,
+        )
+        if subset_list:
+            dataset_mapper = {
+                subset: dataset_mapper[subset]
+                if subset in dataset_mapper
+                else lambda x: x
+                for subset in subset_list
+            }
+        # return every subset as a dictionary if `subset` is None
+        if subset is None:
+            # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
+            return dataset_mapper
+        else:
+            return dataset_mapper[subset]
 
     def get_transform(
         self,
@@ -310,10 +343,3 @@ class Experiment:
             )
 
         return model
-
-    def finish(self):
-        if (
-            hasattr(self, "logger_and_callbacks")
-            and "logger" in self.logger_and_callbacks
-        ):
-            self.logger_and_callbacks["logger"].experiment.finish()

@@ -1,42 +1,13 @@
 import math
 import os
-import random
 from argparse import ArgumentParser
 from copy import deepcopy
 
 import pytorch_lightning as pl
+from data.dataset.mapping import SubsetDataset
 from main import Experiment
-from torch.utils.data import Dataset
 from utils.configs import read_configs
 from utils.logging import log_to_wandb
-
-
-class SubsetDataset(Dataset):
-    def __init__(self, base_dataset, indices=None, size=None, seed=None):
-        """
-        Build dataset that simply adds more data transformations to the original samples.
-        Parameters
-        ----------
-        base_dataset: torch.utils.data.Dataset
-            base dataset that is used to get source samples.
-        """
-        self.base_dataset = base_dataset
-
-        if indices is not None:
-            self.indices = indices
-        else:
-            if args.seed:
-                random_sampler = random.Random(args.seed).sample
-            else:
-                random_sampler = random.sample
-            self.indices = random_sampler(range(len(base_dataset)), size)
-
-    def __len__(self):
-        return len(self.indices)
-
-    def __getitem__(self, idx):
-        idx = self.indices[idx]
-        return self.base_dataset[idx]
 
 
 def get_data_size_schedule(args, num_train_samples):
@@ -172,7 +143,9 @@ if __name__ == "__main__":
         epochs = cycle_cfg["training"]["epochs"]
         if args.same_steps:
             epochs = math.floor(epochs * len(trn_base_dataset) / dataset_size)
-            print(f"Increasing training epoch: {cycle_cfg['training']['epochs']} -> {epochs}")
+            print(
+                f"Increasing training epoch: {cycle_cfg['training']['epochs']} -> {epochs}"
+            )
         # lightning trainer
         pl_trainer = pl.Trainer(
             max_epochs=epochs,
@@ -187,7 +160,7 @@ if __name__ == "__main__":
             val_dataloader,
         )
         # log results
-        experiment.finish()
+        logger_and_callbacks["logger"].experiment.finish()
         # test
         res = pl_trainer.test(model, val_dataloader)
         print("Result:", res)
