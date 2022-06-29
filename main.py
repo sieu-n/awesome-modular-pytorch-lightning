@@ -1,22 +1,20 @@
 import os
 import random
 import re
+
 import lightning
 import numpy as np
 import pytorch_lightning as pl
 import torch
+from data.collate_fn import build_collate_fn
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
-
-from data.collate_fn import build_collate_fn
 from utils.callbacks import build_callback
 from utils.configs import merge_config
-from utils.experiment import (
-    apply_transforms,
-    build_dataset as _build_dataset,
-    build_initial_transform as _build_initial_transform,
-    build_transforms as _build_transforms,
-)
+from utils.experiment import apply_transforms
+from utils.experiment import build_dataset as _build_dataset
+from utils.experiment import build_initial_transform as _build_initial_transform
+from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
 from utils.logging import create_logger
@@ -67,7 +65,9 @@ class Experiment:
         torch.manual_seed(seed)
         random.seed(seed)
 
-    def setup_dataset(self, dataset_cfg, transform_cfg, const_cfg=None, subset_to_get=None):
+    def setup_dataset(
+        self, dataset_cfg, transform_cfg, const_cfg=None, subset_to_get=None
+    ):
         if const_cfg is None:
             const_cfg = self.const_cfg
 
@@ -90,7 +90,7 @@ class Experiment:
         # 3. build transformations such as normalization and data augmentation.
         transforms = self.get_transform(
             transform_cfg,
-            subset=None,    # generate all subsets by default.
+            subset=None,  # generate all subsets by default.
             const_cfg=const_cfg,
         )
 
@@ -106,9 +106,7 @@ class Experiment:
         # plot samples after data augmentation
         if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
             if "trn" in datasets:
-                save_to = (
-                    f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
-                )
+                save_to = f"{self.exp_dir}/{self.debug_cfg['view_train_augmentation']['save_to']}"
                 print(f"[*] Visualizing training samples under `{save_to}")
 
                 plot_samples_from_dataset(
@@ -125,7 +123,9 @@ class Experiment:
                     **self.debug_cfg["view_train_augmentation"],
                 )
             else:
-                print("the 'trn' subset is not defined in the dataset, so `view_train_augmentation` is disabled.")
+                print(
+                    "the 'trn' subset is not defined in the dataset, so `view_train_augmentation` is disabled."
+                )
 
         if subset_to_get is None:
             return datasets
@@ -141,11 +141,11 @@ class Experiment:
     ):
         if cfg is not None:
             if "wandb" in cfg:
-                assert wandb_cfg == {}
-                wandb_cfg = cfg
+                assert wandb_cfg is None
+                wandb_cfg = cfg["wandb"]
             if "tensorboard" in cfg:
-                assert tensorboard_cfg == {}
-                tensorboard_cfg = cfg
+                assert tensorboard_cfg is None
+                tensorboard_cfg = cfg["tensorboard"]
             if "callbacks" in cfg:
                 assert callback_list == []
                 callback_list = cfg["callbacks"]
@@ -276,7 +276,7 @@ class Experiment:
         logger = create_logger(
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
-            tensorboard_cfg=tensorboard_cfg
+            tensorboard_cfg=tensorboard_cfg,
         )
         # callbacks
         callbacks = []

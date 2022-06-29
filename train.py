@@ -1,8 +1,8 @@
-from argparse import ArgumentParser
 import os
-import torch
-import pytorch_lightning as pl
+from argparse import ArgumentParser
 
+import pytorch_lightning as pl
+import torch
 from main import Experiment
 from utils.configs import read_configs
 
@@ -35,16 +35,15 @@ if __name__ == "__main__":
         dataloader_cfg=cfg["dataloader"],
     )
     train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
-    model = experiment.setup_model(
-        model_cfg=cfg["model"],
-        training_cfg=cfg["training"]
-    )
+    model = experiment.setup_model(model_cfg=cfg["model"], training_cfg=cfg["training"])
     logger_and_callbacks = experiment.setup_callbacks(cfg=cfg)
 
     # train
-    save_path = "checkpoints/model_state_dict.pth",
+    save_path = ("checkpoints/model_state_dict.pth",)
     if not args.root_dir:
-        root_dir = os.path.join(f"{experiment.exp_dir}/checkpoints", experiment.experiment_name)
+        root_dir = os.path.join(
+            f"{experiment.exp_dir}/checkpoints", experiment.experiment_name
+        )
     else:
         root_dir = os.path.join(args.root_dir, experiment.experiment_name)
     epochs = cfg["training"]["epochs"]
@@ -52,11 +51,7 @@ if __name__ == "__main__":
     pl_trainer = pl.Trainer(
         max_epochs=epochs,
         default_root_dir=root_dir,
-        **(
-            logger_and_callbacks
-            if hasattr(experiment, "logger_and_callbacks")
-            else {}
-        ),
+        **(logger_and_callbacks if hasattr(experiment, "logger_and_callbacks") else {}),
         **cfg["trainer"],
     )
 
@@ -67,10 +62,7 @@ if __name__ == "__main__":
     )
 
     # log results
-    if (
-        hasattr(experiment, "logger_and_callbacks")
-        and "logger" in logger_and_callbacks
-    ):
+    if hasattr(experiment, "logger_and_callbacks") and "logger" in logger_and_callbacks:
         logger_and_callbacks["logger"].experiment.finish()
 
     # save weights
@@ -79,10 +71,7 @@ if __name__ == "__main__":
         os.makedirs(save_path_root)
     torch.save(model.state_dict(), f"{experiment.exp_dir}/{save_path}")
     # test
-    res = pl_trainer.test(
-        model,
-        val_dataloader
-    )
+    res = pl_trainer.test(model, val_dataloader)
 
     print("Result:", res)
     print("Experiment and log dir:", experiment.get_directory())

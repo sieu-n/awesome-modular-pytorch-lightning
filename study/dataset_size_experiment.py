@@ -3,8 +3,8 @@ import os
 import random
 from argparse import ArgumentParser
 from copy import deepcopy
-import pytorch_lightning as pl
 
+import pytorch_lightning as pl
 from main import Experiment
 from torch.utils.data import Dataset
 from utils.configs import read_configs
@@ -71,8 +71,12 @@ if __name__ == "__main__":
     parser.add_argument("--offline", action="store_true", default=False)
     parser.add_argument("--root_dir", type=str, default=None)
 
-    parser.add_argument("--seed", type=int, default=None, help="random seed for defining dataset.")
-    parser.add_argument("-r", "--range", nargs="+", help="(start, step) or (start, step, stop)")
+    parser.add_argument(
+        "--seed", type=int, default=None, help="random seed for defining dataset."
+    )
+    parser.add_argument(
+        "-r", "--range", nargs="+", help="(start, step) or (start, step, stop)"
+    )
     parser.add_argument(
         "-rp", "--range_percent", nargs=2, help="seed_samples_percent, addendum_percent"
     )
@@ -149,23 +153,24 @@ if __name__ == "__main__":
 
         # build model and callbacks
         model = experiment.setup_model(
-            model_cfg=cfg["model"],
-            training_cfg=cfg["training"]
+            model_cfg=cfg["model"], training_cfg=cfg["training"]
         )
         logger_and_callbacks = experiment.setup_callbacks(cfg=cycle_cfg)
 
         ################################################################
         # train
         ################################################################
-        save_path = "checkpoints/model_state_dict.pth",
+        save_path = ("checkpoints/model_state_dict.pth",)
         if not args.root_dir:
-            root_dir = os.path.join(f"{experiment.exp_dir}/checkpoints", experiment.experiment_name)
+            root_dir = os.path.join(
+                f"{experiment.exp_dir}/checkpoints", experiment.experiment_name
+            )
         else:
             root_dir = os.path.join(args.root_dir, experiment.experiment_name)
         # compute number of epochs to compensate smaller number of steps.
         epochs = cfg["training"]["epochs"]
         if args.same_steps:
-            epochs = math.floor(epochs * (data_size_cycle[-1]) / dataset_size)
+            epochs = math.floor(epochs * len(trn_base_dataset) / dataset_size)
             print(f"Increasing training epoch: {cfg['training']['epochs']} -> {epochs}")
         # lightning trainer
         pl_trainer = pl.Trainer(
@@ -191,10 +196,7 @@ if __name__ == "__main__":
         ):
             logger_and_callbacks["logger"].experiment.finish()
         # test
-        res = pl_trainer.test(
-            model,
-            val_dataloader
-        )
+        res = pl_trainer.test(model, val_dataloader)
         print("Result:", res)
         results.append(res[0])
 

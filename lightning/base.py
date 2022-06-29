@@ -3,8 +3,6 @@ from collections import OrderedDict
 import algorithms.tta as TTA_modules
 import torchmetrics
 import wandb
-
-from .common import _LightningModule
 from algorithms import loss as LossPool
 from models import catalog as ModelPool
 from models import heads as HeadPool
@@ -14,6 +12,8 @@ from sklearn.metrics import ConfusionMatrixDisplay
 from torch import nn
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
+
+from .common import _LightningModule
 
 """ Build components for the lightningmodule
 """
@@ -144,7 +144,7 @@ class _BaseLightningTrainer(_LightningModule):
                 model=self,
                 training_cfg=training_cfg,
                 const_cfg=const_cfg,
-                **tta_cfg["args"]
+                **tta_cfg["args"],
             )
 
     def enable_tta(self, TTA_module=None):

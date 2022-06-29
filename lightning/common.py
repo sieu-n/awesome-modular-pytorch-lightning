@@ -1,9 +1,8 @@
-from torch import optim
-from torch.optim import lr_scheduler
 import pytorch_lightning as pl
-
 from algorithms.optimizers.lr_scheduler.warmup import GradualWarmupScheduler
 from algorithms.optimizers.sam import SAM
+from torch import optim
+from torch.optim import lr_scheduler
 
 
 class _LightningModule(pl.LightningModule):
