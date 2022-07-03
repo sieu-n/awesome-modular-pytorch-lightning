@@ -1,0 +1,7 @@
+dataloader:
+  base_dataloader:
+    batch_size: 128
+
+trainer:
+  max_steps: 40000
+  accumulate_grad_batches: 2

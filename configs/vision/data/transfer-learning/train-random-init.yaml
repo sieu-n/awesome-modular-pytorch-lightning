@@ -66,9 +66,6 @@ callbacks:
       logging_interval: "epoch"
 
 model:
-  backbone:
-    cfg:
-      low_res: True
   modules:
     classifier:
       name: ClassificationHead

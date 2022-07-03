@@ -19,7 +19,6 @@ transform:
     [
       "trn,val,test",
       [
-        { "name": "Resize", "args": {} },
         {
           "name": "Resize",
           "args":
