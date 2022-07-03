@@ -85,7 +85,7 @@ def build_dataset_mapping(mapping_cfg, const_cfg):
         def apply_mapping(base_dataset):
             dataset = base_dataset
             for build_mapping in mapping_list:
-                dataset = build_mapping(dataset)
+                dataset = build_mapping(dataset, **{"const_cfg": const_cfg})
             return dataset
 
         return apply_mapping

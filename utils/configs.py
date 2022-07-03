@@ -1,5 +1,4 @@
 from copy import deepcopy
-from operator import is_
 
 import yaml
 
