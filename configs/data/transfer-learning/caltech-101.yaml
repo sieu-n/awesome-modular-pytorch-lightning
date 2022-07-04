@@ -1,0 +1,54 @@
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.Food101.html#torchvision.datasets.Food101
+# The Food-101 is a challenging data set of
+#   - 101 food categories
+#   - 101’000 images.
+#   - For each class, 250 manually reviewed test images are provided as well as 750 training images.
+# On purpose, the training images were not cleaned, and thus still contain some amount of noise. This comes mostly
+# in the form of intense colors and sometimes wrong labels. All images were rescaled to have a maximum side length
+# of 512 pixels.
+
+dataset:
+  MODE: "torchvision"
+  NAME: "Caltech101"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./Caltech101"
+  dataset_subset_cfg:
+    trn:
+      download: True
+  initial_transform:
+    name: "TupleToClassificationData"
+
+  mapping:
+    # split train / val images.
+    [
+      [
+        "trn",
+        [
+          {
+            "name": "ClassBalanceTrainValSplit",
+            "args":
+              {
+                "subset": "val",  # on purpose because training set consists of 30 images per-class.
+                "count": 30,
+              },
+          },
+        ],
+      ],
+      [
+        "val",
+        [
+          {
+            "name": "ClassBalanceTrainValSplit",
+            "args":
+              {
+                "subset": "trn",  # on purpose
+                "count": 30,
+              },
+          },
+        ],
+      ],
+    ]
+
+const:
+  num_classes: 101

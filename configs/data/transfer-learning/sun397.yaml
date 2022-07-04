@@ -1,0 +1,58 @@
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.SUN397.html#torchvision.datasets.SUN397
+# The SUN397 or Scene UNderstanding (SUN) is a dataset for scene recognition
+#   - consisting of 397 categories
+#   - with 108’754 images.
+
+# TODO: implement partitioning.
+dataset:
+  MODE: "torchvision"
+  NAME: "SUN397"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./SUN397"
+  dataset_subset_cfg:
+    trn:
+      download: True
+  initial_transform:
+    name: "TupleToClassificationData"
+  mapping:
+    # split train / val images. The exact subset is slightly different from the original split, but the procedure is consistent.
+    [
+      [
+        "trn",
+        [
+          {
+            "name": "ClassBalanceTrainValSplit",
+            "args":
+              {
+                "subset": "trn",
+                "count": 50,
+              },
+          },
+          {
+            "name": "ClassBalanceTrainValSplit",
+            "args":
+              {
+                "subset": "val",  # on purpose because training set consists of 30 images per-class.
+                "count": 50,  # <-- this determines the training set size.
+              },
+          },
+        ],
+      ],
+      [
+        "val",
+        [
+          {
+            "name": "ClassBalanceTrainValSplit",
+            "args":
+              {
+                "subset": "val",
+                "count": 50,
+              },
+          },
+        ],
+      ],
+    ]
+
+const:
+  num_classes: 397

@@ -3,10 +3,10 @@
 # The Describable Textures Dataset (DTD) is an evolving collection of textural images in the wild, annotated with a
 # series of human-centric attributes, inspired by the perceptual properties of textures. DTD is a texture database,
 # consisting of 5640 images, organized according to a list of 47 terms (categories) inspired from human perception.
-#   - There are 120 images for each category. 
+#   - There are 120 images for each category.
 #   - Image sizes range between 300x300 and 640x640
 #   - images contain at least 90% of the surface representing the category attribute.
-#   - Train, validation and test, 40 images per class, for each split. 
+#   - Train, validation and test, 40 images per class, for each split.
 
 dataset:
   MODE: "torchvision"

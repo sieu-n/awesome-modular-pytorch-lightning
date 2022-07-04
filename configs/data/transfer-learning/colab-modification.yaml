@@ -5,6 +5,5 @@ dataloader:
 trainer:
   max_steps: 40000
   accumulate_grad_batches: 2
-
 # if training still doesn't work with regards to memory, further increase the `accumulate_grad_batches` variable or try
 # using lower precision training(e.g. configs/utils/fp16.yaml).

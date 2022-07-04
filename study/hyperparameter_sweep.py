@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 from main import Experiment
-from utils.configs import merge_config, read_configs, compute_links
+from utils.configs import compute_links, merge_config, read_configs
 from utils.logging import log_to_wandb
 
 

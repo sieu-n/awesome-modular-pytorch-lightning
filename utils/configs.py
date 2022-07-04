@@ -135,17 +135,21 @@ def compute_links(cfg):
         _query = deepcopy(query)
         while cursor < len(_query):
             if _query[cursor] == "{":
-                assert left == -1, f"Two consecutive opening brackets found. query: {query}"
+                assert (
+                    left == -1
+                ), f"Two consecutive opening brackets found. query: {query}"
                 is_compiled = True
                 left = cursor
             if _query[cursor] == "}":
-                assert left != -1, f"Closing bracket found but was never opened. query: {query}"
-                obj = recursive_search(_query[left + 1:cursor])
+                assert (
+                    left != -1
+                ), f"Closing bracket found but was never opened. query: {query}"
+                obj = recursive_search(_query[left + 1 : cursor])
                 if cursor == len(query) - 1 and left == 0:
                     print(f"Compiled {query} := {obj}")
                     return obj, True
 
-                _query = _query.replace(_query[left:cursor + 1], str(obj))
+                _query = _query.replace(_query[left : cursor + 1], str(obj))
                 left = -1
             cursor += 1
         if is_compiled:

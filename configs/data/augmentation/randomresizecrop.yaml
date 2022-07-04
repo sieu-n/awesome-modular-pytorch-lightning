@@ -1,5 +1,4 @@
-transform:
-  [
+transform: [
     [
       "trn",
       [
@@ -26,15 +25,11 @@ transform:
       [
         {
           "name": "Resize",
-          "args":
-            {
-              "size": [256, 256],
-              "interpolation": "bilinear",
-            },
+          "args": { "size": [256, 256], "interpolation": "bilinear" },
         },
         {
           "name": "TorchTransforms",
-          "args": { "NAME": "CenterCrop", "ARGS": {"size": [224, 224]} },
+          "args": { "NAME": "CenterCrop", "ARGS": { "size": [224, 224] } },
         },
         # more data augmentation (rand augment, auto augment, ...)
       ],

@@ -108,7 +108,9 @@ class Experiment:
             )
             for subset in subsets
         }
-        datasets = {subset: dataset_mapping[subset](datasets[subset]) for subset in subsets}
+        datasets = {
+            subset: dataset_mapping[subset](datasets[subset]) for subset in subsets
+        }
 
         # plot samples after data augmentation
         if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:

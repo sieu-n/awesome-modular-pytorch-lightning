@@ -33,9 +33,7 @@ class _LightningModule(pl.LightningModule):
                 **optimizer_kwargs,
             )
         else:
-            optimizer = optimizer_builder(
-                self.parameters(), **optimizer_kwargs
-            )
+            optimizer = optimizer_builder(self.parameters(), **optimizer_kwargs)
 
         config = {"optimizer": optimizer}
         # lr schedule
