@@ -20,6 +20,10 @@ training:
     momentum: 0.9
     weight_decay: "{training.lr}*0.00001"
 
+  lr_warmup:
+    multiplier: 1
+    total_epoch: 1000
+
   lr_scheduler:
     name: "cosine"
     args:
