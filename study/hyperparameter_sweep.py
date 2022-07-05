@@ -12,26 +12,14 @@ def set_key_to(d, key, value):
     # Simply traversing `d` is indeed more complex because `key` might not exist in d.
     # For example, given key="training.optimizer.lr" and value="0.01",
     # create an empty dictionary: d_to_push = { "training": { "optimizer": { } } }
-    d_to_push = {"WRAPPER": None}
-    prev_key = "WRAPPER"
+    d_to_push = {}
     _d_to_push = d_to_push
-    for k in key.split("."):
-        # 'mapping.[0].[1].[0]' -> ["mapping", "0]", "1]", "0]"]
-        dict_key = k.split("[")[0]
-        _d_to_push[prev_key] = {dict_key: None}
-        _d_to_push = _d_to_push[prev_key]
-        prev_key = dict_key
-        # loop through ["0]", "1]", "0]"]
-        for list_idx in k.split("[")[1:]:
-            assert list_idx[-1] == "]", f"{list_idx} was given."
-            list_idx = int(list_idx[:-1])
-            _d_to_push[prev_key] = [{} for _ in range(list_idx + 1)]
-            _d_to_push[prev_key][list_idx] = None
-            _d_to_push = _d_to_push[prev_key]
-            prev_key = list_idx
+    for k in key.split(".")[:-1]:
+        _d_to_push[k] = {}
+        _d_to_push = _d_to_push[k]
     # fill in 0.01: d_to_push = { "training": { "optimizer": { "lr": 0.01 } } }
-    _d_to_push[prev_key] = value
-    merged = merge_config(cfg_base=d, cfg_from=d_to_push["WRAPPER"])
+    _d_to_push[key.split(".")[-1]] = value
+    merged = merge_config(cfg_base=d, cfg_from=d_to_push)
     return merged
 
 
@@ -136,7 +124,7 @@ if __name__ == "__main__":
         ################################################################
         # train
         ################################################################
-        save_path = ("checkpoints/model_state_dict.pth",)
+        save_path = "checkpoints/model_state_dict.pth"
         if not args.root_dir:
             root_dir = os.path.join(
                 f"{experiment.exp_dir}/checkpoints", experiment.experiment_name

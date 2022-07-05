@@ -66,7 +66,7 @@ def build_dataset(dataset_cfg):
 def build_dataset_mapping(mapping_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
     mappings = {}
-    for subsets, d_configs in mapping_cfg:
+    for subsets, d_configs in deepcopy(mapping_cfg):
         t = []
         # for each element of transforms,
         for d_config in d_configs:
@@ -96,7 +96,7 @@ def build_dataset_mapping(mapping_cfg, const_cfg):
 def build_transforms(transform_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
     transforms = {}
-    for subsets, t_configs in transform_cfg:
+    for subsets, t_configs in deepcopy(transform_cfg):
         t = []
         # for each element of transforms,
         for t_config in t_configs:
@@ -117,6 +117,7 @@ def build_transforms(transform_cfg, const_cfg):
 
 
 def build_initial_transform(initial_transform_cfg, const_cfg):
+    initial_transform_cfg = deepcopy(initial_transform_cfg)
     # 2.2. actually apply transformations.
     initial_transform = None
     # find transform from name

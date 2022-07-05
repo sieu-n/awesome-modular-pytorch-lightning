@@ -18,7 +18,7 @@ training:
     lr: "{training.lr}"
     nesterov: True
     momentum: 0.9
-    weight_decay: "{training.lr}*0.00001"
+    weight_decay: "{training.lr}*0.01"
 
   lr_warmup:
     multiplier: 1
@@ -39,7 +39,7 @@ training:
       update:
         value: "cls_loss"
     confusion_matrix:
-      frequency: { "trn": 50, "val": 5 }
+      interval: { "trn": 50, "val": 5 }
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"

@@ -132,7 +132,7 @@ if __name__ == "__main__":
         ################################################################
         # train
         ################################################################
-        save_path = ("checkpoints/model_state_dict.pth",)
+        save_path = "checkpoints/model_state_dict.pth"
         if not args.root_dir:
             root_dir = os.path.join(
                 f"{experiment.exp_dir}/checkpoints", experiment.experiment_name

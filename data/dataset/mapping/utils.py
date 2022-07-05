@@ -13,7 +13,7 @@ class RemapIndices(Dataset):
 
 
 class ClassBalanceTrainValSplit(RemapIndices):
-    def __init__(self, base_dataset, subset, count, seed=42):
+    def __init__(self, base_dataset, subset, count, seed=42, const_cfg=None):
         rng = random.Random(seed)
 
         print("[*] Loading dataset for splitting validation set based on class type.")
@@ -55,6 +55,7 @@ class TrainValSplit(RemapIndices):
         count=None,
         ratio=None,
         indices=None,
+        const_cfg=None,
     ):
         if indices is not None:
             self.indices = indices
@@ -95,7 +96,7 @@ class TrainValSplit(RemapIndices):
 
 
 class SubsetDataset(RemapIndices):
-    def __init__(self, base_dataset, indices=None, size=None, seed=None):
+    def __init__(self, base_dataset, indices=None, size=None, seed=None, const_cfg=None):
         """
         Build dataset that simply adds more data transformations to the original samples.
         Parameters

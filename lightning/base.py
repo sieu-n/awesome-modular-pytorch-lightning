@@ -113,14 +113,14 @@ class _BaseLightningTrainer(_LightningModule):
                     **metric_cfg.get("args", {}),
                 )
                 # get log frequency
-                frequency = metric_cfg.get("frequency", 1)
-                if type(frequency) == dict:
-                    frequency = frequency.get(subset, 1)
+                interval = metric_cfg.get("interval", 1)
+                if type(interval) == dict:
+                    interval = interval.get(subset, 1)
                 metric_data = {
                     "name": metric_name,
                     "metric": metric,
                     "update_keys": metric_cfg["update"],
-                    "frequency": frequency,
+                    "interval": interval,
                     "next_log": 0,
                 }
 
@@ -172,10 +172,12 @@ class _BaseLightningTrainer(_LightningModule):
 
     def digest_metrics(self, subset):
         for metric_data in self.metrics[subset]:
+            # log every `interval` epochs.
             if metric_data["next_log"] > 0:
+                metric_data["next_log"] -= 1
                 continue
-            # skip `frequency` - 1 epochs before logging.
-            metric_data["next_log"] = metric_data["frequency"] - 1
+            # skip `interval` - 1 times.
+            metric_data["next_log"] = metric_data["interval"] - 1
 
             metric_name = metric_data["name"]
             res = metric_data["metric"].compute()

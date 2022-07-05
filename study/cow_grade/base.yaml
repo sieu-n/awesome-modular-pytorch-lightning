@@ -137,7 +137,7 @@ training:
         preds: "logits"
         target: "y"
     confusion_matrix:
-      frequency: { "trn": 50 }
+      interval: { "trn": 50 }
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"

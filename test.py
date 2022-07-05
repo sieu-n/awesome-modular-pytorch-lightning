@@ -10,19 +10,16 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
-    parser.add_argument("--name", type=str, default=None)
-    parser.add_argument("--group", type=str, default=None)
-    parser.add_argument("--offline", action="store_true", default=False)
+    parser.add_argument("--weights", required=True)
+    parser.add_argument("--is_ckpt", default=False, action="store_true")
     parser.add_argument("--root_dir", type=str, default=None)
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
-    if args.name is not None:
-        cfg["name"] = args.name
-    if args.group:
-        cfg["wandb"]["group"] = args.group
-    if args.offline:
-        cfg["wandb"]["offline"] = True
+    cfg["wandb"]["offline"] = True
+
+    cfg["model"]["state_dict_path"] = args.weights
+    cfg["model"]["is_ckpt"] = args.is_ckpt
     # initialize experiment
     experiment = Experiment(cfg)
     experiment.initialize_environment(cfg=cfg)
@@ -55,22 +52,5 @@ if __name__ == "__main__":
         **cfg["trainer"],
     )
 
-    pl_trainer.fit(
-        model,
-        train_dataloader,
-        val_dataloader,
-    )
-
-    # save weights
-    save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
-    if not os.path.exists(save_path_root):
-        os.makedirs(save_path_root)
-    torch.save(model.state_dict(), f"{experiment.exp_dir}/{save_path}")
-    # test
     res = pl_trainer.test(model, val_dataloader)
-
-    # log results
-    logger_and_callbacks["logger"].experiment.finish()
-
     print("Result:", res)
-    print("Experiment and log dir:", experiment.get_directory())
