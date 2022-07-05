@@ -8,7 +8,7 @@ training:
   ID: "ClassificationTrainer"
 
   epochs: 200
-  lr: 0.1
+  lr: 0.03
 
   optimizer: "sgd"
   optimizer_cfg:
