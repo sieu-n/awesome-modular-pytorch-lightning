@@ -9,6 +9,7 @@ from utils.logging import log_to_wandb
 
 
 def set_key_to(d, key, value):
+    # Simply traversing `d` is indeed more complex because `key` might not exist in d.
     # For example, given key="training.optimizer.lr" and value="0.01",
     # create an empty dictionary: d_to_push = { "training": { "optimizer": { } } }
     d_to_push = {"WRAPPER": None}
@@ -30,7 +31,7 @@ def set_key_to(d, key, value):
             prev_key = list_idx
     # fill in 0.01: d_to_push = { "training": { "optimizer": { "lr": 0.01 } } }
     _d_to_push[prev_key] = value
-    merged = merge_config(cfg_base=d, cfg_from=d_to_push)
+    merged = merge_config(cfg_base=d, cfg_from=d_to_push["WRAPPER"])
     return merged
 
 

@@ -1,0 +1,8 @@
+training:
+  lr_scheduler:
+    name: "1cycle"
+    args:
+      anneal_strategy: "linear"
+      total_steps: "{trainer.max_steps}"
+    cfg:
+      interval: "step"
