@@ -15,9 +15,10 @@ dataset:
       download: True
       split: "train"
     val:
+      download: True
       split: "test"
   initial_transform:
     name: "TupleToClassificationData"
 
 const:
-  num_classes: 101
+  num_classes: 196

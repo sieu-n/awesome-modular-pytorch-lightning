@@ -1,4 +1,4 @@
-# https://pytorch.org/vision/stable/generated/torchvision.datasets.StanfordCars.html#torchvision.datasets.StanfordCars
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.Flowers102.html#torchvision.datasets.Flowers102
 # Oxford 102 Flower is an image classification dataset consisting of
 #   - 102 flower categories.
 #   - Each class consists of between 40 and 258 images.
