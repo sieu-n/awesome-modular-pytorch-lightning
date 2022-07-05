@@ -4,7 +4,7 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 from main import Experiment
-from utils.configs import compute_links, merge_config, read_configs
+from utils.configs import compile_links, merge_config, read_configs
 from utils.logging import log_to_wandb
 
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         "-t", "--dtype", default="str", type=str, choices=["str", "int", "float"]
     )
     args = parser.parse_args()
-    cfg = read_configs(args.configs)
+    cfg = read_configs(args.configs, compile_links=False)
 
     if args.name is not None:
         cfg["name"] = args.name
@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
         # set `args.key` in config to `value`
         cycle_cfg = set_key_to(cycle_cfg, args.key, value)
-        cycle_cfg = compute_links(cycle_cfg)
+        cycle_cfg = compile_links(cycle_cfg)
         ################################################################
         # build experiment
         ################################################################

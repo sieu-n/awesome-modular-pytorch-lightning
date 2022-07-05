@@ -65,7 +65,7 @@ def merge_config(cfg_base, cfg_from):
     return recursively_write(deepcopy(cfg_base), cfg_from)
 
 
-def read_configs(yaml_paths):
+def read_configs(yaml_paths, compile_links=True):
     """
     Load and combine multiple yaml files and return final config.
 
@@ -84,10 +84,14 @@ def read_configs(yaml_paths):
     for yaml_path in yaml_paths[::-1]:
         new_cfg = read_yaml(yaml_path)
         cfg = merge_config(cfg, new_cfg)
-    return compute_links(cfg)
+    # complie links. This behaviour might be disabled when we would like to edit the config file later such as during
+    # hyperparameter sweeping.
+    if compile_links:
+        cfg = compile_links(cfg)
+    return cfg
 
 
-def compute_links(cfg):
+def compile_links(cfg):
     """
     Computes `links` in config file that can be defined using curly brackets. For example,
 
