@@ -65,7 +65,7 @@ def merge_config(cfg_base, cfg_from):
     return recursively_write(deepcopy(cfg_base), cfg_from)
 
 
-def read_configs(yaml_paths, compile_links=True):
+def read_configs(yaml_paths, compile=True):
     """
     Load and combine multiple yaml files and return final config.
 
@@ -86,7 +86,7 @@ def read_configs(yaml_paths, compile_links=True):
         cfg = merge_config(cfg, new_cfg)
     # complie links. This behaviour might be disabled when we would like to edit the config file later such as during
     # hyperparameter sweeping.
-    if compile_links:
+    if compile:
         cfg = compile_links(cfg)
     return cfg
 

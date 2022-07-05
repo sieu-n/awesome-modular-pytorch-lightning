@@ -5,6 +5,6 @@ training:
       # Original version updates per-batch but we modify to update pre-epoch.
       max_lr: "{training.lr}"
       anneal_strategy: "linear"
-      total_steps: "{trainer.epochs}"
+      total_steps: "{training.epochs}"
     cfg:
-      interval: "epochs"
+      interval: "epoch"

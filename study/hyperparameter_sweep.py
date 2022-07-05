@@ -84,7 +84,7 @@ if __name__ == "__main__":
         "-t", "--dtype", default="str", type=str, choices=["str", "int", "float"]
     )
     args = parser.parse_args()
-    cfg = read_configs(args.configs, compile_links=False)
+    cfg = read_configs(args.configs, compile=False)
 
     if args.name is not None:
         cfg["name"] = args.name
