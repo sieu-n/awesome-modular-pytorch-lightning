@@ -1,5 +1,5 @@
-from torch.utils.data import Dataset
 import numpy as np
+from torch.utils.data import Dataset
 
 
 class InstanceIndependantNoise(Dataset):
@@ -9,7 +9,9 @@ class InstanceIndependantNoise(Dataset):
         num_classes,
         method="custom",
         transition_matrix=None,
-        transition_prob=None
+        transition_prob=None,
+        *args,
+        **kwargs,
     ):
         """
         Build dataset that simply adds more data transformations to the original samples.
@@ -41,14 +43,18 @@ class InstanceIndependantNoise(Dataset):
                 next_class = (c + 1) % num_classes
                 transition_matrix[c][next_class] = transition_prob
         else:
-            raise ValueError(f"Invalid method '{method}' was provided to `InstanceIndependantNoise`.")
+            raise ValueError(
+                f"Invalid method '{method}' was provided to `InstanceIndependantNoise`."
+            )
         # fill in diagonal indices so sum of transition_matrix[c] 1.0
         for c in range(num_classes):
             # sum of transition_matrix excluding p[c][c]
             s = sum(transition_matrix[c]) - transition_matrix[c][c]
             assert 0.0 <= s <= 1.0
             transition_matrix[c][c] = 1.0 - s
-        print(f"Transitioning data based on transition matrix: \n{np.array(transition_matrix)}")
+        print(
+            f"Transitioning data based on transition matrix: \n{np.array(transition_matrix)}"
+        )
 
         self.corruption_prob = np.cumsum(transition_matrix, axis=1)
         self.random_score = np.random.uniform(size=len(self.base_dataset))
@@ -63,7 +69,6 @@ class InstanceIndependantNoise(Dataset):
         return len(self.base_dataset)
 
     def __getitem__(self, idx):
-        idx = self.indices[idx]
         data = self.base_dataset[idx]
         data["labels"] = self.corrupt_label(data["labels"], self.random_score[idx])
         return data

@@ -1,0 +1,12 @@
+training:
+  metrics:
+    class-avg-accuracy:
+      when: "trn,val,test"
+      name: "Accuracy"
+      file: "torchmetrics"
+      args:
+        average: "macro"
+        num_classes: "{const.num_classes}"
+      update:
+        preds: "logits"
+        target: "y"

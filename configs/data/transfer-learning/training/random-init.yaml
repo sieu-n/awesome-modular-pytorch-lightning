@@ -1,24 +1,35 @@
-name: "CIFAR10-ResNet"
+name: "RandomInitialization-ResNet18"
 
 dataloader:
   base_dataloader:
-    batch_size: 64
+    batch_size: 256
+
+trainer:
+  max_steps: 20000
 
 training:
   ID: "ClassificationTrainer"
 
-  epochs: 200
-  lr: 0.1
+  epochs: null
+  lr: 0.01
 
   optimizer: "sgd"
   optimizer_cfg:
+    lr: "{training.lr}"
+    nesterov: True
     momentum: 0.9
-    weight_decay: 0.0005
+    weight_decay: "{training.lr}*0.01"
+
+  lr_warmup:
+    multiplier: 1
+    total_epoch: 1000
+
   lr_scheduler:
     name: "cosine"
-    args: {}
+    args:
+      T_max: "{trainer.max_steps}"
     cfg:
-      interval: "epoch"
+      interval: "step"
 
   metrics:
     loss:
@@ -28,12 +39,12 @@ training:
       update:
         value: "cls_loss"
     confusion_matrix:
-      frequency: { "trn": 50, "val": 5 }
+      interval: { "trn": 50, "val": 5 }
       when: "trn,val,test"
       name: "ConfusionMatrix"
       file: "torchmetrics"
       args:
-        num_classes: 10
+        num_classes: "{const.num_classes}"
       update:
         preds: "logits"
         target: "y"
@@ -52,28 +63,24 @@ callbacks:
       monitor: "epoch_val/accuracy"
       mode: "max"
       save_last: True
-      save_top_k: 5
+      save_top_k: 1
   - name: "LearningRateMonitor"
     file: "lightning"
     args:
       logging_interval: "epoch"
 
 model:
-  backbone:
-    cfg:
-      low_res: True
   modules:
     classifier:
       name: ClassificationHead
       input: "output"
       args:
         reduction: "gap"
-        in_features: 512
-        dropout: 0.2
-        num_classes: 10
+        in_features: "{model.backbone.out_features}"
+        num_classes: "{const.num_classes}"
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
 
 wandb:
-  project: "CIFAR10-classification"
+  project: "Transfer-learning-classification"

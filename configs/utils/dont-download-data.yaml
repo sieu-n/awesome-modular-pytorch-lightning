@@ -1,0 +1,8 @@
+dataset:
+  dataset_base_cfg:
+    download: False
+  dataset_subset_cfg:
+    trn:
+      download: False
+    val:
+      download: False

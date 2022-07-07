@@ -4,14 +4,14 @@ from copy import deepcopy
 
 import pytorch_lightning as pl
 from main import Experiment
-from utils.configs import merge_config, read_configs
+from utils.configs import compile_links, merge_config, read_configs
 from utils.logging import log_to_wandb
 
 
 def set_key_to(d, key, value):
+    # Simply traversing `d` is indeed more complex because `key` might not exist in d.
     # For example, given key="training.optimizer.lr" and value="0.01",
     # create an empty dictionary: d_to_push = { "training": { "optimizer": { } } }
-
     d_to_push = {}
     _d_to_push = d_to_push
     for k in key.split(".")[:-1]:
@@ -72,7 +72,7 @@ if __name__ == "__main__":
         "-t", "--dtype", default="str", type=str, choices=["str", "int", "float"]
     )
     args = parser.parse_args()
-    cfg = read_configs(args.configs)
+    cfg = read_configs(args.configs, compile=False)
 
     if args.name is not None:
         cfg["name"] = args.name
@@ -100,6 +100,7 @@ if __name__ == "__main__":
 
         # set `args.key` in config to `value`
         cycle_cfg = set_key_to(cycle_cfg, args.key, value)
+        cycle_cfg = compile_links(cycle_cfg)
         ################################################################
         # build experiment
         ################################################################
@@ -123,7 +124,7 @@ if __name__ == "__main__":
         ################################################################
         # train
         ################################################################
-        save_path = ("checkpoints/model_state_dict.pth",)
+        save_path = "checkpoints/model_state_dict.pth"
         if not args.root_dir:
             root_dir = os.path.join(
                 f"{experiment.exp_dir}/checkpoints", experiment.experiment_name

@@ -13,7 +13,7 @@ def plot_image_classification(images, labels=None, label_map=None, **kwargs):
     """
     image = cv2.cvtColor(images, cv2.COLOR_RGB2BGR)
     # x is cv2-style bgr image
-    fontLocation = (10, 10)
+    fontLocation = (10, 30)
     fontScale = 1
     fontColor = (255, 0, 0)
     fontThickness = 2

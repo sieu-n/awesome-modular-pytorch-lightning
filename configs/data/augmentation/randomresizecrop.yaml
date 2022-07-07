@@ -1,0 +1,57 @@
+transform: [
+    [
+      "trn",
+      [
+        {
+          "name": "RandomResizedCropAndInterpolation",
+          "args":
+            {
+              "size": 224,
+              "scale": [0.08, 1.0],
+              "ratio": [0.75, 1.3333],
+              "interpolation": "random",
+            },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+    [
+      # standard approach to use images cropped to the central 87.5% for validation
+      "val,test",
+      [
+        {
+          "name": "Resize",
+          "args": { "size": [256, 256], "interpolation": "bilinear" },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "CenterCrop", "ARGS": { "size": [224, 224] } },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+    [
+      "trn,val,test",
+      [
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+            },
+        },
+      ],
+    ],
+  ]
+
+const:
+  task: "image classification"
+  # normalize to [0, 1].
+  normalization_mean: [0, 0, 0]
+  normalization_std: [1, 1, 1]

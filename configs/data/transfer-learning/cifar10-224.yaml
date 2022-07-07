@@ -1,0 +1,32 @@
+dataset:
+  MODE: "torchvision"
+  NAME: "CIFAR10"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./cifar10"
+  dataset_subset_cfg:
+    trn:
+      download: True
+      train: True
+    val:
+      train: False
+  initial_transform:
+    name: "TupleToClassificationData"
+
+# other useful configs.
+const:
+  task: "image classification"
+  normalization_mean: [0.4914, 0.4822, 0.4465]
+  normalization_std: [0.2023, 0.1994, 0.2010]
+  num_classes: 10
+  label_map:
+    - "airplane"
+    - "automobile"
+    - "bird"
+    - "cat"
+    - "deer"
+    - "dog"
+    - "frog"
+    - "horse"
+    - "ship"
+    - "truck"

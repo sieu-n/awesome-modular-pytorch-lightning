@@ -1,0 +1,28 @@
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.DTD.html#torchvision.datasets.DTD
+# https://www.robots.ox.ac.uk/~vgg/data/dtd/
+# The Describable Textures Dataset (DTD) is an evolving collection of textural images in the wild, annotated with a
+# series of human-centric attributes, inspired by the perceptual properties of textures. DTD is a texture database,
+# consisting of 5640 images, organized according to a list of 47 terms (categories) inspired from human perception.
+#   - There are 120 images for each category.
+#   - Image sizes range between 300x300 and 640x640
+#   - images contain at least 90% of the surface representing the category attribute.
+#   - Train, validation and test, 40 images per class, for each split.
+
+dataset:
+  MODE: "torchvision"
+  NAME: "DTD"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./DTD"
+    partition: 1
+  dataset_subset_cfg:
+    trn:
+      download: True
+      split: "train"
+    val:
+      split: "val"
+  initial_transform:
+    name: "TupleToClassificationData"
+
+const:
+  num_classes: 47

@@ -1,0 +1,24 @@
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.StanfordCars.html#torchvision.datasets.StanfordCars
+# The Cars dataset contains
+#   - 16,185 images of
+#   - 196 classes of cars.
+#   - split into 8,144 training images and 8,041 testing images, where each class has been split roughly in a 50-50 split
+
+dataset:
+  MODE: "torchvision"
+  NAME: "StanfordCars"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    root: "./StanfordCars"
+  dataset_subset_cfg:
+    trn:
+      download: True
+      split: "train"
+    val:
+      download: True
+      split: "test"
+  initial_transform:
+    name: "TupleToClassificationData"
+
+const:
+  num_classes: 196

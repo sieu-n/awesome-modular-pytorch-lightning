@@ -1,0 +1,20 @@
+# https://pytorch.org/vision/stable/generated/torchvision.datasets.OxfordIIITPet.html#torchvision.datasets.OxfordIIITPet
+
+dataset:
+  MODE: "torchvision"
+  NAME: "OxfordIIITPet"
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    target_types: "category"
+    root: "./OxfordIIITPet"
+  dataset_subset_cfg:
+    trn:
+      download: True
+      split: "trainval"
+    val:
+      split: "test"
+  initial_transform:
+    name: "TupleToClassificationData"
+
+const:
+  num_classes: 37

@@ -1,0 +1,18 @@
+dataset:
+  mapping:
+    [
+      [
+        "trn",
+        [
+          {
+            "name": "InstanceIndependantNoise",
+            "args":
+              {
+                "method": "symmetric",
+                "num_classes": "{const.num_classes}",
+                "transition_prob": 0.2,
+              },
+          },
+        ],
+      ],
+    ]

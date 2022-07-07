@@ -1,0 +1,10 @@
+# Training procedure for transfer learning used in the paper:
+# TResNet: High Performance GPU-Dedicated Architecture, WACV 2021
+training:
+  lr_scheduler:
+    name: "1cycle"
+    args:
+      anneal_strategy: "linear"
+      total_steps: "{trainer.max_steps}"
+    cfg:
+      interval: "step"

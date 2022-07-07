@@ -30,13 +30,10 @@ class _LightningModule(pl.LightningModule):
                 params=self.parameters(),
                 base_optimizer=optimizer_builder,
                 rho=sam_cfg["rho"] if "rho" in sam_cfg else 0.05,
-                lr=self.training_cfg["lr"],
                 **optimizer_kwargs,
             )
         else:
-            optimizer = optimizer_builder(
-                self.parameters(), lr=self.training_cfg["lr"], **optimizer_kwargs
-            )
+            optimizer = optimizer_builder(self.parameters(), **optimizer_kwargs)
 
         config = {"optimizer": optimizer}
         # lr schedule
@@ -49,7 +46,6 @@ class _LightningModule(pl.LightningModule):
                 schedule_kwargs["lr_lambda"] = lambda epoch: 1
             elif schedule_name == "cosine":
                 schedule_builder = lr_scheduler.CosineAnnealingLR
-                schedule_kwargs["T_max"] = self.training_cfg["epochs"]
                 assert "frequency" not in scheduler_config or "frequency" == "epoch"
             elif schedule_name == "exponential":
                 schedule_builder = lr_scheduler.ExponentialLR

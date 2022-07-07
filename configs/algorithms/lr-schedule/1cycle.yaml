@@ -1,0 +1,12 @@
+# NOTE: This scheduler is not chainable.
+training:
+  lr_scheduler:
+    name: "1cycle"
+    args:
+      # Original version updates per-batch but we modify to update pre-epoch.
+      pct_start: 0.3
+      max_lr: "{training.lr}"
+      anneal_strategy: "linear"
+      total_steps: "{training.epochs}"
+    cfg:
+      interval: "epoch"
