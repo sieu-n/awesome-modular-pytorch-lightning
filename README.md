@@ -482,7 +482,7 @@ callbacks:
 
 1. `timm` or `torchvision` models have an argument called `pretrained` for loading a pretrained feature extractor(typically ImageNet trained).
 
-2. To load from custom checkpoints, you can specify a url or path to the state dict in `model.backbone.weights`. For example, `configs/vision/models/imagenet21k/imagenet21k_resnet50.yaml` loads ImageNet21K checkpoints from a url proposed in the paper: [ImageNet-21K Pretraining for the Masses](https://github.com/Alibaba-MIIL/ImageNet21K). Path to state dict can be provided in `model.backbone.weights.state_dict_path` instead of the url.
+2. To load from custom checkpoints, you can specify a url or path to the state dict in `model.backbone.weights`. For example, `configs/vision/models/imagenet21k/imagenet21k_resnet50.yaml` loads ImageNet21K checkpoints from a url proposed in the paper: [ImageNet-21K Pretraining for the Masses](https://github.com/Alibaba-MIIL/ImageNet21K). Path to state dict can be provided in `model.backbone.weights.state_dict_path` instead of the url. This is implemented in `lightning/base.py:L23`
 ```yaml
 model:
   backbone:
@@ -496,6 +496,16 @@ model:
       is_ckpt: True
       url: "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/ImageNet_21K_P/models/resnet50_miil_21k.pth"
       # alternatively, `state_dict_path: {PATH TO STATE DICT}`
+```
+
+### Loading and resuming from checkpoint
+
+To resume from a checkpoint, provide the path to state dict in `model.state_dict_path`. Checkpoints generated using `ModelCheckpoint` callback contain state dict inside the `state_dict` key while saving using `torch.save(model.state_dict())` directly saves the state dict. The `is_ckpt` argument should be true if the state dict is generated through the `ModelCheckpoint` callback.
+
+```yaml
+model:
+  is_ckpt: True # True / False according to the type of the state dict.
+  state_dict_path: {PATH TO STATE DICT}
 ```
 
 ## Learning rate schedule
