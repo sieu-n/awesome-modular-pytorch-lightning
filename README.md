@@ -4,73 +4,565 @@
 What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 - Ever wanted to train `tresnetm50` models and apply TTA(test-time augmentation) or SWA(stocahstic weight averaging) to enhance performance? Apply sharpness-aware minimization to semantic segmentation models and measure the difference in calibration? LightCollections is a framework that utilize and connects existing libraries so experiments can be run effortlessly.
 - LightCollection aims at extending the features of `pytorch-lightning`. We aim to provide training procedures of various subtasks in Computer Vision with a collection of `LightningModule` and utilities for easily using model architecture, metrics, dataset, and training algorithms.
-- This repository is designed to utilize many amazing and robust and open-source projects such as `timm`, `torchmetrics`, and more. Currently, the following frameworks are integrated into `LightCollections` and can be easily applied through the config files:
+- This repository utilize many amazing and robust and open-source projects such as `timm`, `torchmetrics`, and more. Currently, the following frameworks are integrated into `LightCollections` and can be easily applied through the config files:
   - `torchvision.models` for models, `torchvision.transforms` for transforms, optimizers and learning rate schedules from `pytorch`.
-  - Network backbones from `timm`.
+  - Network architecture and weights from `timm`.
   - `inagenet21k` [pretrained weights](https://github.com/Alibaba-MIIL/ImageNet21K) and feature to load model weights from url / `.pth` file.
-  - `torch-ema` for saving EMA weights.
-  - `torchmetrics` for logging metrics. For example, see `configs/vision/training/resnet-cifar10.yaml`
+  - `TTAch` for test-time augmentation.
+  - `torchmetrics` for metrics.
   - WIP & future TODO:
     - Data augmentation from `albumentations`
-    - TTA and TTAch
-    -
+    - Object detection models and weights from `MMDetection`
 
+# Quickstart
 
-## How to run experiments
-1. Run experiments using `train.py`
+## Running experiments with `train.py`
 
-- CIFAR10 image classification with ResNet18``.
+- CIFAR10 image classification with ResNet18.
 ```shell
-!python train.py --config configs/vision/training/resnet-cifar10.yaml configs/vision/models/resnet/resnet18-custom.yaml configs/vision/data/cifar10.yaml configs/utils/wandb.yaml configs/utils/train.yaml
+!python train.py --name DUMMY-CIFAR10-ResNet18 --configs \
+    configs/vision/classification/resnet-cifar10.yaml \
+    configs/vision/models/resnet/resnet18-custom.yaml \
+    configs/data/cifar10-kuangliu.yaml \
+    configs/device/gpu.yaml \
+    configs/utils/wandb.yaml \
+    configs/utils/train.yaml
 ```
 
-2. Use the `Experiment` class to run complex experiments for research, hyperparameter sweep, ...:
+- Transfer learning experiments on Stanford Dogs dataset using TResNet-M(GPU needed)
+```shell
+!pip install git+https://github.com/mapillary/inplace_abn.git@v1.0.12 -q
+!python train.py --name TResNetM-StanfordDogs --config \
+    configs/data/transfer-learning/training/colab-modification.yaml \
+    configs/data/transfer-learning/training/random-init.yaml \
+    configs/data/transfer-learning/cifar10-224.yaml \
+    configs/data/augmentation/randomresizecrop.yaml \
+    configs/vision/models/tresnetm.yaml \
+    configs/device/gpu.yaml \
+    configs/utils/wandb.yaml \
+    configs/utils/train.yaml
+```
 
-For example, please have a look at the `study/dataset_size_experiment.py`.
 
-### How does config files work?
+## `Experiment` factory class
+
+LightCollections can also be used as a library for extending your pytorch lightning code. `train.py` simply conveys the config file to the `Experiment` class defined in `main.py` to build components such as dataset, dataloaders, models, and callbacks.
+```Python
+    ...
+    experiment = Experiment(cfg)
+    experiment.initialize_environment(cfg=cfg)
+    datasets = experiment.setup_dataset(
+        dataset_cfg=cfg["dataset"],
+        transform_cfg=cfg["transform"],
+    )
+    dataloaders = experiment.setup_dataloader(
+        datasets=datasets,
+        dataloader_cfg=cfg["dataloader"],
+    )
+    train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
+    model = experiment.setup_model(model_cfg=cfg["model"], training_cfg=cfg["training"])
+    logger_and_callbacks = experiment.setup_callbacks(cfg=cfg)
+    ...
+```
+
+You don't neccessarily need to create every component using the `Experiment` class. For example, if you wish to use a custom dataset instead, you can skip `experiment.setup_dataset` and feed your custom dataset to `experiment.setup_dataloader`. The `Experiment` class simply manages constant global variables such as label map, normalization mean and standard deviation, and manages a common log directory to conveniently create the components.
+
+In an example implemented in `tools/hyperparameter_sweep.py`, I was able to implement hyperparameter sweeping using the `Experiment` class.
+
+## How does config files work?
 
 Training involves many configs. `LightCollections` implements a cascading config system where we use multiple layers of config
-files to define differnt parts of the experiment. For example, in the CIFAR10 example above, we use 5 config files.
+files to define differnt parts of the experiment. For example, in the CIFAR10 example above, we combine 6 config files.
 ```shell
-configs/vision/training/resnet-cifar10.yaml
-configs/vision/models/resnet/resnet18-custom.yaml
-configs/vision/data/cifar10.yaml
-configs/utils/wandb.yaml
+configs/vision/classification/resnet-cifar10.yaml \
+configs/vision/models/resnet/resnet18-custom.yaml \
+configs/data/cifar10-kuangliu.yaml \
+configs/device/gpu.yaml \
+configs/utils/wandb.yaml \
 configs/utils/train.yaml
 ```
-here, if we want to log to `TensorBoard` instead of `wandb`, you may replace
+Each layer defines something different, such as the dataset, network architecture, or training procedure. If we wanted to use a `ResNet50` model instead, we may replace
 ```shell
-configs/utils/wandb.yaml
--> configs/utils/tensorboard.yaml
+configs/vision/models/resnet/resnet18-custom.yaml
+-> configs/vision/models/resnet/resnet50-custom.yaml
 ```
-these cascading config files are baked at the start of `train.py`, where configs are overriden in inverse order. These baked config files are logged under `configs/logs/{experiment_name}.(yaml/pkl/json)` for logging purpose.
+these cascading config files are baked at the start of `train.py`. Configs in front have higher priority. These baked config files are logged under `configs/logs/{experiment_name}.(yaml/pkl/json)` for logging and reproduction purpose.
 
-## Overview
+## Components from `catalog`
 
 - If not implemented yet, you may take an instance of `main.py: Experiment` and override any part of it.
 - Training procedure (`LightningModule`): List of available training procedures are listed in `lightning/trainers.py`
 - Model architectures:
   - Backbone models implemented in `torchvision.models` can be used.
   - Backbone models implemented in `timm` can be used.
-  - Although we highly recommend using `timm`, as it is throughly evaluated and managed, custom implementations of some architectures are listed in `models/backbone/__init__.py`.
+  - Although we highly recommend using `timm`, as they provide a large variaty of computer vision models and their models are throughly evaluated, custom implementations of some architectures are listed in `catalog/models/__init__.py`.
 - Dataset
-  - Dataset: currently only `torchvision` datasets are supported by `Experiment`, however you could use `torchvision.datasets.ImageFolder` to load from custom dataset.
+  - Dataset: currently only `torchvision` datasets are supported by `Experiment`, however `torchvision.datasets.ImageFolder` can be used to load from custom dataset. In addition, you may just use a custom dataset.
   - Transformations(data augmentation): Transforms must be listed in one in [`data/transforms/vision/__init__.py`]
 - Other features
   - Optimizers
   - Metrics / loss
 
-## Timeline
 
-- 220517 | Create object detection dataset.
-- 220517 | Implementation of ResNet-D and PreAct-ResNet.
-- 220508 | Working version of the repository on `Image Classification`.
-- 220504 | Create repository! Start of `awesome-modular-pytorch-lightning`.
+# List of algorithms implemented
 
-### Tracking progress
+## Network architecture
 
-- Project Dashboard: [\[Trello\]](https://trello.com/b/AnOjqk1F/awesome-modular-pytorch-lightning-development)
+For computer vision models, we recommend borrowing architecture from `timm` as they provide robust implementations and pretrained weights for a wide variety of architectures. We remove the classification head from the original models.
+
+### [timm](https://github.com/rwightman/pytorch-image-models)
+
+[`timm`](https://github.com/rwightman/pytorch-image-models) provides a wide variety of architectures for computer vision. `timm.list_models()` returns a complete list of available models in timm. Models can be created with `timm.create_model()`.
+
+An example of creating a `resnet50` model using `timm`:
+```
+model = timm.create_model("resnet50", pretrained=True)
+```
+
+To use `timm` models,
+- set `model.backbone.TYPE` to `timm`.
+- set `model.backbone.ID` to the model name.
+- set additional arguments in `model.backbone.cfg`.
+- set `model.backbone.out_features` to the number of output channels.
+- Refer to: `configs/vision/models/resnet/resnet50-timm.yaml`
+```
+model:
+  backbone:
+    TYPE: "timm"
+    ID: "resnet50"
+    cfg:
+      pretrained: True
+    out_features: 2048
+```
+
+
+### torchvision.models
+
+`torchvision.models` also provide a number of architectures for computer vision. The list of models can be found [here](https://pytorch.org/vision/stable/models.html). 
+
+An example of creating a `resnet50` model using `torchvision`:
+```
+model = torchvision.models.resnet50()
+```
+
+To use `timm` models, 
+- set `model.backbone.TYPE` to `torchvision`.
+- set `model.backbone.ID` to the model name.
+- set additional arguments in `models.backbone.cfg`.
+- set `model.backbone.out_features` to the number of output channels.
+- Refer to: `configs/vision/models/resnet/resnet50-torchvision.yaml`
+```
+model:
+  backbone:
+    TYPE: "torchvision"
+    ID: "resnet50"
+    cfg:
+      pretrained: False
+    drop_after: "avgpool"
+    out_features: 2048
+```
+
+## Data Augmentation
+
+### RandomResizeCrop(ImageNet augmentation)
+
+- Paper: https://arxiv.org/abs/1409.4842
+- Note: Common data augmentation strategy for ImageNet using RandomResizedCrop.
+- Refer to: `configs/data/augmentation/randomresizecrop.yaml`
+
+```yaml
+transform: [
+    [
+      "trn",
+      [
+        {
+          "name": "RandomResizedCropAndInterpolation",
+          "args":
+            {
+              "size": 224,
+              "scale": [0.08, 1.0],
+              "ratio": [0.75, 1.3333],
+              "interpolation": "random",
+            },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+    [
+      # standard approach to use images cropped to the central 87.5% for validation
+      "val,test",
+      [
+        {
+          "name": "Resize",
+          "args": { "size": [256, 256], "interpolation": "bilinear" },
+        },
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "CenterCrop", "ARGS": { "size": [224, 224] } },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+    [
+      "trn,val,test",
+      [
+        { "name": "ToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+            },
+        },
+      ],
+    ],
+  ]
+```
+
+### RandAugment
+
+- Paper: https://arxiv.org/abs/1909.13719
+- Note: Commonly used data augmentation strategy for image classification.
+- Refer to: `configs/data/augmentation/randaugment.yaml`
+
+```yaml
+transform:
+...
+        {
+          "name": "TorchTransforms",
+          "args":
+            { 
+              "NAME": "RandAugment",
+              "ARGS": { "num_ops": 2, "magnitude": 9 } 
+            },
+        },
+...
+```
+Refer to: `configs/algorithms/data_augmentation/randaugment.yaml`
+
+### TrivialAugmentation
+- Paper: https://arxiv.org/abs/2103.10158
+- Note: Commonly used data augmentation strategy for image classification.
+- Refer to: `configs/data/augmentation/trivialaugment.yaml`
+```yaml
+transform:
+...
+        {
+          "name": "TorchTransforms",
+          "args":
+            {
+              "NAME": "TrivialAugmentWide",
+              "ARGS": { "num_magnitude_bins": 31 },
+            },
+        },
+...
+```
+
+### Mixup
+- Paper: https://arxiv.org/abs/1710.09412
+- Note: Commonly used data augmentation strategy for image classification. As the labels are continuous values, the loss function should be modified accordingly.
+- Refer to: `configs/data/augmentation/mixup/mixup.yaml`
+```yaml
+training:
+  mixup_cutmix:
+    mixup_alpha: 1.0
+    cutmix_alpha: 0.0
+    cutmix_minmax: null
+    prob: 1.0
+    switch_prob: 0.5
+    mode: "batch"
+    correct_lam: True
+    label_smoothing: 0.1
+    num_classes: 1000
+
+model:
+  modules:
+    loss_fn:
+      name: "SoftTargetCrossEntropy"
+```
+
+### CutMix
+- Paper: https://arxiv.org/abs/2103.10158
+- Note: Commonly used data augmentation strategy for image classification. As the labels are continuous values, the loss function should be modified accordingly.
+- Refer to: `configs/data/augmentation/mixup/cutmix.yaml`
+```yaml
+training:
+  mixup_cutmix:
+    mixup_alpha: 0.0
+    cutmix_alpha: 1.0
+    cutmix_minmax: null
+    prob: 1.0
+    switch_prob: 0.5
+    mode: "batch"
+    correct_lam: True
+    label_smoothing: 0.1
+    num_classes: 10
+
+model:
+  modules:
+    loss_fn:
+      name: "SoftTargetCrossEntropy"
+```
+
+### CutOut
+- Paper: https://arxiv.org/abs/1708.04552
+- Note: Commonly used data augmentation strategy for image classification.
+- Refer to: `configs/data/augmentation/cutout.yaml` and `configs/data/augmentation/cutout_multiple.yaml`
+```yaml
+transform:
+...
+    [
+      "trn",
+      [
+        ...
+        {
+          # CutOut!!
+          "name": "CutOut",
+          "args": { "mask_size": 0.5, "num_masks": 1 },
+        },
+      ],
+    ],
+...
+```
+
+### `timm` mixup-cutmix
+
+- Paper: https://arxiv.org/abs/2110.00476
+- Note: By default, models trained in `timm` randomly switches between `Mixup` and `CutMix` data augmentation. This is found to be effective in their paper.
+- Refer to: `configs/data/augmentation/mixup/mixup_cutmix.yaml`
+```yaml
+training:
+  mixup_cutmix:
+    mixup_alpha: .8
+    cutmix_alpha: 1.0
+    cutmix_minmax: null
+    prob: 1.0
+    switch_prob: 0.5
+    mode: "batch"
+    correct_lam: True
+    label_smoothing: 0.1
+    num_classes: 1000
+model:
+  modules:
+    loss_fn:
+      name: "SoftTargetCrossEntropy"
+```
+
+## Regularization
+
+### Label smoothing
+- Note: Commonly used regularization strategy.
+- Refer to: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html
+```
+model:
+  modules:
+    loss_fn:
+      name: "CrossEntropyLoss"
+      args:
+        label_smoothing: 0.1
+
+```
+
+### Weight decay
+- Note: Commonly used regularization strategy.
+- Refer to: [torch.optim.SGD](https://pytorch.org/docs/stable/generated/torch.optim.SGD.html) and `configs/vision/classification/resnet-cifar10.yaml`
+```yaml
+training:
+  optimizer_cfg:
+    weight_decay: 0.0005
+```
+
+### DropOut(classification)
+- Paper: https://jmlr.org/papers/v15/srivastava14a.html
+- Note: Commonly used regularization strategy.
+- Refer to: `configs/vision/classification/resnet-cifar10.yaml`
+```yaml
+model:
+  modules:
+    classifier:
+      args:
+        dropout: 0.2
+```
+
+### R-Drop(classification)
+- Paper: https://arxiv.org/abs/2106.14448
+- Note: Regularization strategy that minimizes the KL-divergence between the output distributions of two sub-models sampled by dropout.
+- Refer to: `configs/algorithms/rdrop.yaml`
+```yaml
+training:
+  rdrop:
+    alpha: 0.6
+```
+
+## Loss functions
+
+### Sharpness-aware minimization(SAM)
+- Paper: https://arxiv.org/abs/2010.01412
+- Note: Sharpness aware minimization aims at finding flat minimas. It is demonstrated to improve training speed, generalization, robustness to label noise. However, two backpropagation is needed at every opimization step which doubles the training time.
+- Refer to: `configs/algorithms/sharpness-aware-minimization.yaml`
+```yaml
+training:
+  sharpness-aware:
+    rho: 0.05
+```
+
+### PolyLoss
+- Paper: https://arxiv.org/abs/2204.12511
+- Note: The authors derive the taylor expansion of cross entropy and demonstrate that modifying the coefficient of the first-order term can improve performance.
+- Refer to: `configs/algorithms/loss/poly1.yaml`
+```yaml
+model:
+  modules:
+    loss_fn:
+      name: "PolyLoss"
+      file: "loss"
+      args:
+        eps: 2.0
+```
+
+### One-to-all BCE loss for classification
+
+- Paper: https://arxiv.org/abs/2110.00476
+- Note: The authors show that BCE loss can be used for classification tasks and shows similar or better performance.
+- Refer to: `configs/algorithms/loss/classification_bce.yaml`
+```yaml
+model:
+  modules:
+    loss_fn:
+      name: "OneToAllBinaryCrossEntropy"
+      file: "loss"
+```
+
+## Knowledge Distillation (WIP)
+
+### Vanila knowlege distillation
+
+(TODO)
+- Paper: https://arxiv.org/abs/1503.02531
+- Note: Distill knowledge from large network to small network by minimizing the KL divergence of the teacher and student prediction.
+- Refer to:
+```
+TODO
+```
+
+## Training
+
+### Gradient Clipping
+- Note: Used to preventing gradient explosion and stabilize the training by clipping large gradients. Recently, it is demonstrated to have a number of benefits.
+- Refer to: `configs/algorithms/optimizer/gradient_clipping.yaml` and `configs/algorithms/optimizer/gradient_clipping_maulat_optimization.yaml`
+```
+trainer:
+  gradient_clip_val: 1.0
+```
+
+### Stocahstic Weight Averaging(SWA)
+- Paper: https://arxiv.org/abs/1803.05407
+- Note: Average multiple checkpoints during training for better performance. An awesome overview of the algorithm is provided by [pytorch](https://pytorch.org/blog/stochastic-weight-averaging-in-pytorch/). Luckily, `pytorch-lightning` provides an easy-to-use callback that implements SWA. To train a SWA model from an existing checkpoint, you may set `swa_epoch_start: 0.0`.
+- Refer to: `configs/algorithms/swa.yaml`
+```
+callbacks:
+  - name: "StochasticWeightAveraging"
+    file: "lightning"
+    args:
+      swa_lrs: 0.02 # typicall x0.2 ~ x0.5 of initial lr
+      swa_epoch_start: 0.75
+      annealing_epochs: 5 # smooth the connection between lr schedule and SWA.
+      annealing_strategy: "cos"
+      avg_fn: null
+```
+
+## Pre-training
+
+### Fine-tuning from a pretrained feature extractor backbone
+
+1. `timm` or `torchvision` models have an argument called `pretrained` for loading a pretrained feature extractor(typically ImageNet trained).
+
+2. To load from custom checkpoints, you can specify a url or path to the state dict in `model.backbone.weights`. For example, `configs/vision/models/imagenet21k/imagenet21k_resnet50.yaml` loads ImageNet21K checkpoints from a url proposed in the paper: [ImageNet-21K Pretraining for the Masses](https://github.com/Alibaba-MIIL/ImageNet21K). Path to state dict can be provided in `model.backbone.weights.state_dict_path` instead of the url.
+```yaml
+model:
+  backbone:
+    TYPE: "timm"
+    ID: "resnet50"
+    cfg:
+      pretrained: False
+    out_features: 2048
+
+    weights:
+      is_ckpt: True
+      url: "https://miil-public-eu.oss-eu-central-1.aliyuncs.com/model-zoo/ImageNet_21K_P/models/resnet50_miil_21k.pth"
+      # alternatively, `state_dict_path: {PATH TO STATE DICT}`
+```
+
+## Learning rate schedule
+
+### 1-cycle learning rate schedule
+
+- Paper: https://arxiv.org/abs/1708.07120
+- Note: Linearly increases learning rate from 0 to maximum for the first half of training then linearly decreases to 0. Commonly used learning rate schedule.
+- Refer to: `configs/algorithms/lr-schedule/1cycle.yaml` and [torch.optim.lr_scheduler.OneCycleLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html)
+```
+training:
+  lr_scheduler:
+    name: "1cycle"
+    args:
+      # Original version updates per-batch but we modify to update pre-epoch.
+      pct_start: 0.3
+      max_lr: "{training.lr}"
+      anneal_strategy: "linear"
+      total_steps: "{training.epochs}"
+    cfg:
+      interval: "epoch"
+```
+
+### Cosine learning rate decay
+- Paper: https://arxiv.org/abs/2103.10158
+- Note: Decays the learning from the initial value to 0 via a cosine function. Commonly used learning rate schedule.
+- Refer to: `configs/vision/classification/resnet-cifar10.yaml` and [torch.optim.lr_scheduler.CosineAnnealingLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
+```
+training:
+  lr_scheduler:
+    name: "cosine"
+    args:
+      T_max: "{training.epochs}"
+    cfg:
+      interval: "epoch"
+```
+
+### WarmUp
+- Paper: https://arxiv.org/abs/2103.10158
+- Note: Commonly used strategy to stabilize training at early stages.
+- Refer to: `configs/algorithms/lr-schedule/warmup.yaml`
+```yaml
+training:
+  lr_warmup:
+    multiplier: 1
+    total_epoch: 5
+```
+
+## Metrics
+
+### torchmetrics
+
+# Overview
+
+## LightningModules
+
+### ClassificationTrainer
+
+## Data
+Currently `torchvision` datasets are supported by `Experiment`, however you could use `torchvision.datasets.ImageFolder` to load from custom dataset.
+
+### Transformations(data augmentation): Transforms must be listed in one in [`data/transforms/vision/__init__.py`]
+
+
+## Utils
+
+### Optimizers
 
 ## About me
 
