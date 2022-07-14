@@ -1,1 +1,1 @@
-from . import catalog, heads, vision  # noqa F401
+from . import tta, vision  # noqa F401

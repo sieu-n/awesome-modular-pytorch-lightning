@@ -1,69 +1,10 @@
-from collections import OrderedDict
-
-import algorithms.tta as TTA_modules
-import torchmetrics
+import catalog
 import wandb
-from algorithms import loss as LossPool
-from models import catalog as ModelPool
-from models import heads as HeadPool
-from models.vision.backbone.timm import timm_feature_extractor
-from models.vision.backbone.torchvision import torchvision_feature_extractor
 from sklearn.metrics import ConfusionMatrixDisplay
-from torch import nn
 from utils.models import get_layer
 from utils.pretrained import load_model_weights
 
 from .common import _LightningModule
-
-""" Build components for the lightningmodule
-"""
-
-
-def build_backbone(name, model_type="custom", drop_after=None, *args, **kwargs):
-    if model_type == "torchvision":
-        backbone = torchvision_feature_extractor(
-            model_id=name, drop_after=drop_after, *args, **kwargs
-        )
-    elif model_type == "timm":
-        backbone = timm_feature_extractor(model_id=name, *args, **kwargs)
-    elif model_type == "custom":
-        return getattr(ModelPool, str(name))(**kwargs)
-    else:
-        raise ValueError(f"Invalid `model.backbone.TYPE`: `{model_type}")
-
-    return backbone
-
-
-def build_metric(metric_type, file=None, *args, **kwargs):
-    # build and return any nn.Module that is defined under `module_locations`.
-    metric_pool = OrderedDict(
-        {
-            "torchmetrics": torchmetrics,
-        }
-    )
-    # if library is specified
-    if file:
-        if type(metric_type) == str:
-            metric_type = getattr(metric_pool[file], metric_type)
-        else:
-            raise ValueError(
-                "If `file` is specified, provide the name of the metric_pool as a string."
-            )
-    elif type(metric_type) == str:
-        is_found = False
-        for location in metric_pool.values():
-            if hasattr(location, metric_type):
-                print(f"'{metric_type}' was found in `{location}.")
-                metric_type = getattr(location, metric_type)
-                is_found = True
-                break
-        if not is_found:
-            raise ValueError(
-                f"{metric_type} was not found in the pool of modules: {list(metric_pool.values())}"
-            )
-    print(f"Building metric: '{metric_type}'")
-    metric = metric_type(*args, **kwargs)
-    return metric
 
 
 class _BaseLightningTrainer(_LightningModule):
@@ -81,7 +22,7 @@ class _BaseLightningTrainer(_LightningModule):
         # build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
-            self.backbone = build_backbone(
+            self.backbone = catalog.models.build_backbone(
                 name=backbone_cfg["ID"],
                 model_type=backbone_cfg["TYPE"],
                 drop_after=backbone_cfg.get("drop_after", None),
@@ -96,10 +37,8 @@ class _BaseLightningTrainer(_LightningModule):
         print("[*] Building modules attached to the backbone model...")
         modules = model_cfg.get("modules", {})
         for module_name, module_cfg in modules.items():
-            head_module = self.build_module(
-                module_type=module_cfg["name"],
-                file=module_cfg.get("file", None),
-                **module_cfg.get("args", {}),
+            head_module = catalog.modules.get(name=module_cfg["name"], file=module_cfg.get("file", None))(
+                **module_cfg.get("args", {})
             )
             setattr(self, module_name, head_module)
         # set metrics
@@ -107,9 +46,7 @@ class _BaseLightningTrainer(_LightningModule):
         metrics = training_cfg.get("metrics", {})
         for metric_name, metric_cfg in metrics.items():
             for subset in metric_cfg["when"].split(","):
-                metric = build_metric(
-                    metric_type=metric_cfg["name"],
-                    file=metric_cfg.get("file", None),
+                metric = catalog.metric.get(name=metric_cfg["name"], file=metric_cfg.get("file", None))(
                     **metric_cfg.get("args", {}),
                 )
                 # get log frequency
@@ -140,7 +77,7 @@ class _BaseLightningTrainer(_LightningModule):
         if "tta" in model_cfg:
             tta_cfg = model_cfg["tta"]
             self.is_tta_enabled = True
-            self.TTA_module = getattr(TTA_modules, tta_cfg["name"])(
+            self.TTA_module = catalog.TTA_modules.get(tta_cfg["name"])(
                 model=self,
                 training_cfg=training_cfg,
                 const_cfg=const_cfg,
@@ -228,38 +165,6 @@ class _BaseLightningTrainer(_LightningModule):
     def get_hook(self, key, device=None):
         device_index = device.index
         return self._hook_cache[device_index][key]
-
-    def build_module(self, module_type, file=None, *args, **kwargs):
-        # build and return any nn.Module that is defined under `module_locations`.
-        module_pool = OrderedDict(
-            {
-                "heads": HeadPool,
-                "loss": LossPool,
-                "torch.nn": nn,
-            }
-        )
-        # if library is specified
-        if file:
-            if type(module_type) == str:
-                module_type = getattr(module_pool[file], module_type)
-            else:
-                raise ValueError(
-                    "If `to_look_at` is specified, provide the name of the module as a string."
-                )
-        elif type(module_type) == str:
-            is_found = False
-            for location in module_pool.values():
-                if hasattr(location, module_type):
-                    print(f"'{module_type}' was found in `{location}.")
-                    module_type = getattr(location, module_type)
-                    is_found = True
-                    break
-            if not is_found:
-                raise ValueError(
-                    f"{module_type} was not found in the pool of modules: {list(module_pool.values())}"
-                )
-        head = module_type(*args, **kwargs)
-        return head
 
     def _training_step(self, batch, batch_idx):
         raise NotImplementedError()

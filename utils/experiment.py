@@ -4,10 +4,9 @@ import pickle
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-
-import data.dataset.mapping as DM
-import data.transforms.vision as DT_V
 import yaml
+
+import catalog
 from data.dataset.util import torchvision_dataset
 from data.transforms.base import ApplyDataTransformations, ComposeTransforms
 
@@ -20,40 +19,6 @@ from .verbose import set_verbose
 ########################################################################
 # Find transforms and build dataset.
 ########################################################################
-def find_transform_from_name(f_name):
-    TRANSFORM_DECLARATIONS = [DT_V]  # list of modules to serach for.
-    if type(f_name) == str:
-        # find transform name that matches `name` from TRANSFORM_DECLARATIONS
-        is_name_in = [hasattr(file, f_name) for file in TRANSFORM_DECLARATIONS]
-        assert (
-            sum(is_name_in) == 1
-        ), f"Transform `{f_name}` was found in `{sum(is_name_in)} files."
-        file = TRANSFORM_DECLARATIONS[is_name_in.index(True)]
-        print(
-            f"Transform {f_name} --> {getattr(file, f_name)}: found in {file.__name__}"
-        )
-        return getattr(file, f_name)
-    else:
-        print(f"{f_name} might already be a function.")
-        return f_name
-
-
-def find_dataset_mapper_from_name(d_name):
-    DATASET_DECLARATIONS = [DM]  # list of modules to serach for.
-    if type(d_name) == str:
-        # find transform name that matches `name` from TRANSFORM_DECLARATIONS
-        is_name_in = [hasattr(file, d_name) for file in DATASET_DECLARATIONS]
-        assert (
-            sum(is_name_in) == 1
-        ), f"Dataset `{d_name}` was found in `{sum(is_name_in)} files."
-        file = DATASET_DECLARATIONS[is_name_in.index(True)]
-        print(f"Dataset {d_name} --> {getattr(file, d_name)}: found in {file.__name__}")
-        return getattr(file, d_name)
-    else:
-        print(f"{d_name} might already be a function.")
-        return d_name
-
-
 def build_dataset(dataset_cfg):
     # returns: dict{subset_key: torch.utils.data.Dataset, ...}
     dataset_mode = dataset_cfg["MODE"]
@@ -72,7 +37,7 @@ def build_dataset_mapping(mapping_cfg, const_cfg):
         for d_config in d_configs:
             f_name, kwargs = d_config["name"], d_config.get("args", {})
             # find transform from name
-            data_mapper = find_dataset_mapper_from_name(f_name)
+            data_mapper = catalog.dataset_mapping.get(f_name)
             # build transform using arguments.
             kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
             t.append(lambda base_dataset: data_mapper(base_dataset, **kwargs))
@@ -102,7 +67,7 @@ def build_transforms(transform_cfg, const_cfg):
         for t_config in t_configs:
             f_name, kwargs = t_config["name"], t_config.get("args", {})
             # find transform from name
-            transform_f = find_transform_from_name(f_name)
+            transform_f = catalog.transforms.get(f_name)
             # build transform using arguments.
             kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
             t.append(transform_f(**kwargs))
@@ -121,7 +86,7 @@ def build_initial_transform(initial_transform_cfg, const_cfg):
     # 2.2. actually apply transformations.
     initial_transform = None
     # find transform from name
-    transform_f = find_transform_from_name(initial_transform_cfg["name"])
+    transform_f = catalog.transforms.get(initial_transform_cfg["name"])
     # build transform using arguments.
     kwargs = initial_transform_cfg.get("args", {})
     kwargs["const_cfg"] = const_cfg
