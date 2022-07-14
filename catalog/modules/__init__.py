@@ -1,7 +1,7 @@
 from torch import nn
-from . import heads, loss
 
 from .._get import _get_from_sources
+from . import heads, loss
 
 
 def get(name, file=None):
@@ -11,9 +11,5 @@ def get(name, file=None):
         "torch.nn": nn,
     }
     return _get_from_sources(
-        sources=sources,
-        scope=globals(),
-        name=name,
-        file=file,
-        object_type="Metric"
+        sources=sources, scope=globals(), name=name, file=file, object_type="Metric"
     )

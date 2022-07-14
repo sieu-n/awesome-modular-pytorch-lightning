@@ -37,16 +37,18 @@ class _BaseLightningTrainer(_LightningModule):
         print("[*] Building modules attached to the backbone model...")
         modules = model_cfg.get("modules", {})
         for module_name, module_cfg in modules.items():
-            head_module = catalog.modules.get(name=module_cfg["name"], file=module_cfg.get("file", None))(
-                **module_cfg.get("args", {})
-            )
+            head_module = catalog.modules.get(
+                name=module_cfg["name"], file=module_cfg.get("file", None)
+            )(**module_cfg.get("args", {}))
             setattr(self, module_name, head_module)
         # set metrics
         self.metrics = {"trn": [], "val": [], "test": []}
         metrics = training_cfg.get("metrics", {})
         for metric_name, metric_cfg in metrics.items():
             for subset in metric_cfg["when"].split(","):
-                metric = catalog.metric.get(name=metric_cfg["name"], file=metric_cfg.get("file", None))(
+                metric = catalog.metric.get(
+                    name=metric_cfg["name"], file=metric_cfg.get("file", None)
+                )(
                     **metric_cfg.get("args", {}),
                 )
                 # get log frequency

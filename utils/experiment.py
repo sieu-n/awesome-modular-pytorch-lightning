@@ -4,9 +4,9 @@ import pickle
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import yaml
 
 import catalog
+import yaml
 from data.dataset.util import torchvision_dataset
 from data.transforms.base import ApplyDataTransformations, ComposeTransforms
 

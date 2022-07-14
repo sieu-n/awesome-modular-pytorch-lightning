@@ -1,6 +1,5 @@
-import ttach
-
 import catalog
+import ttach
 
 
 def build_transforms(transforms):

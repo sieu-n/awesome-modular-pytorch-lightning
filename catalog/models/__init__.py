@@ -1,9 +1,15 @@
 # model catalog
-from models.vision.backbone.resnet import ResNet18, ResNet34, ResNet50, ResNet101  # noqa F401
+from models.vision.backbone.resnet import (  # noqa F401
+    ResNet18,
+    ResNet34,
+    ResNet50,
+    ResNet101,
+)
 
 # utils
 from models.vision.backbone.timm import timm_feature_extractor
 from models.vision.backbone.torchvision import torchvision_feature_extractor
+
 from .._get import _get
 
 
