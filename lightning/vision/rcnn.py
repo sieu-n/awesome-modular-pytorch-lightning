@@ -1,10 +1,8 @@
 from collections import OrderedDict
 
 import torch
-import torch.nn as nn
 import torchvision
 from lightning.base import _BaseLightningTrainer
-from models.heads import FastRCNNPredictor, MLPHead, ROIPooler
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.roi_heads import RoIHeads
 from torchvision.models.detection.rpn import (

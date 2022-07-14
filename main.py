@@ -1,8 +1,7 @@
 import os
 import random
-import re
 
-import lightning
+import catalog
 import numpy as np
 import pytorch_lightning as pl
 import torch
@@ -324,7 +323,7 @@ class Experiment:
 
     def setup_model(self, model_cfg, training_cfg):
         # model
-        lightning_module = lightning.get(training_cfg["ID"])
+        lightning_module = catalog.lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg, self.const_cfg)
 
         if self.debug_cfg and "network_summary" in self.debug_cfg:

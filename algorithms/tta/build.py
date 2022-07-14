@@ -1,6 +1,5 @@
+import catalog
 import ttach
-
-from . import layers as TTA_layers
 
 
 def build_transforms(transforms):
@@ -17,6 +16,6 @@ def build_transforms(transforms):
 
 def _build_transform(name, **kwargs):
     if type(name) == str:
-        return getattr(TTA_layers, name)(**kwargs)
+        return catalog.TTA_layers.get(name)(**kwargs)
     else:
         return name

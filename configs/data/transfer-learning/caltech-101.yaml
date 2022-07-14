@@ -21,34 +21,13 @@ dataset:
 
   mapping:
     # split train / val images.
-    [
-      [
-        "trn",
-        [
-          {
-            "name": "ClassBalanceTrainValSplit",
-            "args":
-              {
-                "subset": "val",  # on purpose because training set consists of 30 images per-class.
+    [["trn", [{ "name": "ClassBalanceTrainValSplit", "args": {
+                "subset": "val", # on purpose because training set consists of 30 images per-class.
                 "count": 30,
-              },
-          },
-        ],
-      ],
-      [
-        "val",
-        [
-          {
-            "name": "ClassBalanceTrainValSplit",
-            "args":
-              {
-                "subset": "trn",  # on purpose
+              } }]], ["val", [{ "name": "ClassBalanceTrainValSplit", "args": {
+                "subset": "trn", # on purpose
                 "count": 30,
-              },
-          },
-        ],
-      ],
-    ]
+              } }]]]
 
 const:
   num_classes: 101

@@ -1,6 +1,7 @@
 import random
-from tqdm import tqdm
+
 from torch.utils.data import Dataset
+from tqdm import tqdm
 
 
 class RemapIndices(Dataset):
@@ -96,7 +97,9 @@ class TrainValSplit(RemapIndices):
 
 
 class SubsetDataset(RemapIndices):
-    def __init__(self, base_dataset, indices=None, size=None, seed=None, const_cfg=None):
+    def __init__(
+        self, base_dataset, indices=None, size=None, seed=None, const_cfg=None
+    ):
         """
         Build dataset that simply adds more data transformations to the original samples.
         Parameters

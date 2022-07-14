@@ -1,11 +1,11 @@
-# Torchmetrics can be integrated.
+# Torchmetrics can be integrated
 
 Please have a read at the `torchmetrics` catalog to check the list of readily available metrics.
-- https://torchmetrics.readthedocs.io/en/stable/all-metrics.html
+- <https://torchmetrics.readthedocs.io/en/stable/all-metrics.html>
 
 Custom metrics can be implemented using the following guide. The metrics defined under `training.metrics` are
 automatically applied during training.
-- https://torchmetrics.readthedocs.io/en/stable/pages/implement.html
+- <https://torchmetrics.readthedocs.io/en/stable/pages/implement.html>
 
 ## Keywords
 

@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms.functional as TF
-from data.transforms.vision import UnNormalize
+from catalog.transforms import UnNormalize
 from utils.experiment import makedir
 
 from .vision import plot_image_classification, plot_object_detection

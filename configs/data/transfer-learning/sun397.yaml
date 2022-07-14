@@ -23,20 +23,12 @@ dataset:
         [
           {
             "name": "ClassBalanceTrainValSplit",
-            "args":
-              {
-                "subset": "trn",
-                "count": 50,
-              },
+            "args": { "subset": "trn", "count": 50 },
           },
-          {
-            "name": "ClassBalanceTrainValSplit",
-            "args":
-              {
-                "subset": "val",  # on purpose because training set consists of 30 images per-class.
-                "count": 50,  # <-- this determines the training set size.
-              },
-          },
+          { "name": "ClassBalanceTrainValSplit", "args": {
+                "subset": "val", # on purpose because training set consists of 30 images per-class.
+                "count": 50, # <-- this determines the training set size.
+              } },
         ],
       ],
       [
@@ -44,11 +36,7 @@ dataset:
         [
           {
             "name": "ClassBalanceTrainValSplit",
-            "args":
-              {
-                "subset": "val",
-                "count": 50,
-              },
+            "args": { "subset": "val", "count": 50 },
           },
         ],
       ],
