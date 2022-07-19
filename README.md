@@ -558,6 +558,46 @@ training:
 
 ### torchmetrics
 
+## Test-time augmentation(TTA)
+
+- Refer to: `configs/algorithms/tta/hvflip.yaml`
+```yaml
+model:
+  tta:
+    name: "ClassificationTTAWrapper"
+    args:
+      output_label_key: "logits"
+      merge_mode: "mean"
+      transforms:
+        - name: "HorizontalFlip"
+        - name: "VerticalFlip"
+```
+- and `configs/algorithms/tta/rotation.yaml`
+```yaml
+model:
+  tta:
+    name: "ClassificationTTAWrapper"
+    args:
+      merge_mode: "mean"
+      transforms:
+        - name: "HorizontalFlip"
+        - name: "Rotation"
+          args:
+            angles:
+              - 0
+              - 30
+              - 60
+              - 90
+              - 120
+              - 150
+              - 180
+              - 210
+              - 240
+              - 270
+              - 300
+              - 330
+```
+
 # Overview
 
 ## LightningModules

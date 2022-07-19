@@ -17,3 +17,7 @@ from ._get import _get
 
 def get(name):
     return _get(globals(), name, "TTA-layers")
+
+
+def build(name, *args, **kwargs):
+    return get(name)(*args, **kwargs)
