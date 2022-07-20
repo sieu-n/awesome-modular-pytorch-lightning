@@ -95,10 +95,7 @@ dataset:
               - img
               type: Collect
             type: MultiScaleFlipAug
-          type: VOCDataset
-
-  initial_transform:
-    
+          type: VOCDataset    
 
 transform:
 

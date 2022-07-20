@@ -5,7 +5,6 @@ import catalog
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from data.collate_fn import build_collate_fn
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.callbacks import build_callback
@@ -304,9 +303,9 @@ class Experiment:
             )
             # build collate_fn
             if "collate_fn" in dataloader_cfg:
-                dataloader_cfg["collate_fn"] = build_collate_fn(
+                dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
                     name=dataloader_cfg["collate_fn"]["name"],
-                    kwargs=dataloader_cfg["collate_fn"]["args"],
+                    **dataloader_cfg["collate_fn"].get("args", {})
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(
