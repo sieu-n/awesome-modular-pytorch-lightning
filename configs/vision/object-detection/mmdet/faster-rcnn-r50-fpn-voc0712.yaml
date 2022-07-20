@@ -1,55 +1,20 @@
-name: "CIFAR10-ResNet"
+name: "faster-rcnn-r50-fpn-voc0712"
 
-const:
-  num_gpus: "len({trainer.gpus})"
-  samples_per_gpu: 2
-  val_samples_per_gpu: 1
-
-dataloader:
-  base_dataloader: # depends on hardware:)
-    sampler: null
-    batch_sampler: null
-    num_workers: "2*{const.num_gpus}"
-    pin_memory: True
-    collate_fn:
-      name: mmcv_parallel_collate
-  trn:
-    batch_size: "{const.samples_per_gpu}*{const.num_gpus}"
-    shuffle: True
-    collate_fn:
-      args:
-        samples_per_gpu: "{const.samples_per_gpu}"
-    # Extend default_collate to add support for:type:`~mmcv.parallel.DataContainer`.
-  val:
-    batch_size: "{const.val_samples_per_gpu}*{const.num_gpus}"
-    shuffle: False
-    collate_fn:
-      args:
-        samples_per_gpu: "{const.val_samples_per_gpu}"
-  test:
-    batch_size: "{const.val_samples_per_gpu}*{const.num_gpus}"
-    shuffle: False
-    collate_fn:
-      args:
-        samples_per_gpu: "{const.val_samples_per_gpu}"
-
-debug:
-  view_train_augmentation:
-    is_xywh: False
-    bbox_unnormalization: False
-    preprocess_f: convert-mmdetbbox
 training:
-  ID: "ClassificationTrainer"
+  ID: "MMDetectionTrainer"
 
-  epochs: 200
-  lr: 0.03
+  epochs: 4
+  lr: 0.01
 
   optimizer: "sgd"
   optimizer_cfg:
     lr: "{training.lr}"
     momentum: 0.9
-    weight_decay: 0.0005
+    weight_decay: 0.0001
 
+  #lr_warmup:
+  #  multiplier: 1
+  #  total_epoch: 5
   lr_scheduler:
     name: "cosine"
     args:
@@ -64,23 +29,6 @@ training:
       file: "torchmetrics"
       update:
         value: "cls_loss"
-    confusion_matrix:
-      interval: { "trn": 50, "val": 5 }
-      when: "trn,val,test"
-      name: "ConfusionMatrix"
-      file: "torchmetrics"
-      args:
-        num_classes: "{const.num_classes}"
-      update:
-        preds: "logits"
-        target: "y"
-    accuracy:
-      when: "trn,val,test"
-      name: "Accuracy"
-      file: "torchmetrics"
-      update:
-        preds: "logits"
-        target: "y"
 
 callbacks:
   - name: ModelCheckpoint
@@ -96,25 +44,167 @@ callbacks:
       logging_interval: "epoch"
 
 model:
-  backbone:
-    TYPE: "custom"
-    ID: "ResNet18"
-    out_features: 512
-    cfg:
-      low_res: True
-  modules:
-    classifier:
-      name: ClassificationHead
-      input: "output"
-      args:
-        reduction: "gap"
-        in_features: "{model.backbone.out_features}"
-        dropout: 0.2
-        num_classes: "{const.num_classes}"
-        return_logits: True # return logits instead of softmax probability.
-    loss_fn:
-      name: "CrossEntropyLoss"
-
+  mm_model:
+    backbone:
+      depth: 50
+      frozen_stages: 1
+      init_cfg:
+        checkpoint: torchvision://resnet50
+        type: Pretrained
+      norm_cfg:
+        requires_grad: true
+        type: BN
+      norm_eval: true
+      num_stages: 4
+      out_indices:
+        - 0
+        - 1
+        - 2
+        - 3
+      style: pytorch
+      type: ResNet
+    neck:
+      in_channels:
+        - 256
+        - 512
+        - 1024
+        - 2048
+      num_outs: 5
+      out_channels: 256
+      type: FPN
+    roi_head:
+      bbox_head:
+        bbox_coder:
+          target_means:
+            - 0.0
+            - 0.0
+            - 0.0
+            - 0.0
+          target_stds:
+            - 0.1
+            - 0.1
+            - 0.2
+            - 0.2
+          type: DeltaXYWHBBoxCoder
+        fc_out_channels: 1024
+        in_channels: 256
+        loss_bbox:
+          loss_weight: 1.0
+          type: L1Loss
+        loss_cls:
+          loss_weight: 1.0
+          type: CrossEntropyLoss
+          use_sigmoid: false
+        num_classes: "{const.num_classes}-1"
+        reg_class_agnostic: false
+        roi_feat_size: 7
+        type: Shared2FCBBoxHead
+      bbox_roi_extractor:
+        featmap_strides:
+          - 4
+          - 8
+          - 16
+          - 32
+        out_channels: 256
+        roi_layer:
+          output_size: 7
+          sampling_ratio: 0
+          type: RoIAlign
+        type: SingleRoIExtractor
+      type: StandardRoIHead
+    rpn_head:
+      anchor_generator:
+        ratios:
+          - 0.5
+          - 1.0
+          - 2.0
+        scales:
+          - 8
+        strides:
+          - 4
+          - 8
+          - 16
+          - 32
+          - 64
+        type: AnchorGenerator
+      bbox_coder:
+        target_means:
+          - 0.0
+          - 0.0
+          - 0.0
+          - 0.0
+        target_stds:
+          - 1.0
+          - 1.0
+          - 1.0
+          - 1.0
+        type: DeltaXYWHBBoxCoder
+      feat_channels: 256
+      in_channels: 256
+      loss_bbox:
+        loss_weight: 1.0
+        type: L1Loss
+      loss_cls:
+        loss_weight: 1.0
+        type: CrossEntropyLoss
+        use_sigmoid: true
+      type: RPNHead
+    test_cfg:
+      rcnn:
+        max_per_img: 100
+        nms:
+          iou_threshold: 0.5
+          type: nms
+        score_thr: 0.05
+      rpn:
+        max_per_img: 1000
+        min_bbox_size: 0
+        nms:
+          iou_threshold: 0.7
+          type: nms
+        nms_pre: 1000
+    train_cfg:
+      rcnn:
+        assigner:
+          ignore_iof_thr: -1
+          match_low_quality: false
+          min_pos_iou: 0.5
+          neg_iou_thr: 0.5
+          pos_iou_thr: 0.5
+          type: MaxIoUAssigner
+        debug: false
+        pos_weight: -1
+        sampler:
+          add_gt_as_proposals: true
+          neg_pos_ub: -1
+          num: 512
+          pos_fraction: 0.25
+          type: RandomSampler
+      rpn:
+        allowed_border: -1
+        assigner:
+          ignore_iof_thr: -1
+          match_low_quality: true
+          min_pos_iou: 0.3
+          neg_iou_thr: 0.3
+          pos_iou_thr: 0.7
+          type: MaxIoUAssigner
+        debug: false
+        pos_weight: -1
+        sampler:
+          add_gt_as_proposals: false
+          neg_pos_ub: -1
+          num: 256
+          pos_fraction: 0.5
+          type: RandomSampler
+      rpn_proposal:
+        max_per_img: 1000
+        min_bbox_size: 0
+        nms:
+          iou_threshold: 0.7
+          type: nms
+        nms_pre: 2000
+    type: FasterRCNN
 wandb:
   name: "FasterRCNN-ResNet50-FPN-VOC0712"
-  project: ""
+  project: "MMDetection-wrappers"

@@ -10,7 +10,7 @@ training:
     mode: "batch"
     correct_lam: True
     label_smoothing: 0.1
-    num_classes: 10
+    num_classes: "{const.num_classes}"
 
 model:
   modules:
