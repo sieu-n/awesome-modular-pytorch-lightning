@@ -17,6 +17,7 @@ preprocessor_factory = {
     "convert-mmdetbbox": [MMdetDataset2Torchvision(to_xywh=False)],
 }
 
+
 def plot_sample(
     task, data, mode="save", savedir="results/example.png", label_map=None, **kwargs
 ):
@@ -40,7 +41,7 @@ def plot_samples_from_dataset(
     subplot_dim=(5, 5),
     save_to="results/samples_vis.png",
     root_dir="",
-    image_tensor_to_numpy=False,
+    image_tensor_to_numpy=True,
     unnormalize=False,
     normalization_mean=(0.5, 0.5, 0.5),
     normalization_std=(0.5, 0.5, 0.5),
@@ -78,7 +79,7 @@ def plot_samples_from_dataset(
         if unnormalize:
             data = UnNormalize(normalization_mean, normalization_std)(data)
         if image_tensor_to_numpy:
-            data["images"] = np.asarray(TF.to_pil_image(data["images"]))
+            data["images"] = data["images"].permute(1, 2, 0).numpy().astype(np.uint8)
 
         plt.subplot(w, h, i)
         plot_image = plot_sample(

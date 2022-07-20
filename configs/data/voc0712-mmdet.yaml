@@ -1,6 +1,6 @@
 debug:
   view_train_augmentation:
-    resize_to: [256, 256] # resize so class text is displayed.
+    is_xywh: False
   network_summary:
     input_shape: [3, 224, 224]
 dataset:

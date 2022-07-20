@@ -35,7 +35,8 @@ dataloader:
 
 debug:
   view_train_augmentation:
-    is_xywh: True
+    is_xywh: False
+    bbox_unnormalization: False
     preprocess_f: convert-mmdetbbox
 training:
   ID: "ClassificationTrainer"

@@ -67,12 +67,9 @@ class MMdetDataset2Torchvision(_BaseTransform):
     to_xywh: bool
         If true, convert to YOLO-format relative (x, y, w, h) bounding box. If false, only change key and maintain
         pascal transform format.
-    bgr2rgb: bool
-        If true, convert BGR image to RGB-format.
     """
-    def __init__(self, to_xywh=True, bgr2rgb=True, *args, **kwargs):
+    def __init__(self, to_xywh=True, *args, **kwargs):
         self.to_xywh = to_xywh
-        self.bgr2rgb = bgr2rgb
         super().__init__(*args, **kwargs)
 
     def __call__(self, d):
@@ -92,8 +89,4 @@ class MMdetDataset2Torchvision(_BaseTransform):
             else:
                 w, h = d["img"].size(2), d["img"].size(1)
             torchvision_d["boxes"] = normalize_bbox(x1y1x2y2_to_xywh(torchvision_d["boxes"]), w, h)
-        # (optional) convert BGR image to RGB
-        if self.bgr2rgb:
-            permute = [2, 1, 0]
-            torchvision_d["images"] = torchvision_d["images"][permute]
         return torchvision_d
