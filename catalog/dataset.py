@@ -18,12 +18,12 @@ def build_dataset(dataset_type, name=None, cfg=None, *args, **kwargs):
     if dataset_type == "torchvision":
         ds_builder = getattr(TD, name)
         print(
-            f"[*] Attempting to build `{ds_builder}`."
+            f"Building `{ds_builder}`."
         )
         return ds_builder(*args, **kwargs)
     elif dataset_type == "mmdetection":
         print(
-            f"[*] Attempting to load {cfg['type']}dataset from `mmdetection`."
+            f"Loading `{cfg['type']}` dataset from `mmdetection`."
         )
         return build_dataset_mmdet(cfg, *args, **kwargs)
     else:

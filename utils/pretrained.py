@@ -9,7 +9,7 @@ def download_model_state_dict(url, name="./pretrained.pth"):
     if not os.path.exists(os.path.dirname(name)):
         os.makedirs(os.path.dirname(name))
     # download from url
-    print(f"[*] Downloading model state dict into '{name}' from: {url}")
+    print(f"Downloading pretrained model state dict into `{name}` from: {url}")
     r = requests.get(url, allow_redirects=True)
     open(name, "wb").write(r.content)
     return name

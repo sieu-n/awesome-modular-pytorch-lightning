@@ -51,7 +51,9 @@ class ApplyDataTransformations(Dataset):
         d = self.base_dataset[idx]
         if self.initial_transform is not None:
             d = self.initial_transform(*d)
-        return self.transforms(d)
+        if self.transforms is not None:
+            d = self.transforms(d)
+        return d
 
 
 class ComposeTransforms:

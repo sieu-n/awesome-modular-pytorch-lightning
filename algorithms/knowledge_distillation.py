@@ -4,7 +4,7 @@ from utils.pretrained import load_model_weights
 
 class TeacherModelKD:
     def __init__(self, model_cfg, training_cfg, fuse_bn=True):
-        print("[*] Initializing teacher model for knowledge distillation!")
+        print("Initializing teacher model for knowledge distillation...")
         assert (
             "state_dict_path" in model_cfg
         ), "Teacher model must be initialized with pretrained state_dict."

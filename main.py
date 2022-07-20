@@ -65,12 +65,13 @@ class Experiment:
         random.seed(seed)
 
     def setup_dataset(
-        self, dataset_cfg, transform_cfg, const_cfg=None, subset_to_get=None
+        self, dataset_cfg, transform_cfg=None, const_cfg=None, subset_to_get=None
     ):
         if const_cfg is None:
             const_cfg = self.const_cfg
 
         # 1. build initial dataset that read data.
+        print("(1/5) Building initial dataset from `data.dataset_base_cfg` and `data.dataset_subset_cfg`.")
         datasets = self.get_base_dataset(
             dataset_cfg=dataset_cfg,
             subset=None,
@@ -78,6 +79,7 @@ class Experiment:
 
         # 2. build initial transformation to convert raw data into dictionary.
         if "initial_transform" in dataset_cfg:
+            print("(2/5) Building initial transformations based on `data.initial_transform`.")
             initial_transform_cfg = dataset_cfg["initial_transform"]
             initial_transform = self.get_initial_transform(
                 initial_transform_cfg=initial_transform_cfg,
@@ -85,14 +87,18 @@ class Experiment:
             )
         else:
             initial_transform = None
-
+            print("(2/5) `data.initial_transform` is not defined in config. Skipping initial transformations.")
         # 3. build transformations such as normalization and data augmentation.
-        transforms = self.get_transform(
-            transform_cfg,
-            subset=None,  # generate all subsets by default.
-            const_cfg=const_cfg,
-        )
-
+        if transform_cfg is not None:
+            print("(3/5) Building transformations based on `transform`.")
+            transforms = self.get_transform(
+                transform_cfg,
+                subset=None,  # generate all subsets by default.
+                const_cfg=const_cfg,
+            )
+        else:
+            print("(3/5) `transform` is not defined in config. Skipping transformations.")
+            transforms = {}
         # 4. apply dataset wrappers such as "SubsetDataset"
         subsets = datasets.keys()
         dataset_mapping = self.get_dataset_mapping(
@@ -102,7 +108,7 @@ class Experiment:
         # 5. actually apply transformations.
         datasets = {
             subset: apply_transforms(
-                datasets[subset], initial_transform, transforms[subset]
+                datasets[subset], initial_transform, transforms.get(subset, None)
             )
             for subset in subsets
         }
@@ -187,7 +193,6 @@ class Experiment:
             is provided, a single dataset corresponding to the subset value is returned.
         """
         print_to_end("-")
-        print("[*] Loading base-dataset")
         # build initial dataset to read data.
         if subset is None:
             subset_types = list(dataset_cfg["dataset_subset_cfg"].keys())
@@ -293,7 +298,7 @@ class Experiment:
         # build dataloader for each subset and apply to the dataset object.
         for subset, dataset in it:
             # build configs.
-            print("[*] Creating PyTorch `DataLoader`.")
+            print(f"[*] Creating PyTorch `DataLoader` for subset `{subset}`.")
             dataloader_cfg = merge_config(
                 base_dataloader_cfg, dataloader_cfg.get(subset, {})
             )
