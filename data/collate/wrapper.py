@@ -6,8 +6,9 @@ some dimension in the scatter function. This behavior has some limitations.
 1. All tensors have to be the same size.
 2. Types are limited (numpy array or Tensor).
 """
-from mmcv.parallel import collate
 from functools import partial
+
+from mmcv.parallel import collate
 
 
 def mmcv_parallel_collate(samples_per_gpu):

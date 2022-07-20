@@ -6,20 +6,20 @@ const:
   val_samples_per_gpu: 1
 
 dataloader:
-  base_dataloader:  # depends on hardware:)
+  base_dataloader: # depends on hardware:)
     sampler: null
     batch_sampler: null
     num_workers: "2*{const.num_gpus}"
     pin_memory: True
-    collate_fn: 
+    collate_fn:
       name: mmcv_parallel_collate
   trn:
     batch_size: "{const.samples_per_gpu}*{const.num_gpus}"
     shuffle: True
-    collate_fn: 
+    collate_fn:
       args:
         samples_per_gpu: "{const.samples_per_gpu}"
-    # Extend default_collate to add support for:type:`~mmcv.parallel.DataContainer`. 
+    # Extend default_collate to add support for:type:`~mmcv.parallel.DataContainer`.
   val:
     batch_size: "{const.val_samples_per_gpu}*{const.num_gpus}"
     shuffle: False
@@ -33,6 +33,10 @@ dataloader:
       args:
         samples_per_gpu: "{const.val_samples_per_gpu}"
 
+debug:
+  view_train_augmentation:
+    is_xywh: True
+    preprocess_f: convert-mmdetbbox
 training:
   ID: "ClassificationTrainer"
 

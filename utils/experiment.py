@@ -7,7 +7,7 @@ from pathlib import Path
 
 import catalog
 import yaml
-from data.transforms.base import ApplyDataTransformations, ComposeTransforms
+from data.transforms.base import ApplyTransforms, ComposeTransforms
 
 from .verbose import set_verbose
 
@@ -85,7 +85,7 @@ def build_initial_transform(initial_transform_cfg, const_cfg):
 
 
 def apply_transforms(dataset, initial_transform=None, transforms=None):
-    return ApplyDataTransformations(
+    return ApplyTransforms(
         base_dataset=dataset,
         initial_transform=initial_transform,
         transforms=transforms,

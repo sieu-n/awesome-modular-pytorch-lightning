@@ -138,14 +138,14 @@ model:
 
 ### torchvision.models
 
-`torchvision.models` also provide a number of architectures for computer vision. The list of models can be found [here](https://pytorch.org/vision/stable/models.html). 
+`torchvision.models` also provide a number of architectures for computer vision. The list of models can be found [here](https://pytorch.org/vision/stable/models.html).
 
 An example of creating a `resnet50` model using `torchvision`:
 ```
 model = torchvision.models.resnet50()
 ```
 
-To use `timm` models, 
+To use `timm` models,
 - set `model.backbone.TYPE` to `torchvision`.
 - set `model.backbone.ID` to the model name.
 - set additional arguments in `models.backbone.cfg`.
@@ -166,7 +166,7 @@ model:
 
 ### RandomResizeCrop(ImageNet augmentation)
 
-- Paper: https://arxiv.org/abs/1409.4842
+- Paper: <https://arxiv.org/abs/1409.4842>
 - Note: Common data augmentation strategy for ImageNet using RandomResizedCrop.
 - Refer to: `configs/data/augmentation/randomresizecrop.yaml`
 
@@ -226,7 +226,7 @@ transform: [
 
 ### RandAugment
 
-- Paper: https://arxiv.org/abs/1909.13719
+- Paper: <https://arxiv.org/abs/1909.13719>
 - Note: Commonly used data augmentation strategy for image classification.
 - Refer to: `configs/data/augmentation/randaugment.yaml`
 
@@ -246,7 +246,7 @@ transform:
 Refer to: `configs/algorithms/data_augmentation/randaugment.yaml`
 
 ### TrivialAugmentation
-- Paper: https://arxiv.org/abs/2103.10158
+- Paper: <https://arxiv.org/abs/2103.10158>
 - Note: Commonly used data augmentation strategy for image classification.
 - Refer to: `configs/data/augmentation/trivialaugment.yaml`
 ```yaml
@@ -264,7 +264,7 @@ transform:
 ```
 
 ### Mixup
-- Paper: https://arxiv.org/abs/1710.09412
+- Paper: <https://arxiv.org/abs/1710.09412>
 - Note: Commonly used data augmentation strategy for image classification. As the labels are continuous values, the loss function should be modified accordingly.
 - Refer to: `configs/data/augmentation/mixup/mixup.yaml`
 ```yaml
@@ -287,7 +287,7 @@ model:
 ```
 
 ### CutMix
-- Paper: https://arxiv.org/abs/2103.10158
+- Paper: <https://arxiv.org/abs/2103.10158>
 - Note: Commonly used data augmentation strategy for image classification. As the labels are continuous values, the loss function should be modified accordingly.
 - Refer to: `configs/data/augmentation/mixup/cutmix.yaml`
 ```yaml
@@ -310,7 +310,7 @@ model:
 ```
 
 ### CutOut
-- Paper: https://arxiv.org/abs/1708.04552
+- Paper: <https://arxiv.org/abs/1708.04552>
 - Note: Commonly used data augmentation strategy for image classification.
 - Refer to: `configs/data/augmentation/cutout.yaml` and `configs/data/augmentation/cutout_multiple.yaml`
 ```yaml
@@ -332,7 +332,7 @@ transform:
 
 ### `timm` mixup-cutmix
 
-- Paper: https://arxiv.org/abs/2110.00476
+- Paper: <https://arxiv.org/abs/2110.00476>
 - Note: By default, models trained in `timm` randomly switches between `Mixup` and `CutMix` data augmentation. This is found to be effective in their paper.
 - Refer to: `configs/data/augmentation/mixup/mixup_cutmix.yaml`
 ```yaml
@@ -357,7 +357,7 @@ model:
 
 ### Label smoothing
 - Note: Commonly used regularization strategy.
-- Refer to: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html
+- Refer to: <https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html>
 ```
 model:
   modules:
@@ -378,7 +378,7 @@ training:
 ```
 
 ### DropOut(classification)
-- Paper: https://jmlr.org/papers/v15/srivastava14a.html
+- Paper: <https://jmlr.org/papers/v15/srivastava14a.html>
 - Note: Commonly used regularization strategy.
 - Refer to: `configs/vision/classification/resnet-cifar10.yaml`
 ```yaml
@@ -390,7 +390,7 @@ model:
 ```
 
 ### R-Drop(classification)
-- Paper: https://arxiv.org/abs/2106.14448
+- Paper: <https://arxiv.org/abs/2106.14448>
 - Note: Regularization strategy that minimizes the KL-divergence between the output distributions of two sub-models sampled by dropout.
 - Refer to: `configs/algorithms/rdrop.yaml`
 ```yaml
@@ -402,7 +402,7 @@ training:
 ## Loss functions
 
 ### Sharpness-aware minimization(SAM)
-- Paper: https://arxiv.org/abs/2010.01412
+- Paper: <https://arxiv.org/abs/2010.01412>
 - Note: Sharpness aware minimization aims at finding flat minimas. It is demonstrated to improve training speed, generalization, robustness to label noise. However, two backpropagation is needed at every opimization step which doubles the training time.
 - Refer to: `configs/algorithms/sharpness-aware-minimization.yaml`
 ```yaml
@@ -412,7 +412,7 @@ training:
 ```
 
 ### PolyLoss
-- Paper: https://arxiv.org/abs/2204.12511
+- Paper: <https://arxiv.org/abs/2204.12511>
 - Note: The authors derive the taylor expansion of cross entropy and demonstrate that modifying the coefficient of the first-order term can improve performance.
 - Refer to: `configs/algorithms/loss/poly1.yaml`
 ```yaml
@@ -427,7 +427,7 @@ model:
 
 ### One-to-all BCE loss for classification
 
-- Paper: https://arxiv.org/abs/2110.00476
+- Paper: <https://arxiv.org/abs/2110.00476>
 - Note: The authors show that BCE loss can be used for classification tasks and shows similar or better performance.
 - Refer to: `configs/algorithms/loss/classification_bce.yaml`
 ```yaml
@@ -443,7 +443,7 @@ model:
 ### Vanila knowlege distillation
 
 (TODO)
-- Paper: https://arxiv.org/abs/1503.02531
+- Paper: <https://arxiv.org/abs/1503.02531>
 - Note: Distill knowledge from large network to small network by minimizing the KL divergence of the teacher and student prediction.
 - Refer to:
 ```
@@ -461,7 +461,7 @@ trainer:
 ```
 
 ### Stocahstic Weight Averaging(SWA)
-- Paper: https://arxiv.org/abs/1803.05407
+- Paper: <https://arxiv.org/abs/1803.05407>
 - Note: Average multiple checkpoints during training for better performance. An awesome overview of the algorithm is provided by [pytorch](https://pytorch.org/blog/stochastic-weight-averaging-in-pytorch/). Luckily, `pytorch-lightning` provides an easy-to-use callback that implements SWA. To train a SWA model from an existing checkpoint, you may set `swa_epoch_start: 0.0`.
 - Refer to: `configs/algorithms/swa.yaml`
 ```
@@ -512,7 +512,7 @@ model:
 
 ### 1-cycle learning rate schedule
 
-- Paper: https://arxiv.org/abs/1708.07120
+- Paper: <https://arxiv.org/abs/1708.07120>
 - Note: Linearly increases learning rate from 0 to maximum for the first half of training then linearly decreases to 0. Commonly used learning rate schedule.
 - Refer to: `configs/algorithms/lr-schedule/1cycle.yaml` and [torch.optim.lr_scheduler.OneCycleLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.OneCycleLR.html)
 ```
@@ -530,7 +530,7 @@ training:
 ```
 
 ### Cosine learning rate decay
-- Paper: https://arxiv.org/abs/2103.10158
+- Paper: <https://arxiv.org/abs/2103.10158>
 - Note: Decays the learning from the initial value to 0 via a cosine function. Commonly used learning rate schedule.
 - Refer to: `configs/vision/classification/resnet-cifar10.yaml` and [torch.optim.lr_scheduler.CosineAnnealingLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
 ```
@@ -544,7 +544,7 @@ training:
 ```
 
 ### WarmUp
-- Paper: https://arxiv.org/abs/2103.10158
+- Paper: <https://arxiv.org/abs/2103.10158>
 - Note: Commonly used strategy to stabilize training at early stages.
 - Refer to: `configs/algorithms/lr-schedule/warmup.yaml`
 ```yaml

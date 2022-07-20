@@ -1,7 +1,7 @@
 import random
-
 import torch
 import torchvision.transforms.functional as TF
+
 from data.transforms.base import _BaseTransform
 from utils.bbox import (
     normalize_bbox,
@@ -9,92 +9,6 @@ from utils.bbox import (
     x1y1x2y2_to_xywh,
     xywh_to_x1y1x2y2,
 )
-
-
-class DetectionVOCLabelTransform(_BaseTransform):
-    def __init__(self, **kwargs):
-        """
-        Recieves the naive `VOC2012` torchvision dataset, which contains the annotations from the `.xml` file.
-        Processes and returns the class and bbox in the following format:
-
-        x = PIL.Image
-        y = {"boxes": torch.Tensor(4, num_obj), "labels": torch.Tensor(num_obj)}
-
-        Each bbox coordinates are given in (x, y, w, h) format. The numbers are normalized to (0, 1) range by dividing
-        them with the width and height of the image.
-        """
-        super().__init__(**kwargs)
-        self.label2code = {
-            name: idx for idx, name in enumerate(self.const_cfg["label_map"])
-        }
-
-    def __call__(self, x, y):
-        boxes, labels = self.transform(y, x.size[0], x.size[1])
-        return {"images": x, "boxes": boxes, "labels": labels}
-
-    def transform(self, label, img_w, img_h):
-        """
-        img_w: int
-        img_h: int
-        label: dict
-            output of VOC-style .xml annotation
-        """
-        label = label["annotation"]["object"]
-        targets = {"boxes": [], "labels": []}
-        for obj_label in label:
-            bbox = obj_label["bndbox"]
-            x1, y1, x2, y2 = (
-                int(bbox["xmin"]),
-                int(bbox["ymin"]),
-                int(bbox["xmax"]),
-                int(bbox["ymax"]),
-            )
-            bbox_xywh = x1y1x2y2_to_xywh([x1, y1, x2, y2])
-            targets["boxes"].append(normalize_bbox(bbox_xywh, img_w, img_h))
-            targets["labels"].append(self.label2code[obj_label["name"]])
-
-        # returns {"boxes": torch.Tensor(4, num_obj), "labels": torch.Tensor(num_obj)}
-        return torch.tensor(targets["boxes"]), torch.tensor(targets["labels"])
-
-
-class YOLObbox2Pytorch(_BaseTransform):
-    def __call__(self, d):
-        if len(d["boxes"]) > 0:
-            d["boxes"] = self.transform(
-                d["boxes"], d["images"].size(2), d["images"].size(1)
-            )
-        return d
-
-    def transform(self, boxes, img_w, img_h):
-        """
-        Convert YOLO-format relative (x, y, w, h) bbox to PyTorch-style absolute (x1, y1, x2, y2) coordinates.
-        Parameters
-        ----------
-        img_w: int
-        img_h: int
-        boxes: torch.Tensor(4, num_obj)
-        """
-        return unnormalize_bbox(xywh_to_x1y1x2y2(boxes), img_w, img_h)
-
-
-class Pytorchbbox2YOLO(_BaseTransform):
-    def __call__(self, d):
-        if len(d["boxes"]) > 0:
-            d["boxes"] = self.transform(
-                d["boxes"], d["images"].size(2), d["images"].size(1)
-            )
-        return d
-
-    def transform(self, boxes, img_w, img_h):
-        """
-        Convert PyTorch-style absolute (x1, y1, x2, y2) bbox to YOLO-format relative (x, y, w, h) coordinates.
-        Parameters
-        ----------
-        img_w: int
-        img_h: int
-        boxes: torch.Tensor(4, num_obj)
-        """
-        return normalize_bbox(x1y1x2y2_to_xywh(boxes), img_w, img_h)
 
 
 class DetectionCropToRatio(_BaseTransform):

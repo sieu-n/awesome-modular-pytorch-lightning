@@ -4,79 +4,79 @@ auto_scale_lr:
 checkpoint_config:
   interval: 1
 custom_hooks:
-- type: NumClassCheckHook
+  - type: NumClassCheckHook
 data:
   samples_per_gpu: 2
   test:
     ann_file: data/VOCdevkit/VOC2007/ImageSets/Main/test.txt
     img_prefix: data/VOCdevkit/VOC2007/
     pipeline:
-    - type: LoadImageFromFile
-    - flip: false
-      img_scale:
-      - 1000
-      - 600
-      transforms:
-      - keep_ratio: true
-        type: Resize
-      - type: RandomFlip
-      - mean:
-        - 123.675
-        - 116.28
-        - 103.53
-        std:
-        - 58.395
-        - 57.12
-        - 57.375
-        to_rgb: true
-        type: Normalize
-      - size_divisor: 32
-        type: Pad
-      - keys:
-        - img
-        type: ImageToTensor
-      - keys:
-        - img
-        type: Collect
-      type: MultiScaleFlipAug
+      - type: LoadImageFromFile
+      - flip: false
+        img_scale:
+          - 1000
+          - 600
+        transforms:
+          - keep_ratio: true
+            type: Resize
+          - type: RandomFlip
+          - mean:
+              - 123.675
+              - 116.28
+              - 103.53
+            std:
+              - 58.395
+              - 57.12
+              - 57.375
+            to_rgb: true
+            type: Normalize
+          - size_divisor: 32
+            type: Pad
+          - keys:
+              - img
+            type: ImageToTensor
+          - keys:
+              - img
+            type: Collect
+        type: MultiScaleFlipAug
     type: VOCDataset
   train:
     dataset:
       ann_file:
-      - data/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt
-      - data/VOCdevkit/VOC2012/ImageSets/Main/trainval.txt
+        - data/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt
+        - data/VOCdevkit/VOC2012/ImageSets/Main/trainval.txt
       img_prefix:
-      - data/VOCdevkit/VOC2007/
-      - data/VOCdevkit/VOC2012/
+        - data/VOCdevkit/VOC2007/
+        - data/VOCdevkit/VOC2012/
       pipeline:
-      - type: LoadImageFromFile
-      - type: LoadAnnotations
-        with_bbox: true
-      - img_scale:
-        - 1000
-        - 600
-        keep_ratio: true
-        type: Resize
-      - flip_ratio: 0.5
-        type: RandomFlip
-      - mean:
-        - 123.675
-        - 116.28
-        - 103.53
-        std:
-        - 58.395
-        - 57.12
-        - 57.375
-        to_rgb: true
-        type: Normalize
-      - size_divisor: 32
-        type: Pad
-      - type: DefaultFormatBundle
-      - keys:
-        - img
-        - gt_bboxes
-        - gt_labels
-        type: Collect
+        - type: LoadImageFromFile
+        - type: LoadAnnotations
+          with_bbox: true
+        - img_scale:
+            - 1000
+            - 600
+          keep_ratio: true
+          type: Resize
+        - flip_ratio: 0.5
+          type: RandomFlip
+        - mean:
+            - 123.675
+            - 116.28
+            - 103.53
+          std:
+            - 58.395
+            - 57.12
+            - 57.375
+          to_rgb: true
+          type: Normalize
+        - size_divisor: 32
+          type: Pad
+        - type: DefaultFormatBundle
+        - keys:
+            - img
+            - gt_bboxes
+            - gt_labels
+          type: Collect
       type: VOCDataset
     times: 3
     type: RepeatDataset
@@ -84,34 +84,34 @@ data:
     ann_file: data/VOCdevkit/VOC2007/ImageSets/Main/test.txt
     img_prefix: data/VOCdevkit/VOC2007/
     pipeline:
-    - type: LoadImageFromFile
-    - flip: false
-      img_scale:
-      - 1000
-      - 600
-      transforms:
-      - keep_ratio: true
-        type: Resize
-      - type: RandomFlip
-      - mean:
-        - 123.675
-        - 116.28
-        - 103.53
-        std:
-        - 58.395
-        - 57.12
-        - 57.375
-        to_rgb: true
-        type: Normalize
-      - size_divisor: 32
-        type: Pad
-      - keys:
-        - img
-        type: ImageToTensor
-      - keys:
-        - img
-        type: Collect
-      type: MultiScaleFlipAug
+      - type: LoadImageFromFile
+      - flip: false
+        img_scale:
+          - 1000
+          - 600
+        transforms:
+          - keep_ratio: true
+            type: Resize
+          - type: RandomFlip
+          - mean:
+              - 123.675
+              - 116.28
+              - 103.53
+            std:
+              - 58.395
+              - 57.12
+              - 57.375
+            to_rgb: true
+            type: Normalize
+          - size_divisor: 32
+            type: Pad
+          - keys:
+              - img
+            type: ImageToTensor
+          - keys:
+              - img
+            type: Collect
+        type: MultiScaleFlipAug
     type: VOCDataset
   workers_per_gpu: 2
 data_root: data/VOCdevkit/
@@ -123,24 +123,24 @@ evaluation:
   metric: mAP
 img_norm_cfg:
   mean:
-  - 123.675
-  - 116.28
-  - 103.53
+    - 123.675
+    - 116.28
+    - 103.53
   std:
-  - 58.395
-  - 57.12
-  - 57.375
+    - 58.395
+    - 57.12
+    - 57.375
   to_rgb: true
 load_from: null
 log_config:
   hooks:
-  - type: TextLoggerHook
+    - type: TextLoggerHook
   interval: 50
 log_level: INFO
 lr_config:
   policy: step
   step:
-  - 3
+    - 3
 model:
   backbone:
     depth: 50
@@ -154,18 +154,18 @@ model:
     norm_eval: true
     num_stages: 4
     out_indices:
-    - 0
-    - 1
-    - 2
-    - 3
+      - 0
+      - 1
+      - 2
+      - 3
     style: pytorch
     type: ResNet
   neck:
     in_channels:
-    - 256
-    - 512
-    - 1024
-    - 2048
+      - 256
+      - 512
+      - 1024
+      - 2048
     num_outs: 5
     out_channels: 256
     type: FPN
@@ -173,15 +173,15 @@ model:
     bbox_head:
       bbox_coder:
         target_means:
-        - 0.0
-        - 0.0
-        - 0.0
-        - 0.0
+          - 0.0
+          - 0.0
+          - 0.0
+          - 0.0
         target_stds:
-        - 0.1
-        - 0.1
-        - 0.2
-        - 0.2
+          - 0.1
+          - 0.1
+          - 0.2
+          - 0.2
         type: DeltaXYWHBBoxCoder
       fc_out_channels: 1024
       in_channels: 256
@@ -198,10 +198,10 @@ model:
       type: Shared2FCBBoxHead
     bbox_roi_extractor:
       featmap_strides:
-      - 4
-      - 8
-      - 16
-      - 32
+        - 4
+        - 8
+        - 16
+        - 32
       out_channels: 256
       roi_layer:
         output_size: 7
@@ -212,29 +212,29 @@ model:
   rpn_head:
     anchor_generator:
       ratios:
-      - 0.5
-      - 1.0
-      - 2.0
+        - 0.5
+        - 1.0
+        - 2.0
       scales:
-      - 8
+        - 8
       strides:
-      - 4
-      - 8
-      - 16
-      - 32
-      - 64
+        - 4
+        - 8
+        - 16
+        - 32
+        - 64
       type: AnchorGenerator
     bbox_coder:
       target_means:
-      - 0.0
-      - 0.0
-      - 0.0
-      - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
+        - 0.0
       target_stds:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
       type: DeltaXYWHBBoxCoder
     feat_channels: 256
     in_channels: 256
@@ -316,63 +316,63 @@ runner:
   max_epochs: 4
   type: EpochBasedRunner
 test_pipeline:
-- type: LoadImageFromFile
-- flip: false
-  img_scale:
-  - 1000
-  - 600
-  transforms:
-  - keep_ratio: true
+  - type: LoadImageFromFile
+  - flip: false
+    img_scale:
+      - 1000
+      - 600
+    transforms:
+      - keep_ratio: true
+        type: Resize
+      - type: RandomFlip
+      - mean:
+          - 123.675
+          - 116.28
+          - 103.53
+        std:
+          - 58.395
+          - 57.12
+          - 57.375
+        to_rgb: true
+        type: Normalize
+      - size_divisor: 32
+        type: Pad
+      - keys:
+          - img
+        type: ImageToTensor
+      - keys:
+          - img
+        type: Collect
+    type: MultiScaleFlipAug
+train_pipeline:
+  - type: LoadImageFromFile
+  - type: LoadAnnotations
+    with_bbox: true
+  - img_scale:
+      - 1000
+      - 600
+    keep_ratio: true
     type: Resize
-  - type: RandomFlip
+  - flip_ratio: 0.5
+    type: RandomFlip
   - mean:
-    - 123.675
-    - 116.28
-    - 103.53
+      - 123.675
+      - 116.28
+      - 103.53
     std:
-    - 58.395
-    - 57.12
-    - 57.375
+      - 58.395
+      - 57.12
+      - 57.375
     to_rgb: true
     type: Normalize
   - size_divisor: 32
     type: Pad
+  - type: DefaultFormatBundle
   - keys:
-    - img
-    type: ImageToTensor
-  - keys:
-    - img
+      - img
+      - gt_bboxes
+      - gt_labels
     type: Collect
-  type: MultiScaleFlipAug
-train_pipeline:
-- type: LoadImageFromFile
-- type: LoadAnnotations
-  with_bbox: true
-- img_scale:
-  - 1000
-  - 600
-  keep_ratio: true
-  type: Resize
-- flip_ratio: 0.5
-  type: RandomFlip
-- mean:
-  - 123.675
-  - 116.28
-  - 103.53
-  std:
-  - 58.395
-  - 57.12
-  - 57.375
-  to_rgb: true
-  type: Normalize
-- size_divisor: 32
-  type: Pad
-- type: DefaultFormatBundle
-- keys:
-  - img
-  - gt_bboxes
-  - gt_labels
-  type: Collect
 workflow:
-- - train
-  - 1
+  - - train
+    - 1

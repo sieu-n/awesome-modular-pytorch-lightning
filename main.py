@@ -70,7 +70,9 @@ class Experiment:
             const_cfg = self.const_cfg
 
         # 1. build initial dataset that read data.
-        print("(1/5) Building initial dataset from `data.dataset_base_cfg` and `data.dataset_subset_cfg`.")
+        print(
+            "(1/5) Building initial dataset from `data.dataset_base_cfg` and `data.dataset_subset_cfg`."
+        )
         datasets = self.get_base_dataset(
             dataset_cfg=dataset_cfg,
             subset=None,
@@ -78,7 +80,9 @@ class Experiment:
 
         # 2. build initial transformation to convert raw data into dictionary.
         if "initial_transform" in dataset_cfg:
-            print("(2/5) Building initial transformations based on `data.initial_transform`.")
+            print(
+                "(2/5) Building initial transformations based on `data.initial_transform`."
+            )
             initial_transform_cfg = dataset_cfg["initial_transform"]
             initial_transform = self.get_initial_transform(
                 initial_transform_cfg=initial_transform_cfg,
@@ -86,7 +90,9 @@ class Experiment:
             )
         else:
             initial_transform = None
-            print("(2/5) `data.initial_transform` is not defined in config. Skipping initial transformations.")
+            print(
+                "(2/5) `data.initial_transform` is not defined in config. Skipping initial transformations."
+            )
         # 3. build transformations such as normalization and data augmentation.
         if transform_cfg is not None:
             print("(3/5) Building transformations based on `transform`.")
@@ -96,7 +102,9 @@ class Experiment:
                 const_cfg=const_cfg,
             )
         else:
-            print("(3/5) `transform` is not defined in config. Skipping transformations.")
+            print(
+                "(3/5) `transform` is not defined in config. Skipping transformations."
+            )
             transforms = {}
         # 4. apply dataset wrappers such as "SubsetDataset"
         subsets = datasets.keys()
@@ -207,13 +215,17 @@ class Experiment:
             dataset_subset_cfg = dataset_cfg["dataset_subset_cfg"][subset_key]
             if dataset_subset_cfg is None:
                 dataset_subset_cfg = {}
-            assert isinstance(dataset_subset_cfg, dict), "Expected a dict, got {}.".format(dataset_subset_cfg)
-            dataset_subset_cfg = merge_config(dataset_cfg["dataset_base_cfg"], dataset_subset_cfg)
+            assert isinstance(
+                dataset_subset_cfg, dict
+            ), "Expected a dict, got {}.".format(dataset_subset_cfg)
+            dataset_subset_cfg = merge_config(
+                dataset_cfg["dataset_base_cfg"], dataset_subset_cfg
+            )
             # create dataset.
             datasets[subset_key] = catalog.dataset.build_dataset(
                 dataset_type=dataset_subset_cfg["file"],
                 name=dataset_subset_cfg.get("name", ""),
-                **dataset_subset_cfg.get("args", {})
+                **dataset_subset_cfg.get("args", {}),
             )
 
         # return every subset as a dictionary if `subset` is None
@@ -305,7 +317,7 @@ class Experiment:
             if "collate_fn" in dataloader_cfg:
                 dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
                     name=dataloader_cfg["collate_fn"]["name"],
-                    **dataloader_cfg["collate_fn"].get("args", {})
+                    **dataloader_cfg["collate_fn"].get("args", {}),
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(

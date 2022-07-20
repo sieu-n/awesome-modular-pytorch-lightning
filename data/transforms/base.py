@@ -14,24 +14,16 @@ class _BaseTransform:
     """
 
     def __init__(self, const_cfg=None):
-        self.const_cfg = const_cfg
+        if const_cfg is None:
+            print(f"`const_cfg` is not specified while initializing `{self}`. This might lead to unexpected behaviour.")
+        else:
+            self.const_cfg = const_cfg
 
     def __call__(self, x, y):
         raise NotImplementedError
 
-    """
-    def joint_transform(self, image, label):
-        return image, label
 
-    def input_transform(self, image):
-        return image
-
-    def label_transform(self, label):
-        return label
-    """
-
-
-class ApplyDataTransformations(Dataset):
+class ApplyTransforms(Dataset):
     def __init__(self, base_dataset, initial_transform=None, transforms=None):
         """
         Build dataset that simply adds more data transformations to the original samples.

@@ -1,5 +1,6 @@
-import yaml
 from argparse import ArgumentParser
+
+import yaml
 from mmcv import Config
 
 
@@ -38,5 +39,5 @@ if __name__ == "__main__":
         print("Saving to:", to)
     else:
         to = args.to
-    with open(to, 'w') as outfile:
+    with open(to, "w") as outfile:
         yaml.dump(dict_config, outfile, default_flow_style=False)

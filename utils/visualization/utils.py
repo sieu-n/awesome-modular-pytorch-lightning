@@ -2,8 +2,9 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
+from torchvision.transforms import Compose
 import torchvision.transforms.functional as TF
-from catalog.transforms import UnNormalize
+from catalog.transforms import UnNormalize, MMdetDataset2Torchvision
 from utils.experiment import makedir
 
 from .vision import plot_image_classification, plot_object_detection
@@ -12,7 +13,9 @@ function_for_plotting = {
     "image classification": plot_image_classification,
     "object detection": plot_object_detection,
 }
-
+preprocessor_factory = {
+    "convert-mmdetbbox": [MMdetDataset2Torchvision(to_xywh=False)],
+}
 
 def plot_sample(
     task, data, mode="save", savedir="results/example.png", label_map=None, **kwargs
@@ -60,7 +63,11 @@ def plot_samples_from_dataset(
     for i in range(1, w * h + 1):
         data = dataset[i - 1]
 
-        if preprocess_f:
+        if preprocess_f is not None:
+            if preprocess_f in preprocessor_factory.keys():
+                print(f"Found preprocessor `{preprocess_f}`")
+                preprocess_f = Compose(preprocessor_factory[preprocess_f])
+            
             data = preprocess_f(data)
         if resize_to:
             data["images"] = TF.resize(
