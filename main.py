@@ -187,7 +187,7 @@ class Experiment:
             is provided, a single dataset corresponding to the subset value is returned.
         """
         print_to_end("-")
-        print("[*] Start loading dataset")
+        print("[*] Loading base-dataset")
         # build initial dataset to read data.
         if subset is None:
             subset_types = list(dataset_cfg["dataset_subset_cfg"].keys())
@@ -197,7 +197,7 @@ class Experiment:
         datasets = {}
         for idx, subset_key in enumerate(subset_types):
             print(
-                f"({idx}/{len(subset_types)}) Loading `{subset_key}` subsets of the base dataset."
+                f"({idx+1}/{len(subset_types)}) Loading `{subset_key}` subsets of the base dataset."
             )
 
             dataset_subset_cfg = dataset_cfg["dataset_subset_cfg"][subset_key]

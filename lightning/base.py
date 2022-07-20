@@ -40,6 +40,8 @@ class _BaseLightningTrainer(_LightningModule):
                 self.backbone = load_model_weights(
                     model=self.backbone, **backbone_cfg["weights"]
                 )
+        else:
+            print("(1/4) `model.backbone` is not specified. Skipping backbone model")
         # build modules
         if "modules" in model_cfg:
             print("(2/4) Building modules attached to the backbone model...")
@@ -51,10 +53,12 @@ class _BaseLightningTrainer(_LightningModule):
                     **module_cfg.get("args", {}),
                 )
                 setattr(self, module_name, head_module)
+        else:
+            print("(2/4) `model.modules` is not specified. Skipping building modules")
         # set metrics
-        if "metrics" in model_cfg:
+        self.metrics = {"trn": [], "val": [], "test": []}
+        if "metrics" in training_cfg:
             print("(3/4) Building metrics:")
-            self.metrics = {"trn": [], "val": [], "test": []}
             metrics = training_cfg["metrics"]
             for metric_name, metric_cfg in metrics.items():
                 subsets_to_compute = metric_cfg.get("when", "val")
@@ -76,6 +80,8 @@ class _BaseLightningTrainer(_LightningModule):
                         "next_log": 0,
                     }
                     self.metrics[subset].append(metric_data)
+        else:
+            print("(3/4) `model.metrics` is not specified. Skipping metrics")
         # setup hooks
         self._hook_cache = {}
         if "hooks" in model_cfg:
@@ -88,6 +94,8 @@ class _BaseLightningTrainer(_LightningModule):
                     layer_name=hook_cfg["layer_name"],
                     **hook_cfg.get("cfg", {}),
                 )
+        else:
+            print("(4/4) `model.hooks` is not specified.")
         # tta
         self.is_tta_enabled = False
         if "tta" in model_cfg:

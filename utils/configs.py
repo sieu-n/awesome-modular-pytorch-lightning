@@ -166,7 +166,7 @@ def compile_links(cfg):
     def recurse_iter(parsed_cfg):
         if type(parsed_cfg) == dict:
             it = parsed_cfg.keys()
-        elif type(parsed_cfg) == list or type(parsed_cfg) == tuple:
+        elif type(parsed_cfg) == list:
             it = range(len(parsed_cfg))
         else:
             is_compiled = False

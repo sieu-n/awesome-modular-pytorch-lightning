@@ -7,7 +7,6 @@ from pathlib import Path
 
 import catalog
 import yaml
-from data.dataset.util import torchvision_dataset
 from data.transforms.base import ApplyDataTransformations, ComposeTransforms
 
 from .verbose import set_verbose
@@ -19,15 +18,6 @@ from .verbose import set_verbose
 ########################################################################
 # Find transforms and build dataset.
 ########################################################################
-def build_dataset(dataset_cfg):
-    # returns: dict{subset_key: torch.utils.data.Dataset, ...}
-    dataset_mode = dataset_cfg["MODE"]
-    if dataset_mode == "torchvision":
-        return torchvision_dataset(dataset_cfg["NAME"], dataset_cfg)
-    else:
-        raise ValueError(f"Invalid dataset type: `{dataset_mode}`")
-
-
 def build_dataset_mapping(mapping_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
     mappings = {}
