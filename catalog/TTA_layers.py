@@ -1,3 +1,7 @@
+from algorithms.tta.layers.affine import (  # noqa E403; Rotate image with arbitrary angles.; noqa E403; Zoom into center of the image.
+    CenterZoom,
+    Rotation,
+)
 from ttach.transforms import Add  # noqa E403; Add value to images
 from ttach.transforms import Multiply  # noqa E403; Multiply images by factor
 from ttach.transforms import Resize  # noqa E403; Resize images
@@ -8,9 +12,6 @@ from ttach.transforms import (  # noqa E403; Makes 4 crops for each corner + cen
     HorizontalFlip,
     VerticalFlip,
 )
-
-from algorithms.tta.layers.affine import CenterZoom  # noqa E403; Rotate image with arbitrary angles.
-from algorithms.tta.layers.affine import Rotation  # noqa E403; Zoom into center of the image.
 
 from ._get import _get
 

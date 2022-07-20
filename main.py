@@ -11,7 +11,6 @@ from torchinfo import summary as print_model_summary
 from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import apply_transforms
-from utils.experiment import build_dataset as _build_dataset
 from utils.experiment import build_dataset_mapping as _build_dataset_mapping
 from utils.experiment import build_initial_transform as _build_initial_transform
 from utils.experiment import build_transforms as _build_transforms
@@ -190,7 +189,28 @@ class Experiment:
         print_to_end("-")
         print("[*] Start loading dataset")
         # build initial dataset to read data.
-        datasets = _build_dataset(dataset_cfg)
+        if subset is None:
+            subset_types = list(dataset_cfg["dataset_subset_cfg"].keys())
+        else:
+            subset_types = [subset]
+
+        datasets = {}
+        for idx, subset_key in enumerate(subset_types):
+            print(
+                f"({idx}/{len(subset_types)}) Loading `{subset_key}` subsets of the base dataset."
+            )
+
+            dataset_subset_cfg = dataset_cfg["dataset_subset_cfg"][subset_key]
+            if dataset_subset_cfg is None:
+                dataset_subset_cfg = {}
+            assert isinstance(dataset_subset_cfg, dict), "Expected a dict, got {}.".format(dataset_subset_cfg)
+            dataset_subset_cfg = merge_config(dataset_cfg["dataset_base_cfg"], dataset_subset_cfg)
+            # create dataset.
+            datasets[subset_key] = catalog.dataset.build_dataset(
+                dataset_type=dataset_subset_cfg["file"],
+                name=dataset_subset_cfg.get("name", ""),
+                **dataset_subset_cfg.get("args", {})
+            )
 
         # return every subset as a dictionary if `subset` is None
         if subset is None:
