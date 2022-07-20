@@ -209,7 +209,7 @@ class Experiment:
         datasets = {}
         for idx, subset_key in enumerate(subset_types):
             print(
-                f"[{idx+1}/{len(subset_types)}] Loading `{subset_key}` subsets of the base dataset."
+                f"Loading `{subset_key}` dataset subset."
             )
 
             dataset_subset_cfg = dataset_cfg["dataset_subset_cfg"][subset_key]

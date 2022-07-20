@@ -58,16 +58,18 @@ def plot_samples_from_dataset(
     save_to = os.path.join(root_dir, save_to)
     makedir(save_to)
 
+    # build preprocessor
+    if preprocess_f in preprocessor_factory.keys():
+        print(f"Found preprocessor `{preprocess_f}`")
+        preprocess_f = Compose(preprocessor_factory[preprocess_f])
+
     w, h = subplot_dim
     plt.figure(figsize=(w * plot_size, h * plot_size))
     for i in range(1, w * h + 1):
         data = dataset[i - 1]
 
         if preprocess_f is not None:
-            if preprocess_f in preprocessor_factory.keys():
-                print(f"Found preprocessor `{preprocess_f}`")
-                preprocess_f = Compose(preprocessor_factory[preprocess_f])
-            
+
             data = preprocess_f(data)
         if resize_to:
             data["images"] = TF.resize(
@@ -86,4 +88,5 @@ def plot_samples_from_dataset(
         plt.axis("off")
     plt.tight_layout()
     plt.savefig(save_to)
+    print("Visualization of training data saved in:", save_to)
     plt.close()
