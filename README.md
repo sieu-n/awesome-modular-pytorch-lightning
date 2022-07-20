@@ -97,7 +97,7 @@ these cascading config files are baked at the start of `train.py`. Configs in fr
   - Backbone models implemented in `timm` can be used.
   - Although we highly recommend using `timm`, as they provide a large variaty of computer vision models and their models are throughly evaluated, custom implementations of some architectures are listed in `catalog/models/__init__.py`.
 - Dataset
-  - Dataset: currently only `torchvision` datasets are supported by `Experiment`, however `torchvision.datasets.ImageFolder` can be used to load from custom dataset. In addition, you may just use a custom dataset.
+  - Dataset: currently only `torchvision` datasets are supported by `Experiment`, however `torchvision.datasets.ImageFolder` can be used to load from custom dataset. In addition, you may just use a custom dataset and combine it with the transforms, model and training feature of the repo.
   - Transformations(data augmentation): Transforms must be listed in one in [`data/transforms/vision/__init__.py`]
 - Other features
   - Optimizers
@@ -530,7 +530,7 @@ training:
 ```
 
 ### Cosine learning rate decay
-- Paper: <https://arxiv.org/abs/2103.10158>
+- Paper: <https://arxiv.org/abs/1608.03983>
 - Note: Decays the learning from the initial value to 0 via a cosine function. Commonly used learning rate schedule.
 - Refer to: `configs/vision/classification/resnet-cifar10.yaml` and [torch.optim.lr_scheduler.CosineAnnealingLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CosineAnnealingLR.html)
 ```

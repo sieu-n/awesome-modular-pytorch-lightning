@@ -154,6 +154,7 @@ def compile_links(cfg):
                     return obj, True
 
                 _query = _query.replace(_query[left : cursor + 1], str(obj))
+                cursor = left
                 left = -1
             cursor += 1
         if is_compiled:
