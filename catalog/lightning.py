@@ -1,4 +1,5 @@
 from lightning.vision.classification import ClassificationTrainer  # noqa E403
+from lightning.vision.mmdetection import MMDetectionTrainer  # noqa E403
 from lightning.vision.rcnn import (  # noqa E403
     BaseFasterRCNN,
     FasterRCNNBaseTrainer,

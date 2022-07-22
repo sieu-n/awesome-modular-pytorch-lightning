@@ -45,6 +45,7 @@ callbacks:
 
 model:
   mm_model:
+    pretrained: null
     backbone:
       depth: 50
       frozen_stages: 1
@@ -206,5 +207,4 @@ model:
         nms_pre: 2000
     type: FasterRCNN
 wandb:
-  name: "FasterRCNN-ResNet50-FPN-VOC0712"
   project: "MMDetection-wrappers"

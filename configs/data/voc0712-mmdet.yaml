@@ -1,8 +1,6 @@
 debug:
   view_train_augmentation:
     is_xywh: False
-  network_summary:
-    input_shape: [3, 224, 224]
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
@@ -49,6 +47,9 @@ dataset:
           img_prefix: data/VOCdevkit/VOC2007/
           pipeline:
             - type: LoadImageFromFile
+            - type: LoadAnnotations
+              with_bbox: true
+
             - flip: false
               img_scale: "tuple({const.img_scale})"
               transforms:
@@ -66,6 +67,8 @@ dataset:
                   type: ImageToTensor
                 - keys:
                     - img
+                    - gt_bboxes
+                    - gt_labels
                   type: Collect
               type: MultiScaleFlipAug
           type: VOCDataset

@@ -1,1 +1,1 @@
-from . import classification, rcnn  # noqa F401
+from . import classification, mmdetection, rcnn  # noqa F401

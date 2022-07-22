@@ -1,9 +1,7 @@
-from cmath import e
-import torch
-import torch.nn.functional as F
-from torch import nn
+from copy import deepcopy
 try:
     import mmdet
+    from mmcv import ConfigDict
 except ImportError:
     pass
 
@@ -19,7 +17,7 @@ class MMDetectionTrainer(_BaseLightningTrainer):
         """
         super().__init__(model_cfg, training_cfg, *args, **kwargs)
         assert "mm_model" in model_cfg
-        self.MMDET_model = mmdet.models.builder.build_detector(model_cfg["mm_model"])
+        self.MMDET_model = mmdet.models.builder.build_detector(ConfigDict(model_cfg["mm_model"]))
         # TODO backbone wrappers so we can use more generic feature extractors.
 
     def forward(self, x):
