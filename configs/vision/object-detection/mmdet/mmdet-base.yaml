@@ -1,7 +1,50 @@
 const:
   num_gpus: "len({trainer.gpus})"
-  samples_per_gpu: 2  # NOTE this is train batch size!!
-  val_samples_per_gpu: 1  # NOTE this is val batch size!!
+  samples_per_gpu: 2 # NOTE this is train batch size!!
+  val_samples_per_gpu: 1 # NOTE this is val batch size!!
+
+trainer:
+  # evaluate every 3 epochs
+  check_val_every_n_epoch: 3
+
+training:
+  metrics:
+    total_loss:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss"
+    classification-accuracy:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "acc"
+    loss/rpn_cls:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss_rpn_cls"
+    loss/rpn_bbox:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss_rpn_bbox"
+    loss/bbox_reg:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss_bbox"
+    loss/classification:
+      when: "trn,val,test"
+      name: "MeanMetric"
+      file: "torchmetrics"
+      update:
+        value: "loss_cls"
 
 debug:
   view_train_augmentation:
@@ -16,23 +59,14 @@ dataloader:
     num_workers: "2*{const.num_gpus}"
     pin_memory: True
     collate_fn:
-      name: mmcv_parallel_collate
+      name: mmcv_datacontainer_collate
   trn:
     batch_size: "{const.samples_per_gpu}*{const.num_gpus}"
     shuffle: True
-    collate_fn:
-      args:
-        samples_per_gpu: "{const.samples_per_gpu}"
     # Extend default_collate to add support for:type:`~mmcv.parallel.DataContainer`.
   val:
     batch_size: "{const.val_samples_per_gpu}*{const.num_gpus}"
     shuffle: False
-    collate_fn:
-      args:
-        samples_per_gpu: "{const.val_samples_per_gpu}"
   test:
     batch_size: "{const.val_samples_per_gpu}*{const.num_gpus}"
     shuffle: False
-    collate_fn:
-      args:
-        samples_per_gpu: "{const.val_samples_per_gpu}"

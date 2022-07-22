@@ -7,6 +7,7 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 - This repository utilize many amazing and robust and open-source projects such as `timm`, `torchmetrics`, and more. Currently, the following frameworks are integrated into `LightCollections` and can be easily applied through the config files:
   - `torchvision.models` for models, `torchvision.transforms` for transforms, optimizers and learning rate schedules from `pytorch`.
   - Network architecture and weights from `timm`.
+  - Object detection frameworks and techniques from [`mmdetection`](https://github.com/open-mmlab/mmdetection)
   - `inagenet21k` [pretrained weights](https://github.com/Alibaba-MIIL/ImageNet21K) and feature to load model weights from url / `.pth` file.
   - `TTAch` for test-time augmentation.
   - `torchmetrics` for metrics.

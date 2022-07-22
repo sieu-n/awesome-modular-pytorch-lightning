@@ -3,7 +3,7 @@ name: "faster-rcnn-r50-fpn-voc0712"
 training:
   ID: "MMDetectionTrainer"
 
-  epochs: 4
+  epochs: 12  # `1x` schedule
   lr: 0.01
 
   optimizer: "sgd"
@@ -21,14 +21,6 @@ training:
       T_max: "{training.epochs}"
     cfg:
       interval: "epoch"
-
-  metrics:
-    loss:
-      when: "trn,val,test"
-      name: "MeanMetric"
-      file: "torchmetrics"
-      update:
-        value: "cls_loss"
 
 callbacks:
   - name: ModelCheckpoint

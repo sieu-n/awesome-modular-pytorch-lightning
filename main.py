@@ -208,9 +208,7 @@ class Experiment:
 
         datasets = {}
         for idx, subset_key in enumerate(subset_types):
-            print(
-                f"Loading `{subset_key}` dataset subset."
-            )
+            print(f"Loading `{subset_key}` dataset subset.")
 
             dataset_subset_cfg = dataset_cfg["dataset_subset_cfg"][subset_key]
             if dataset_subset_cfg is None:

@@ -5,6 +5,7 @@ from . import (  # noqa F401
     experiment,
     image,
     logging,
+    mmcv,
     models,
     pretrained,
     verbose,

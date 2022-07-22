@@ -1,0 +1,56 @@
+dataset:
+  dataset_subset_cfg:
+    val:
+      args:
+        cfg:
+          ann_file: data/VOCdevkit/VOC2007/ImageSets/Main/test.txt
+          img_prefix: data/VOCdevkit/VOC2007/
+          pipeline:
+            - type: LoadImageFromFile
+            - type: LoadAnnotations
+              with_bbox: true
+            - img_scale: "tuple({const.img_scale})"
+              keep_ratio: true
+              type: Resize
+            - type: RandomFlip
+              flip_ratio: 0.0
+            - mean: "{const.normalization_mean}"
+              std: "{const.normalization_std}"
+              to_rgb: true
+              type: Normalize
+            - size_divisor: 32
+              type: Pad
+            - type: DefaultFormatBundle
+            - keys:
+                - img
+                - gt_bboxes
+                - gt_labels
+              type: Collect
+          type: VOCDataset
+    test:
+      args:
+        cfg:
+          ann_file: data/VOCdevkit/VOC2007/ImageSets/Main/test.txt
+          img_prefix: data/VOCdevkit/VOC2007/
+          pipeline:
+            - type: LoadImageFromFile
+            - type: LoadAnnotations
+              with_bbox: true
+            - img_scale: "tuple({const.img_scale})"
+              keep_ratio: true
+              type: Resize
+            - type: RandomFlip
+              flip_ratio: 0.0
+            - mean: "{const.normalization_mean}"
+              std: "{const.normalization_std}"
+              to_rgb: true
+              type: Normalize
+            - size_divisor: 32
+              type: Pad
+            - type: DefaultFormatBundle
+            - keys:
+                - img
+                - gt_bboxes
+                - gt_labels
+              type: Collect
+          type: VOCDataset

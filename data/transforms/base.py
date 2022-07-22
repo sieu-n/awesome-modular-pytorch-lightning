@@ -15,7 +15,9 @@ class _BaseTransform:
 
     def __init__(self, const_cfg=None):
         if const_cfg is None:
-            print(f"`const_cfg` was not specified while initializing `{self}`. This might lead to unexpected behaviour.")
+            print(
+                f"`const_cfg` was not specified while initializing `{self}`. This might lead to unexpected behaviour."
+            )
         else:
             self.const_cfg = const_cfg
 

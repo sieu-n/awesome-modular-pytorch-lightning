@@ -38,7 +38,13 @@ def plot_image_classification(images, labels=None, label_map=None, **kwargs):
 
 
 def plot_object_detection(
-    images, boxes=None, labels=None, label_map=None, is_xywh=True, bbox_unnormalization=True, **kwargs
+    images,
+    boxes=None,
+    labels=None,
+    label_map=None,
+    is_xywh=True,
+    bbox_unnormalization=True,
+    **kwargs,
 ):
     """
     x: np.array(W, H, C)

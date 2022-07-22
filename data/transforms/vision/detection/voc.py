@@ -1,10 +1,6 @@
 import torch
-
 from data.transforms.base import _BaseTransform
-from utils.bbox import (
-    normalize_bbox,
-    x1y1x2y2_to_xywh,
-)
+from utils.bbox import normalize_bbox, x1y1x2y2_to_xywh
 
 
 class DetectionVOCLabelTransform(_BaseTransform):

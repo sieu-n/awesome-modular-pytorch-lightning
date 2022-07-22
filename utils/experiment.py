@@ -177,3 +177,26 @@ def print_to_end(char="#"):
     columns = max(int(columns), 40)
     spaces = char * (columns // len(char))
     print(spaces)
+
+
+def print_d(d, p):  # noqa
+    print(p, ":")
+    if type(d) == dict:
+        print("keys:", d.keys())
+        for k in d:
+            p.append(k)
+            print_d(d[k])
+            p.pop()
+    else:
+        try:
+            print("len:", len(d))
+        except:  # noqa
+            print("no len")
+        try:
+            print("shape:", d.shape)
+        except:  # noqa
+            print("no shape")
+        try:
+            print("type:", type(d))
+        except:  # noqa
+            print("no type")

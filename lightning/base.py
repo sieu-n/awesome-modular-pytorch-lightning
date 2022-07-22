@@ -1,3 +1,6 @@
+from copy import deepcopy
+from numpy import isin
+import torch
 import catalog.metric
 import catalog.models
 import catalog.modules
@@ -124,11 +127,17 @@ class _BaseLightningTrainer(_LightningModule):
         self.is_tta_enabled = False
 
     def update_metrics(self, subset, res):
+        def _make_val_feedable(v):
+            v = deepcopy(v)
+            if isinstance(v, torch.Tensor):
+                v.cpu()
+            return v
+
         for metric_data in self.metrics[subset]:
             if metric_data["next_log"] > 0:
                 continue
             update_kwargs = {
-                key: res[val].cpu() for key, val in metric_data["update_keys"].items()
+                key: _make_val_feedable(res[val]) for key, val in metric_data["update_keys"].items()
             }
             metric_data["metric"].update(**update_kwargs)
 
