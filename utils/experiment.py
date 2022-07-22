@@ -7,8 +7,7 @@ from pathlib import Path
 
 import catalog
 import yaml
-from data.dataset.util import torchvision_dataset
-from data.transforms.base import ApplyDataTransformations, ComposeTransforms
+from data.transforms.base import ApplyTransforms, ComposeTransforms
 
 from .verbose import set_verbose
 
@@ -19,15 +18,6 @@ from .verbose import set_verbose
 ########################################################################
 # Find transforms and build dataset.
 ########################################################################
-def build_dataset(dataset_cfg):
-    # returns: dict{subset_key: torch.utils.data.Dataset, ...}
-    dataset_mode = dataset_cfg["MODE"]
-    if dataset_mode == "torchvision":
-        return torchvision_dataset(dataset_cfg["NAME"], dataset_cfg)
-    else:
-        raise ValueError(f"Invalid dataset type: `{dataset_mode}`")
-
-
 def build_dataset_mapping(mapping_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
     mappings = {}
@@ -95,7 +85,7 @@ def build_initial_transform(initial_transform_cfg, const_cfg):
 
 
 def apply_transforms(dataset, initial_transform=None, transforms=None):
-    return ApplyDataTransformations(
+    return ApplyTransforms(
         base_dataset=dataset,
         initial_transform=initial_transform,
         transforms=transforms,
@@ -187,3 +177,26 @@ def print_to_end(char="#"):
     columns = max(int(columns), 40)
     spaces = char * (columns // len(char))
     print(spaces)
+
+
+def print_d(d, p):  # noqa
+    print(p, ":")
+    if type(d) == dict:
+        print("keys:", d.keys())
+        for k in d:
+            p.append(k)
+            print_d(d[k])
+            p.pop()
+    else:
+        try:
+            print("len:", len(d))
+        except:  # noqa
+            print("no len")
+        try:
+            print("shape:", d.shape)
+        except:  # noqa
+            print("no shape")
+        try:
+            print("type:", type(d))
+        except:  # noqa
+            print("no type")

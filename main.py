@@ -5,13 +5,10 @@ import catalog
 import numpy as np
 import pytorch_lightning as pl
 import torch
-from data.collate_fn import build_collate_fn
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
-from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import apply_transforms
-from utils.experiment import build_dataset as _build_dataset
 from utils.experiment import build_dataset_mapping as _build_dataset_mapping
 from utils.experiment import build_initial_transform as _build_initial_transform
 from utils.experiment import build_transforms as _build_transforms
@@ -39,6 +36,7 @@ class Experiment:
         return os.path.join(os.getcwd(), self.exp_dir)
 
     def initialize_environment(self, cfg):
+        print_to_end("=")
         self.experiment_name = _initialize_environment(cfg)
         self.exp_dir = f"results/{self.experiment_name}"
         # set `experiment_name` as os.environ
@@ -66,12 +64,17 @@ class Experiment:
         random.seed(seed)
 
     def setup_dataset(
-        self, dataset_cfg, transform_cfg, const_cfg=None, subset_to_get=None
+        self, dataset_cfg, transform_cfg=None, const_cfg=None, subset_to_get=None
     ):
+        print_to_end("=")
+        print("[*] Building dataset")
         if const_cfg is None:
             const_cfg = self.const_cfg
 
         # 1. build initial dataset that read data.
+        print(
+            "(1/5) Building initial dataset from `data.dataset_base_cfg` and `data.dataset_subset_cfg`."
+        )
         datasets = self.get_base_dataset(
             dataset_cfg=dataset_cfg,
             subset=None,
@@ -79,6 +82,9 @@ class Experiment:
 
         # 2. build initial transformation to convert raw data into dictionary.
         if "initial_transform" in dataset_cfg:
+            print(
+                "(2/5) Building initial transformations based on `data.initial_transform`."
+            )
             initial_transform_cfg = dataset_cfg["initial_transform"]
             initial_transform = self.get_initial_transform(
                 initial_transform_cfg=initial_transform_cfg,
@@ -86,14 +92,22 @@ class Experiment:
             )
         else:
             initial_transform = None
-
+            print(
+                "(2/5) `data.initial_transform` is not defined in config. Skipping initial transformations."
+            )
         # 3. build transformations such as normalization and data augmentation.
-        transforms = self.get_transform(
-            transform_cfg,
-            subset=None,  # generate all subsets by default.
-            const_cfg=const_cfg,
-        )
-
+        if transform_cfg is not None:
+            print("(3/5) Building transformations based on `transform`.")
+            transforms = self.get_transform(
+                transform_cfg,
+                subset=None,  # generate all subsets by default.
+                const_cfg=const_cfg,
+            )
+        else:
+            print(
+                "(3/5) `transform` is not defined in config. Skipping transformations."
+            )
+            transforms = {}
         # 4. apply dataset wrappers such as "SubsetDataset"
         subsets = datasets.keys()
         dataset_mapping = self.get_dataset_mapping(
@@ -103,7 +117,7 @@ class Experiment:
         # 5. actually apply transformations.
         datasets = {
             subset: apply_transforms(
-                datasets[subset], initial_transform, transforms[subset]
+                datasets[subset], initial_transform, transforms.get(subset, None)
             )
             for subset in subsets
         }
@@ -120,7 +134,6 @@ class Experiment:
                 plot_samples_from_dataset(
                     datasets["trn"],
                     task=self.const_cfg["task"],
-                    image_tensor_to_numpy=True,
                     unnormalize=True,
                     normalization_mean=self.const_cfg["normalization_mean"],
                     normalization_std=self.const_cfg["normalization_std"],
@@ -147,6 +160,7 @@ class Experiment:
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
+        print_to_end("=")
         if cfg is not None:
             if "wandb" in cfg:
                 assert wandb_cfg is None
@@ -187,10 +201,31 @@ class Experiment:
             Returns dictionary containing the torch.utils.data.Dataset objects for each subset. If a value for `subset`
             is provided, a single dataset corresponding to the subset value is returned.
         """
-        print_to_end("-")
-        print("[*] Start loading dataset")
         # build initial dataset to read data.
-        datasets = _build_dataset(dataset_cfg)
+        if subset is None:
+            subset_types = list(dataset_cfg["dataset_subset_cfg"].keys())
+        else:
+            subset_types = [subset]
+
+        datasets = {}
+        for idx, subset_key in enumerate(subset_types):
+            print(f"Loading `{subset_key}` dataset subset.")
+
+            dataset_subset_cfg = dataset_cfg["dataset_subset_cfg"][subset_key]
+            if dataset_subset_cfg is None:
+                dataset_subset_cfg = {}
+            assert isinstance(
+                dataset_subset_cfg, dict
+            ), "Expected a dict, got {}.".format(dataset_subset_cfg)
+            dataset_subset_cfg = merge_config(
+                dataset_cfg["dataset_base_cfg"], dataset_subset_cfg
+            )
+            # create dataset.
+            datasets[subset_key] = catalog.dataset.build_dataset(
+                dataset_type=dataset_subset_cfg["file"],
+                name=dataset_subset_cfg.get("name", ""),
+                **dataset_subset_cfg.get("args", {}),
+            )
 
         # return every subset as a dictionary if `subset` is None
         if subset is None:
@@ -262,6 +297,8 @@ class Experiment:
         dataloader_cfg,
         subset_to_get=None,
     ):
+        print_to_end("=")
+        print("[*] Creating PyTorch `DataLoader`")
         dataloaders = {}
 
         base_dataloader_cfg = dataloader_cfg["base_dataloader"]
@@ -273,20 +310,20 @@ class Experiment:
         # build dataloader for each subset and apply to the dataset object.
         for subset, dataset in it:
             # build configs.
-            print("[*] Creating PyTorch `DataLoader`.")
-            dataloader_cfg = merge_config(
+            print(f"Creating `DataLoader` for subset `{subset}`.")
+            subset_dataloader_cfg = merge_config(
                 base_dataloader_cfg, dataloader_cfg.get(subset, {})
             )
             # build collate_fn
-            if "collate_fn" in dataloader_cfg:
-                dataloader_cfg["collate_fn"] = build_collate_fn(
-                    name=dataloader_cfg["collate_fn"]["name"],
-                    kwargs=dataloader_cfg["collate_fn"]["args"],
+            if "collate_fn" in subset_dataloader_cfg:
+                subset_dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
+                    name=subset_dataloader_cfg["collate_fn"]["name"],
+                    **subset_dataloader_cfg["collate_fn"].get("args", {}),
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(
                 dataset,
-                **dataloader_cfg,
+                **subset_dataloader_cfg,
             )
         if subset_to_get is None:
             return dataloaders
@@ -306,7 +343,6 @@ class Experiment:
             assert hasattr(self, "experiment_name")
             experiment_name = self.experiment_name
         # logger
-        print_to_end("-")
         logger = create_logger(
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
@@ -315,7 +351,11 @@ class Experiment:
         # callbacks
         callbacks = []
         for callback_cfg in callback_list:
-            callbacks.append(build_callback(callback_cfg))
+            callbacks.append(catalog.callbacks.build(
+                name=callback_cfg["name"],
+                file=callback_cfg.get("file", None),
+                **callback_cfg.get("args", {})
+            ))
         return {
             "logger": logger,
             "callbacks": callbacks,

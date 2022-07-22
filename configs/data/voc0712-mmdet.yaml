@@ -1,0 +1,130 @@
+debug:
+  view_train_augmentation:
+    is_xywh: False
+dataset:
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    file: "mmdetection"
+  dataset_subset_cfg:
+    trn:
+      args:
+        cfg:
+          ann_file:
+            - data/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt
+            - data/VOCdevkit/VOC2012/ImageSets/Main/trainval.txt
+          img_prefix:
+            - data/VOCdevkit/VOC2007/
+            - data/VOCdevkit/VOC2012/
+          pipeline:
+            - type: LoadImageFromFile
+            - type: LoadAnnotations
+              with_bbox: true
+            - img_scale: "tuple({const.img_scale})"
+              keep_ratio: true
+              type: Resize
+            - flip_ratio: 0.5
+              type: RandomFlip
+            - mean: "{const.normalization_mean}"
+              std: "{const.normalization_std}"
+              to_rgb: true
+              type: Normalize
+            - size_divisor: 32
+              type: Pad
+            - type: DefaultFormatBundle
+            - keys:
+                - img
+                - gt_bboxes
+                - gt_labels
+              type: Collect
+          type: VOCDataset
+    val:
+      args:
+        cfg:
+          ann_file: data/VOCdevkit/VOC2007/ImageSets/Main/test.txt
+          img_prefix: data/VOCdevkit/VOC2007/
+          pipeline:
+            - type: LoadImageFromFile
+            - type: LoadAnnotations
+              with_bbox: true
+
+            - flip: false
+              img_scale: "tuple({const.img_scale})"
+              transforms:
+                - keep_ratio: true
+                  type: Resize
+                - type: RandomFlip
+                - mean: "{const.normalization_mean}"
+                  std: "{const.normalization_std}"
+                  to_rgb: true
+                  type: Normalize
+                - size_divisor: 32
+                  type: Pad
+                - keys:
+                    - img
+                  type: ImageToTensor
+                - keys:
+                    - img
+                    - gt_bboxes
+                    - gt_labels
+                  type: Collect
+              type: MultiScaleFlipAug
+          type: VOCDataset
+    test:
+      args:
+        cfg:
+          ann_file: data/VOCdevkit/VOC2007/ImageSets/Main/test.txt
+          img_prefix: data/VOCdevkit/VOC2007/
+          pipeline:
+            - type: LoadImageFromFile
+            - flip: false
+              img_scale: "tuple({const.img_scale})"
+              transforms:
+                - keep_ratio: true
+                  type: Resize
+                - type: RandomFlip
+                - mean: "{const.normalization_mean}"
+                  std: "{const.normalization_std}"
+                  to_rgb: true
+                  type: Normalize
+                - size_divisor: 32
+                  type: Pad
+                - keys:
+                    - img
+                  type: ImageToTensor
+                - keys:
+                    - img
+                  type: Collect
+              type: MultiScaleFlipAug
+          type: VOCDataset
+
+transform:
+
+# other useful configs.
+const:
+  img_scale: [1000, 600]
+  task: "object detection"
+  normalization_mean: [123.675, 116.28, 103.53]
+  normalization_std: [58.395, 57.12, 57.375]
+  num_classes: 21
+  label_map:
+    - "background"
+    - "aeroplane"
+    - "bicycle"
+    - "bird"
+    - "boat"
+    - "bottle"
+    - "bus"
+    - "car"
+    - "cat"
+    - "chair"
+    - "cow"
+    - "diningtable"
+    - "dog"
+    - "horse"
+    - "motorbike"
+    - "person"
+    - "pottedplant"
+    - "sheep"
+    - "sofa"
+    - "train"
+    - "tvmonitor"

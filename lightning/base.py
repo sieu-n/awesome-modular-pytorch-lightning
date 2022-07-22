@@ -1,4 +1,10 @@
-import catalog
+from copy import deepcopy
+from numpy import isin
+import torch
+import catalog.metric
+import catalog.models
+import catalog.modules
+import catalog.TTA_modules
 import wandb
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils.models import get_layer
@@ -10,6 +16,7 @@ from .common import _LightningModule
 class _BaseLightningTrainer(_LightningModule):
     def __init__(self, model_cfg, training_cfg, const_cfg={}, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        print("[*] Building model components")
         self.const_cfg = const_cfg
         self.training_cfg = training_cfg
         # disable automatic_optimization.
@@ -22,6 +29,8 @@ class _BaseLightningTrainer(_LightningModule):
         # build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
+            print(f"(1/4) Building backbone model: {backbone_cfg['ID']}")
+
             self.backbone = catalog.models.build_backbone(
                 name=backbone_cfg["ID"],
                 model_type=backbone_cfg["TYPE"],
@@ -30,56 +39,73 @@ class _BaseLightningTrainer(_LightningModule):
             )
             # load backbone weights from url / filepath
             if "weights" in backbone_cfg:
+                print(f"Using pretrained backbone: {backbone_cfg['weights']}")
                 self.backbone = load_model_weights(
                     model=self.backbone, **backbone_cfg["weights"]
                 )
+        else:
+            print("(1/4) `model.backbone` is not specified. Skipping backbone model")
         # build modules
-        print("[*] Building modules attached to the backbone model...")
-        modules = model_cfg.get("modules", {})
-        for module_name, module_cfg in modules.items():
-            head_module = catalog.modules.get(
-                name=module_cfg["name"], file=module_cfg.get("file", None)
-            )(**module_cfg.get("args", {}))
-            setattr(self, module_name, head_module)
+        if "modules" in model_cfg:
+            print("(2/4) Building modules attached to the backbone model...")
+            modules = model_cfg["modules"]
+            for module_name, module_cfg in modules.items():
+                head_module = catalog.modules.build(
+                    name=module_cfg["name"],
+                    file=module_cfg.get("file", None),
+                    **module_cfg.get("args", {}),
+                )
+                setattr(self, module_name, head_module)
+        else:
+            print("(2/4) `model.modules` is not specified. Skipping building modules")
         # set metrics
         self.metrics = {"trn": [], "val": [], "test": []}
-        metrics = training_cfg.get("metrics", {})
-        for metric_name, metric_cfg in metrics.items():
-            for subset in metric_cfg["when"].split(","):
-                metric = catalog.metric.get(
-                    name=metric_cfg["name"], file=metric_cfg.get("file", None)
-                )(
-                    **metric_cfg.get("args", {}),
-                )
-                # get log frequency
-                interval = metric_cfg.get("interval", 1)
-                if type(interval) == dict:
-                    interval = interval.get(subset, 1)
-                metric_data = {
-                    "name": metric_name,
-                    "metric": metric,
-                    "update_keys": metric_cfg["update"],
-                    "interval": interval,
-                    "next_log": 0,
-                }
-
-                self.metrics[subset].append(metric_data)
+        if "metrics" in training_cfg:
+            print("(3/4) Building metrics:")
+            metrics = training_cfg["metrics"]
+            for metric_name, metric_cfg in metrics.items():
+                subsets_to_compute = metric_cfg.get("when", "val")
+                for subset in subsets_to_compute.split(","):
+                    metric = catalog.metric.build(
+                        name=metric_cfg["name"],
+                        file=metric_cfg.get("file", None),
+                        **metric_cfg.get("args", {}),
+                    )
+                    # get log frequency
+                    interval = metric_cfg.get("interval", 1)
+                    if type(interval) == dict:
+                        interval = interval.get(subset, 1)
+                    metric_data = {
+                        "name": metric_name,
+                        "metric": metric,
+                        "update_keys": metric_cfg["update"],
+                        "interval": interval,
+                        "next_log": 0,
+                    }
+                    self.metrics[subset].append(metric_data)
+        else:
+            print("(3/4) `model.metrics` is not specified. Skipping metrics")
         # setup hooks
         self._hook_cache = {}
-        hooks = model_cfg.get("hooks", {})
-        for hook_name, hook_cfg in hooks.items():
-            self.setup_hook(
-                network=getattr(self, hook_cfg["model"]),
-                key=hook_name,
-                layer_name=hook_cfg["layer_name"],
-                **hook_cfg.get("cfg", {}),
-            )
+        if "hooks" in model_cfg:
+            print("(4/4) Setting up hooks")
+            hooks = model_cfg["hooks"]
+            for hook_name, hook_cfg in hooks.items():
+                self.setup_hook(
+                    network=getattr(self, hook_cfg["model"]),
+                    key=hook_name,
+                    layer_name=hook_cfg["layer_name"],
+                    **hook_cfg.get("cfg", {}),
+                )
+        else:
+            print("(4/4) `model.hooks` is not specified.")
         # tta
         self.is_tta_enabled = False
         if "tta" in model_cfg:
             tta_cfg = model_cfg["tta"]
             self.is_tta_enabled = True
-            self.TTA_module = catalog.TTA_modules.get(tta_cfg["name"])(
+            self.TTA_module = catalog.TTA_modules.build(
+                name=tta_cfg["name"],
                 model=self,
                 training_cfg=training_cfg,
                 const_cfg=const_cfg,
@@ -101,11 +127,17 @@ class _BaseLightningTrainer(_LightningModule):
         self.is_tta_enabled = False
 
     def update_metrics(self, subset, res):
+        def _make_val_feedable(v):
+            v = deepcopy(v)
+            if isinstance(v, torch.Tensor):
+                v.cpu()
+            return v
+
         for metric_data in self.metrics[subset]:
             if metric_data["next_log"] > 0:
                 continue
             update_kwargs = {
-                key: res[val].cpu() for key, val in metric_data["update_keys"].items()
+                key: _make_val_feedable(res[val]) for key, val in metric_data["update_keys"].items()
             }
             metric_data["metric"].update(**update_kwargs)
 
@@ -123,9 +155,10 @@ class _BaseLightningTrainer(_LightningModule):
             metric_data["metric"].reset()
 
             log_key = f"epoch_{subset}/{metric_name}"
-            # special metrics
+            # special metrics with specific names are treated differently.
             if metric_name == "confusion_matrix":
                 if wandb.run is not None:
+                    # log confusion matrix as image to wandb.
                     disp = ConfusionMatrixDisplay(
                         confusion_matrix=res.numpy(),
                         display_labels=self.const_cfg.get("label_map", None),
@@ -135,6 +168,7 @@ class _BaseLightningTrainer(_LightningModule):
                 else:
                     self.log(log_key, res)
             else:
+                # typical metrics
                 self.log(log_key, res)
 
     def setup_hook(self, network, key, layer_name, mode="output", idx=None):

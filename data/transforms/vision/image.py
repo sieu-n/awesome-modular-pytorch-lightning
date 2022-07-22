@@ -56,7 +56,7 @@ class ColorJitter(_ImageTransform):
 
 
 class UnNormalize(_ImageTransform):
-    def __init__(self, mean, std, **kwargs):
+    def __init__(self, mean=None, std=None, **kwargs):
         """
         Inverse normalization given predefined mean/std values.
         reference: https://discuss.pytorch.org/t/simple-way-to-inverse-transform-normalization/4821/2
@@ -69,6 +69,10 @@ class UnNormalize(_ImageTransform):
             stddev values of (r, g, b) channels to use for normalizing.
         """
         super().__init__(**kwargs)
+        if mean is None:
+            mean = self.const_cfg["normalization_mean"]
+        if std is None:
+            std = self.const_cfg["normalization_std"]
         self.mean = torch.tensor(mean)
         self.std = torch.tensor(std)
 

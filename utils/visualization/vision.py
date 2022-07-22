@@ -38,7 +38,13 @@ def plot_image_classification(images, labels=None, label_map=None, **kwargs):
 
 
 def plot_object_detection(
-    images, boxes=None, labels=None, label_map=None, is_xywh=True, **kwargs
+    images,
+    boxes=None,
+    labels=None,
+    label_map=None,
+    is_xywh=True,
+    bbox_unnormalization=True,
+    **kwargs,
 ):
     """
     x: np.array(W, H, C)
@@ -73,7 +79,7 @@ def plot_object_detection(
             if label_map and obj_class in label_map:
                 # convert label to correct str id if specified.
                 obj_class = label_map[obj_class]
-            if type(obj_bbox[0]) == float:
+            if bbox_unnormalization:
                 w, h = img.shape[1], img.shape[0]
                 obj_bbox = unnormalize_bbox(obj_bbox, w, h)
             if is_xywh:

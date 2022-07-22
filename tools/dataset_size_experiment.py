@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from copy import deepcopy
 
 import pytorch_lightning as pl
-from data.dataset.mapping import SubsetDataset
+from catalog.dataset_mapping import SubsetDataset
 from main import Experiment
 from utils.configs import read_configs
 from utils.logging import log_to_wandb

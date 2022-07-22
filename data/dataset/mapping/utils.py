@@ -17,7 +17,7 @@ class ClassBalanceTrainValSplit(RemapIndices):
     def __init__(self, base_dataset, subset, count, seed=42, const_cfg=None):
         rng = random.Random(seed)
 
-        print("[*] Loading dataset for splitting validation set based on class type.")
+        print("Loading dataset for splitting validation set based on class type.")
         samples_of_class = {}
         for idx, sample in tqdm(enumerate(base_dataset)):
             c = sample["labels"]

@@ -154,6 +154,7 @@ def compile_links(cfg):
                     return obj, True
 
                 _query = _query.replace(_query[left : cursor + 1], str(obj))
+                cursor = left
                 left = -1
             cursor += 1
         if is_compiled:
@@ -166,7 +167,7 @@ def compile_links(cfg):
     def recurse_iter(parsed_cfg):
         if type(parsed_cfg) == dict:
             it = parsed_cfg.keys()
-        elif type(parsed_cfg) == list or type(parsed_cfg) == tuple:
+        elif type(parsed_cfg) == list:
             it = range(len(parsed_cfg))
         else:
             is_compiled = False
