@@ -5,6 +5,7 @@ from torch.utils.data._utils.collate import default_collate  # noqa E403
 
 # utils
 from ._get import _get
+from functools import partial
 
 
 def get(name):
@@ -12,4 +13,4 @@ def get(name):
 
 
 def build(name, *args, **kwargs):
-    return get(name)(*args, **kwargs)
+    return partial(get(name), *args, **kwargs)

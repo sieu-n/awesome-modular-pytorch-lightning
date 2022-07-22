@@ -13,7 +13,7 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
   - `torchmetrics` for metrics.
   - WIP & future TODO:
     - Data augmentation from `albumentations`
-    - Object detection models and weights from `MMDetection`
+    - Semantic segmentation models and weights from `mmsegmentation`
 
 # Quickstart
 
@@ -30,7 +30,7 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/utils/train.yaml
 ```
 
-- Transfer learning experiments on Stanford Dogs dataset using TResNet-M(GPU needed)
+- Transfer learning experiments on Stanford Dogs dataset using TResNet-M
 ```shell
 !pip install git+https://github.com/mapillary/inplace_abn.git@v1.0.12 -q
 !python train.py --name TResNetM-StanfordDogs --config \
@@ -44,6 +44,40 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/utils/train.yaml
 ```
 
+- `FasterRCNN-FPN` on `voc0712` object detection dataset (COLAB)
+```shell
+# refer to: https://mmcv.readthedocs.io/en/latest/get_started/installation.html
+# install dependencies: (use cu111 because colab has CUDA 11.1)
+#!pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
+
+# install mmcv-full thus we could use CUDA operators
+!pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.12.0/index.html
+
+# Install mmdetection
+!rm -rf mmdetection
+!git clone https://github.com/open-mmlab/mmdetection.git
+%cd mmdetection
+!pip install -e .
+
+# clone MPL
+%cd /content
+!git clone https://github.com/krenerd/awesome-modular-pytorch-lightning
+%cd awesome-modular-pytorch-lightning
+!pip install -r requirements.txt -q 
+
+# setup voc07+12 dataset
+!python tools/download_dataset.py --dataset-name voc0712 --save-dir data --delete --unzip
+
+# run experiment
+!python train.py --name voc0712-FasterRCNN-FPN-ResNet50 --config \
+    configs/vision/object-detection/mmdet/faster-rcnn-r50-fpn-voc0712.yaml \
+    configs/vision/object-detection/mmdet/mmdet-base.yaml \
+    configs/data/voc0712-mmdet-no-tta.yaml \
+    configs/data/voc0712-mmdet.yaml \
+    configs/device/gpu.yaml \
+    configs/utils/wandb.yaml \
+    configs/utils/train.yaml
+```
 
 ## `Experiment` factory class
 

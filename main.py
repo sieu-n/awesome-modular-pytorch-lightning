@@ -7,7 +7,6 @@ import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
-from utils.callbacks import build_callback
 from utils.configs import merge_config
 from utils.experiment import apply_transforms
 from utils.experiment import build_dataset_mapping as _build_dataset_mapping
@@ -37,6 +36,7 @@ class Experiment:
         return os.path.join(os.getcwd(), self.exp_dir)
 
     def initialize_environment(self, cfg):
+        print_to_end("=")
         self.experiment_name = _initialize_environment(cfg)
         self.exp_dir = f"results/{self.experiment_name}"
         # set `experiment_name` as os.environ
@@ -160,6 +160,7 @@ class Experiment:
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
+        print_to_end("=")
         if cfg is not None:
             if "wandb" in cfg:
                 assert wandb_cfg is None
@@ -342,7 +343,6 @@ class Experiment:
             assert hasattr(self, "experiment_name")
             experiment_name = self.experiment_name
         # logger
-        print_to_end("=")
         logger = create_logger(
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
@@ -351,7 +351,11 @@ class Experiment:
         # callbacks
         callbacks = []
         for callback_cfg in callback_list:
-            callbacks.append(build_callback(callback_cfg))
+            callbacks.append(catalog.callbacks.build(
+                name=callback_cfg["name"],
+                file=callback_cfg.get("file", None),
+                **callback_cfg.get("args", {})
+            ))
         return {
             "logger": logger,
             "callbacks": callbacks,
