@@ -1,1 +1,1 @@
-from . import replace # noqa E403
+from .replace import ReplaceModulesOfType, SetModule, ResNetLowResHead # noqa

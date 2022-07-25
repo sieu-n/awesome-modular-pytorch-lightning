@@ -1,6 +1,10 @@
 from collections import OrderedDict
 import torch
-from mmcv.parallel import DataContainer
+from typing import Union
+try:
+    from mmcv.parallel import DataContainer
+except ImportError:
+    pass
 
 
 def unpack_datacontainers(datacontainers):
@@ -33,7 +37,7 @@ def send_datacontainers_to_device(data, device, dont_send=[]):
                 datacontainer_to_cuda(v, device)
 
 
-def datacontainer_to_cuda(container, device):
+def datacontainer_to_cuda(container: DataContainer, device: Union[str, torch.device]):
     """
     Send :type:`~mmcv.parallel.DataContainer` to device. There are 3 cases.
 

@@ -1,5 +1,5 @@
 from torch.nn import Module
-from typing import Union, List
+from typing import Union, List, Optional
 
 from .. import rsetattr, rhasattr, rgetattr
 import catalog
@@ -22,6 +22,10 @@ def SetModule(model: Module, key: str, module_cfg: dict, allow_replace: bool = T
     if rhasattr(model, key):
         assert allow_replace, f"model already has attribute `{key}`: \
             {rgetattr(model, key)}. set `allow_replace` to replace"
+        print(f"Replacing {rgetattr(model, key)} -> {new_module}")
+    else:
+        print(f"Creating {key} attribute of model to {new_module}")
+
     rsetattr(model, key, new_module)
 
 
@@ -29,7 +33,7 @@ def ReplaceModulesOfType(
     model: Module,
     types: Union[List[str], str],
     target_type: str,
-    files: Union[List[Union(str, None)], Union[str, None]] = None,
+    files: Union[List[Optional[str]], Optional[str]] = None,
     target_file: Union[str, None] = None,
 ):
     """Replace all modules of type `types` to `target_type`. For example, change
@@ -60,6 +64,6 @@ def ResNetLowResHead(model: Module, num_channels: int = 64, pooling: bool = True
         "file": "torch.nn",
     }
 
-    SetModule(model, "conv1", conv1_cfg)
+    SetModule(model, "backbone.conv1", conv1_cfg)
     if pooling:
-        SetModule(model, "maxpool", maxpool_cfg)
+        SetModule(model, "backbone.maxpool", maxpool_cfg)

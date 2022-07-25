@@ -9,6 +9,7 @@ import wandb
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils import rgetattr
 from utils.pretrained import load_model_weights
+from utils.experiment import print_to_end
 
 from .common import _LightningModule
 
@@ -16,7 +17,9 @@ from .common import _LightningModule
 class _BaseLightningTrainer(_LightningModule):
     def __init__(self, model_cfg, training_cfg, const_cfg={}) -> None:
         super().__init__()
+        print_to_end("=")
         print("[*] Building model components")
+        print_to_end("=")
         self.const_cfg = const_cfg
         self.training_cfg = training_cfg
         # disable automatic_optimization.
@@ -113,18 +116,18 @@ class _BaseLightningTrainer(_LightningModule):
         # `pl.Trainer`. One particular use case is a hook to modify the model
         # architecture.
         if "init_hook" in model_cfg:
-            print("(5/6) Calling initialization hooks.")
+            print("(6/6) Calling initialization hooks.")
             init_hooks = model_cfg["init_hook"]
             for hook_name, hook_cfg in init_hooks.items():
                 # find hook
-                hook_f = catalog.init_hook.get(hook_cfg["name"])
+                hook_f = catalog.init_hooks.get(hook_cfg["name"])
                 # run hook
                 hook_f(
                     self,
                     **hook_cfg.get("args", {}),
                 )
         else:
-            print("(5/6) `model.hooks` is not specified.")
+            print("(6/6) `model.hooks` is not specified.")
 
         # tta
         self.is_tta_enabled = False
@@ -154,17 +157,16 @@ class _BaseLightningTrainer(_LightningModule):
         self.is_tta_enabled = False
 
     def update_metrics(self, subset, res):
-        def _make_val_feedable(v):
-            v = deepcopy(v)
+        def _make_feedable(v):
             if isinstance(v, torch.Tensor):
-                v.cpu()
+                v = v.cpu()
             return v
 
         for metric_data in self.metrics[subset]:
             if metric_data["next_log"] > 0:
                 continue
             update_kwargs = {
-                key: _make_val_feedable(res[val]) for key, val in metric_data["update_keys"].items()
+                key: _make_feedable(res[val]) for key, val in metric_data["update_keys"].items()
             }
             metric_data["metric"].update(**update_kwargs)
 

@@ -172,9 +172,9 @@ def get_timestamp():
     return datetime.now().strftime("%b%d_%H-%M-%S")
 
 
-def print_to_end(char="#"):
+def print_to_end(char="#", max_len=400):
     rows, columns = os.popen("stty size", "r").read().split()
-    columns = max(int(columns), 40)
+    columns = max(int(columns), max_len)
     spaces = char * (columns // len(char))
     print(spaces)
 

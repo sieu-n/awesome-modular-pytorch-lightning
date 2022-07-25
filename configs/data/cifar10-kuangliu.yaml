@@ -2,7 +2,7 @@ debug:
   view_train_augmentation:
     resize_to: [256, 256] # resize so class text is displayed.
   network_summary:
-    input_shape: [3, 224, 224]
+    input_shape: [3, 32, 32]
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:

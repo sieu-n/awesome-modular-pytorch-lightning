@@ -1,17 +1,3 @@
-from . import (  # noqa F401
-    bbox,
-    configs,
-    experiment,
-    image,
-    init_hooks,
-    logging,
-    mmcv,
-    models,
-    pretrained,
-    verbose,
-    visualization,
-)
-
 import functools
 
 
