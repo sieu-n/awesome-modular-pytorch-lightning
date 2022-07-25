@@ -26,7 +26,7 @@ callbacks:
   - name: ModelCheckpoint
     file: lightning
     args:
-      monitor: "epoch_val/accuracy"
+      monitor: "epoch_val/total_loss"
       mode: "max"
       save_last: True
       save_top_k: 1

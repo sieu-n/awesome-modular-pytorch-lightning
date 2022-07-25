@@ -47,9 +47,7 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 - `FasterRCNN-FPN` on `voc0712` object detection dataset (COLAB)
 ```shell
 # refer to: https://mmcv.readthedocs.io/en/latest/get_started/installation.html
-# install dependencies: (use cu111 because colab has CUDA 11.1)
-#!pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
-
+# install dependencies: (use cu113+torch1.12 because colab has CUDA 11.3)
 # install mmcv-full thus we could use CUDA operators
 !pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.12.0/index.html
 

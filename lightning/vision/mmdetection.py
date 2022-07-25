@@ -22,13 +22,12 @@ from utils.mmcv import send_datacontainers_to_device, unpack_datacontainers
 
 
 class MMDetectionTrainer(_BaseLightningTrainer):
-    def __init__(self, model_cfg, training_cfg, *args, **kwargs):
+    def init(self, model_cfg, training_cfg):
         """
         In essence, `MMDetectionTrainer` is a pytorch-lightning version of the runners in `mmcv`. The implementation
         was especially influenced by the implementation of `EpochBasedRunner`.
         https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/epoch_based_runner.html
         """
-        super().__init__(model_cfg, training_cfg, *args, **kwargs)
         assert "mm_model" in model_cfg
         self.MMDET_model = mmdet.models.builder.build_detector(
             ConfigDict(model_cfg["mm_model"])
@@ -48,7 +47,7 @@ class MMDetectionTrainer(_BaseLightningTrainer):
         """
         out = self.MMDET_model.forward(x)
 
-    def predict_step(self, batch):
+    def _predict_step(self, batch):
         # TODO: implement based on `simple_test`
         pass
 
@@ -57,7 +56,7 @@ class MMDetectionTrainer(_BaseLightningTrainer):
         send_datacontainers_to_device(data=batch, device=self.device)
         batch = unpack_datacontainers(batch)
 
-        total_loss, losses = self.compute_loss(**batch, get_summed=True)
+        total_loss, losses = self.compute_loss(**batch)
 
         # log step losses
         self.log_step_results(losses)
@@ -74,10 +73,10 @@ class MMDetectionTrainer(_BaseLightningTrainer):
         # assert a bunch of stuff
         assert sample["img"].size(0) == 1 and sample["img"].size(1) == 3
 
-        _, losses = self.compute_loss(**sample, get_summed=False)
+        _, losses = self.compute_loss(**sample)
         return losses
 
-    def compute_loss(self, img, img_metas, gt_bboxes, gt_labels, get_summed=False, *args, **kwargs):
+    def compute_loss(self, img, img_metas, gt_bboxes, gt_labels, *args, **kwargs):
         """
         Equivalent to `val_step` and `train_step` of `self.MMDET_model`.
         https://github.com/open-mmlab/mmdetection/blob/56e42e72cdf516bebb676e586f408b98f854d84c/mmdet/models/detectors/base.py#L221
@@ -114,9 +113,9 @@ class MMDetectionTrainer(_BaseLightningTrainer):
             gt_labels=gt_labels,
             *args, **kwargs
         )
-        return self.parse_losses(losses, get_summed)
+        return self.parse_losses(losses)
 
-    def parse_losses(self, losses, get_summed=False):
+    def parse_losses(self, losses):
         # `_parse_losses`: https://github.com/open-mmlab/mmdetection/blob/56e42e72cdf516bebb676e586f408b98f854d84c/mmdet/models/detectors/base.py#L176
         loss, log_vars = self.MMDET_model._parse_losses(losses)
         return loss, log_vars

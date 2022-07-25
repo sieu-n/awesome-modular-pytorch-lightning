@@ -3,7 +3,6 @@ import random
 
 import catalog
 import numpy as np
-import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary

@@ -27,13 +27,16 @@ class _LightningModule(pl.LightningModule):
         if "sharpness-aware" in self.training_cfg:
             sam_cfg = self.training_cfg["sharpness-aware"]
             optimizer = SAM(
-                params=self.parameters(),
+                params=filter(lambda p: p.requires_grad, self.parameters()),
                 base_optimizer=optimizer_builder,
                 rho=sam_cfg["rho"] if "rho" in sam_cfg else 0.05,
                 **optimizer_kwargs,
             )
         else:
-            optimizer = optimizer_builder(self.parameters(), **optimizer_kwargs)
+            optimizer = optimizer_builder(
+                filter(lambda p: p.requires_grad, self.parameters()),
+                **optimizer_kwargs
+            )
 
         config = {"optimizer": optimizer}
         # lr schedule

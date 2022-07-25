@@ -3,7 +3,29 @@ import os
 import torch.nn as nn
 
 
-def get_layer(model, key):
+def has_layer(model, key, print_error=False):
+    """
+    Check if a layer exists from a `nn.Module` object. The layer is specified using a specific string format, which
+    heirachically defines some layer.
+    Parameters
+    ----------
+    model: nn.Module
+        Base model object.
+    key: str
+        specifies what layer to get. for example, "layer4.1.conv2".
+    """
+    key = key.split(".")
+    block = model
+    for k in key:
+        if not hasattr(block, k):
+            if print_error:
+                print(f"{block} has no attribute {k}.")
+            return False
+        block = getattr(block, k)
+    return True
+
+
+def find_layer(model, key):
     """
     Find and return a layer from a `nn.Module` object. The layer is specified using a specific string format, which
     heirachically defines some layer.

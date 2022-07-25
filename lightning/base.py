@@ -7,15 +7,15 @@ import catalog.modules
 import catalog.TTA_modules
 import wandb
 from sklearn.metrics import ConfusionMatrixDisplay
-from utils.models import get_layer
+from utils import rgetattr
 from utils.pretrained import load_model_weights
 
 from .common import _LightningModule
 
 
 class _BaseLightningTrainer(_LightningModule):
-    def __init__(self, model_cfg, training_cfg, const_cfg={}, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, model_cfg, training_cfg, const_cfg={}) -> None:
+        super().__init__()
         print("[*] Building model components")
         self.const_cfg = const_cfg
         self.training_cfg = training_cfg
@@ -26,10 +26,10 @@ class _BaseLightningTrainer(_LightningModule):
                 "Automatic optimization feature of pytorch-lighining is disabled because of `sharpness-aware-minimization`. \
                    Be aware of unexpected behavior regarding custom learning rate schedule and optimizers."
             )
-        # build backbone
+        # 1. build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
-            print(f"(1/4) Building backbone model: {backbone_cfg['ID']}")
+            print(f"(1/6) Building backbone model: {backbone_cfg['ID']}")
 
             self.backbone = catalog.models.build_backbone(
                 name=backbone_cfg["ID"],
@@ -44,10 +44,11 @@ class _BaseLightningTrainer(_LightningModule):
                     model=self.backbone, **backbone_cfg["weights"]
                 )
         else:
-            print("(1/4) `model.backbone` is not specified. Skipping backbone model")
-        # build modules
+            print("(1/6) `model.backbone` is not specified. Skipping backbone model")
+        
+        # 2. build modules
         if "modules" in model_cfg:
-            print("(2/4) Building modules attached to the backbone model...")
+            print("(2/6) Building modules attached to the backbone model...")
             modules = model_cfg["modules"]
             for module_name, module_cfg in modules.items():
                 head_module = catalog.modules.build(
@@ -57,11 +58,12 @@ class _BaseLightningTrainer(_LightningModule):
                 )
                 setattr(self, module_name, head_module)
         else:
-            print("(2/4) `model.modules` is not specified. Skipping building modules")
-        # set metrics
+            print("(2/6) `model.modules` is not specified. Skipping building modules")
+
+        # 3. set metrics
         self.metrics = {"trn": [], "val": [], "test": []}
         if "metrics" in training_cfg:
-            print("(3/4) Building metrics:")
+            print("(3/6) Building metrics:")
             metrics = training_cfg["metrics"]
             for metric_name, metric_cfg in metrics.items():
                 subsets_to_compute = metric_cfg.get("when", "val")
@@ -84,21 +86,46 @@ class _BaseLightningTrainer(_LightningModule):
                     }
                     self.metrics[subset].append(metric_data)
         else:
-            print("(3/4) `model.metrics` is not specified. Skipping metrics")
-        # setup hooks
+            print("(3/6) `model.metrics` is not specified. Skipping metrics")
+
+        # 4. call overrided init function defind in child class.
+        print(f"(4/6) init function of `{type(self)}`")
+        self.init(model_cfg, training_cfg)
+
+        # 5. setup feature-extraction hooks
+        # TODO: implement FeatureExtractor callback instead
         self._hook_cache = {}
-        if "hooks" in model_cfg:
-            print("(4/4) Setting up hooks")
-            hooks = model_cfg["hooks"]
-            for hook_name, hook_cfg in hooks.items():
+        if "feature_hooks" in model_cfg:
+            print("(5/6) Setting up hooks for feature-extraction")
+            feature_hooks = model_cfg["feature_hooks"]
+            for hook_name, hook_cfg in feature_hooks.items():
                 self.setup_hook(
-                    network=getattr(self, hook_cfg["model"]),
+                    network=self,
                     key=hook_name,
                     layer_name=hook_cfg["layer_name"],
                     **hook_cfg.get("cfg", {}),
                 )
         else:
-            print("(4/4) `model.hooks` is not specified.")
+            print("(5/6) `model.feature_hooks` is not specified.")
+
+        # 6. setup init hook that can modify model at init. Callbacks are limited
+        # as they can only be called after model is created & wrapped with
+        # `pl.Trainer`. One particular use case is a hook to modify the model
+        # architecture.
+        if "init_hook" in model_cfg:
+            print("(5/6) Calling initialization hooks.")
+            init_hooks = model_cfg["init_hook"]
+            for hook_name, hook_cfg in init_hooks.items():
+                # find hook
+                hook_f = catalog.init_hook.get(hook_cfg["name"])
+                # run hook
+                hook_f(
+                    self,
+                    **hook_cfg.get("args", {}),
+                )
+        else:
+            print("(5/6) `model.hooks` is not specified.")
+
         # tta
         self.is_tta_enabled = False
         if "tta" in model_cfg:
@@ -195,12 +222,15 @@ class _BaseLightningTrainer(_LightningModule):
 
             return hook
 
-        layer = get_layer(network, layer_name)
+        layer = rgetattr(network, layer_name)
         layer.register_forward_hook(save_to(key, mode=mode, idx=idx))
 
     def get_hook(self, key, device=None):
         device_index = device.index
         return self._hook_cache[device_index][key]
+
+    def init(self):
+        raise NotImplementedError()
 
     def _training_step(self, batch, batch_idx):
         raise NotImplementedError()
