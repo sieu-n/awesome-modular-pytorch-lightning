@@ -1,0 +1,13 @@
+# https://pytorch.org/docs/stable/generated/torch.nn.GELU.html
+# Activation function proposed in the paper: 
+# Gaussian Error Linear Units (GELUs)
+model:
+  init_hook:
+    low_res:
+      name: "ReplaceModulesOfType"
+      args:
+        subject_modules: "ReLU"
+        subject_files: "torch.nn"
+        target_module: 
+          name: "GELU"
+          file: "torch.nn"

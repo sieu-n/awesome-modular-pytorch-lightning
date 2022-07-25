@@ -1,0 +1,6 @@
+callbacks:
+  - name: FreezeModule
+    args:
+      modules: backbone
+      freeze_at_start: true
+      train_bn: true

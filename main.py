@@ -365,6 +365,9 @@ class Experiment:
         lightning_module = catalog.lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg, self.const_cfg)
 
+        print("Model:")
+        print(model)
+
         if self.debug_cfg and "network_summary" in self.debug_cfg:
             batch_size = 16  # any num:)
             print(f"[*] Model backbone summary(when bs={batch_size}):")
@@ -374,6 +377,7 @@ class Experiment:
             ]
 
             print_model_summary(model, input_size=input_shape)
+
         # load model from path if specified.
         if "state_dict_path" in model_cfg:
             load_model_weights(

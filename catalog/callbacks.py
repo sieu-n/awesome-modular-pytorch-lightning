@@ -1,5 +1,6 @@
 # callback catalog
 from pytorch_lightning import callbacks as _PytorchLightningCallbacks
+from utils.callbacks import FreezeModule # noqa
 
 # utils
 from ._get import _get_from_sources

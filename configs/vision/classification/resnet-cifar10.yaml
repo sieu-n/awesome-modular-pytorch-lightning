@@ -62,9 +62,12 @@ callbacks:
       logging_interval: "epoch"
 
 model:
-  backbone:
-    cfg:
-      low_res: True
+#  backbone:
+#    cfg:
+#      low_res: True
+  init_hook:
+    low_res:
+      name: "ResNetLowResHead"
   modules:
     classifier:
       name: ClassificationHead

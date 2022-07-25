@@ -37,13 +37,21 @@ def send_datacontainers_to_device(data, device, dont_send=[]):
                 datacontainer_to_cuda(v, device)
 
 
-def datacontainer_to_cuda(container: DataContainer, device: Union[str, torch.device]):
+def datacontainer_to_cuda(container, device: Union[str, torch.device]):
     """
     Send :type:`~mmcv.parallel.DataContainer` to device. There are 3 cases.
 
     1. cpu_only = True, e.g., meta data
     2. cpu_only = False, stack = True, e.g., images tensors
     3. cpu_only = False, stack = False, e.g., gt bboxes
+
+    Parameters
+    ----------
+    container: DataContainer
+        data container object. `container.data` should be either a single torch.Tensor or a
+        list / dictionary of tensors.
+    device: Union[str, torch.device]
+        device to send the data to.
     """
 
     assert not container.cpu_only, f"{container} is not meant to be moved to {device}"

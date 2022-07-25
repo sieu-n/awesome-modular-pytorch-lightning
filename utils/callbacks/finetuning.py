@@ -334,7 +334,7 @@ class FreezeModule(BaseFinetuning):
             raise ArgumentError("`module` or `modules` must be specified.")
 
         self.freeze_at_start = freeze_at_start
-        self.freeze_at_epoch = freeze_at_epoch
+        self.freeze_at_epoch = freeze_at_epoch  # TODO: not implemented
         self.unfreeze_at_epoch = unfreeze_at_epoch
         self.train_bn: bool = train_bn
         self.verbose: bool = verbose

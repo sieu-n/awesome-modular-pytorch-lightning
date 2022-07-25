@@ -1,0 +1,13 @@
+# https://pytorch.org/docs/stable/generated/torch.nn.SiLU.html#torch.nn.SiLU
+# Activation function proposed in the paper: 
+# Swish: a Self-Gated Activation Function
+model:
+  init_hook:
+    low_res:
+      name: "ReplaceModulesOfType"
+      args:
+        subject_modules: "ReLU"
+        subject_files: "torch.nn"
+        target_module: 
+          name: "SiLU"
+          file: "torch.nn"
