@@ -13,5 +13,5 @@ def get(name):
     return _get(globals(), name, "Collate-function")
 
 
-def build(name, *args, **kwargs):
-    return partial(get(name), *args, **kwargs)
+def build(name, args={}, *_args, **kwargs):
+    return partial(get(name), *_args, **args, **kwargs)

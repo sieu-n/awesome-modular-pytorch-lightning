@@ -76,11 +76,7 @@ class _BaseLightningTrainer(_LightningModule):
             for metric_name, metric_cfg in metrics.items():
                 subsets_to_compute = metric_cfg.get("when", "val")
                 for subset in subsets_to_compute.split(","):
-                    metric = catalog.metric.build(
-                        name=metric_cfg["name"],
-                        file=metric_cfg.get("file", None),
-                        **metric_cfg.get("args", {}),
-                    )
+                    metric = catalog.metric.build(**metric_cfg)
                     # get log frequency
                     interval = metric_cfg.get("interval", 1)
                     if type(interval) == dict:

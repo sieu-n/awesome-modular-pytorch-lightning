@@ -9,5 +9,5 @@ def get(name):
     return _get(globals(), name, object_type="Lightning-callbacks")
 
 
-def build(name, file=None, *args, **kwargs):
-    return get(name, file)(*args, **kwargs)
+def build(name, args={}, *_args, **kwargs):
+    return get(name)(*_args, **args, **kwargs)

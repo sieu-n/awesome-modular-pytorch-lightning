@@ -319,8 +319,7 @@ class Experiment:
             # build collate_fn
             if "collate_fn" in subset_dataloader_cfg:
                 subset_dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
-                    name=subset_dataloader_cfg["collate_fn"]["name"],
-                    **subset_dataloader_cfg["collate_fn"].get("args", {}),
+                    subset_dataloader_cfg["collate_fn"]
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(
@@ -354,11 +353,7 @@ class Experiment:
         callbacks = []
         for name, cfg in callback_cfg.items():
             callbacks.append(
-                catalog.callbacks.build(
-                    name=cfg["name"],
-                    file=cfg.get("file", None),
-                    **cfg.get("args", {}),
-                )
+                catalog.callbacks.build(**cfg)
             )
         return {
             "logger": logger,

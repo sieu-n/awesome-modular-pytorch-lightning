@@ -128,33 +128,37 @@ training:
   metrics:
     loss:
       when: "trn,val,test"
-      name: "MeanMetric"
-      file: "torchmetrics"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
       update:
         value: "cls_loss"
     cohens_kappa:
       when: "trn,val,test"
-      name: "CohenKappa"
-      file: "torchmetrics"
+      name: TorchMetric
       args:
-        num_classes: 5
+        name: "CohenKappa"
+        args:
+          num_classes: 5
       update:
         preds: "logits"
         target: "y"
     confusion_matrix:
       interval: { "trn": 50 }
       when: "trn,val,test"
-      name: "ConfusionMatrix"
-      file: "torchmetrics"
+      name: TorchMetric
       args:
-        num_classes: 5
+        name: "ConfusionMatrix"
+        args:
+          num_classes: 5
       update:
         preds: "logits"
         target: "y"
     accuracy:
       when: "trn,val,test"
-      name: "Accuracy"
-      file: "torchmetrics"
+      name: TorchMetric
+      args:
+        name: "Accuracy"
       update:
         preds: "logits"
         target: "y"
