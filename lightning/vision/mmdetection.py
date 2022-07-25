@@ -45,7 +45,8 @@ class MMDetectionTrainer(_BaseLightningTrainer):
                 "gt_labels":
             }
         """
-        out = self.MMDET_model.forward(x)
+        # out = self.MMDET_model.forward(x)
+        pass
 
     def _predict_step(self, batch):
         # TODO: implement based on `simple_test`
@@ -117,7 +118,8 @@ class MMDetectionTrainer(_BaseLightningTrainer):
         return self.parse_losses(losses)
 
     def parse_losses(self, losses):
-        # `_parse_losses`: https://github.com/open-mmlab/mmdetection/blob/56e42e72cdf516bebb676e586f408b98f854d84c/mmdet/models/detectors/base.py#L176
+        # `_parse_losses`: https://github.com/open-mmlab/mmdetection/blob/
+        # 56e42e72cdf516bebb676e586f408b98f854d84c/mmdet/models/detectors/base.py#L176
         loss, log_vars = self.MMDET_model._parse_losses(losses)
         return loss, log_vars
 

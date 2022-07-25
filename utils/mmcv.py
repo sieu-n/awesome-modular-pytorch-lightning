@@ -78,6 +78,6 @@ def datacontainer_to_cuda(container, device: Union[str, torch.device]):
             for idx in it:
                 assert isinstance(
                     container.data[idx], torch.Tensor
-                ), f"Expected `torch.Tensor` but {sample} has \
+                ), f"Expected `torch.Tensor` but {container.data[idx]} has \
                     type: {type(container.data[idx])}"
                 container._data[idx] = container.data[idx].to(device)
