@@ -66,7 +66,10 @@ class Experiment:
         self, dataset_cfg, transform_cfg=None, const_cfg=None, subset_to_get=None
     ):
         print_to_end("=")
+        print_to_end("=")
         print("[*] Building dataset")
+        print_to_end("=")
+        print_to_end("=")
         if const_cfg is None:
             const_cfg = self.const_cfg
 
@@ -155,7 +158,7 @@ class Experiment:
     def setup_callbacks(
         self,
         cfg=None,
-        callback_list=[],
+        callback_cfg={},
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
@@ -168,11 +171,11 @@ class Experiment:
                 assert tensorboard_cfg is None
                 tensorboard_cfg = cfg["tensorboard"]
             if "callbacks" in cfg:
-                assert callback_list == []
-                callback_list = cfg["callbacks"]
+                assert callback_cfg == {}
+                callback_cfg = cfg["callbacks"]
 
         logger_and_callbacks = self._setup_callbacks(
-            callback_list=callback_list,
+            callback_list=callback_cfg,
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
             tensorboard_cfg=tensorboard_cfg,
@@ -332,7 +335,7 @@ class Experiment:
     def _setup_callbacks(
         self,
         experiment_name=None,
-        callback_list=[],
+        callback_cfg={},
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
@@ -349,12 +352,14 @@ class Experiment:
         )
         # callbacks
         callbacks = []
-        for callback_cfg in callback_list:
-            callbacks.append(catalog.callbacks.build(
-                name=callback_cfg["name"],
-                file=callback_cfg.get("file", None),
-                **callback_cfg.get("args", {})
-            ))
+        for name, cfg in callback_cfg.items():
+            callbacks.append(
+                catalog.callbacks.build(
+                    name=cfg["name"],
+                    file=cfg.get("file", None),
+                    **cfg.get("args", {}),
+                )
+            )
         return {
             "logger": logger,
             "callbacks": callbacks,

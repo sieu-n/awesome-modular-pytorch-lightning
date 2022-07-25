@@ -1,6 +1,8 @@
 from collections import OrderedDict
-import torch
 from typing import Union
+
+import torch
+
 try:
     from mmcv.parallel import DataContainer
 except ImportError:
@@ -56,7 +58,9 @@ def datacontainer_to_cuda(container, device: Union[str, torch.device]):
 
     assert not container.cpu_only, f"{container} is not meant to be moved to {device}"
     if container.stack:
-        assert isinstance(container.data, torch.Tensor), f"Expected `torch.Tensor` but got {type(container.data)}"
+        assert isinstance(
+            container.data, torch.Tensor
+        ), f"Expected `torch.Tensor` but got {type(container.data)}"
         container._data = container.data.to(device)
     else:
         if isinstance(container.data, torch.Tensor):
@@ -64,12 +68,16 @@ def datacontainer_to_cuda(container, device: Union[str, torch.device]):
         else:
             if isinstance(container.data, list):
                 it = range(len(container.data))
-            elif isinstance(container.data, dict) or isinstance(container.data, OrderedDict):
+            elif isinstance(container.data, dict) or isinstance(
+                container.data, OrderedDict
+            ):
                 it = container.data.keys()
             else:
                 raise TypeError(f"Unidentified iterator type: {type(container.data)}")
 
             for idx in it:
-                assert isinstance(container.data[idx], torch.Tensor), f"Expected `torch.Tensor` but {sample} has \
+                assert isinstance(
+                    container.data[idx], torch.Tensor
+                ), f"Expected `torch.Tensor` but {sample} has \
                     type: {type(container.data[idx])}"
                 container._data[idx] = container.data[idx].to(device)

@@ -111,7 +111,8 @@ class MMDetectionTrainer(_BaseLightningTrainer):
             img_metas=img_metas,
             gt_bboxes=gt_bboxes,
             gt_labels=gt_labels,
-            *args, **kwargs
+            *args,
+            **kwargs,
         )
         return self.parse_losses(losses)
 

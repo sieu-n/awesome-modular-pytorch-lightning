@@ -57,14 +57,16 @@ training:
         target: "y"
 
 callbacks:
-  - name: ModelCheckpoint
+  ModelCheckpoint:
+    name: ModelCheckpoint
     file: lightning
     args:
       monitor: "epoch_val/accuracy"
       mode: "max"
       save_last: True
       save_top_k: 1
-  - name: "LearningRateMonitor"
+  LearningRateMonitor:
+    name: "LearningRateMonitor"
     file: "lightning"
     args:
       logging_interval: "epoch"

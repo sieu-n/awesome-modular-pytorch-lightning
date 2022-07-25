@@ -1,6 +1,6 @@
 # callback catalog
 from pytorch_lightning import callbacks as _PytorchLightningCallbacks
-from utils.callbacks import FreezeModule # noqa
+from utils.callbacks import FreezeModule  # noqa
 
 # utils
 from ._get import _get_from_sources
@@ -11,7 +11,11 @@ def get(name, file=None):
         "lightning": _PytorchLightningCallbacks,
     }
     return _get_from_sources(
-        sources=sources, scope=globals(), name=name, file=file, object_type="Lightning-callbacks"
+        sources=sources,
+        scope=globals(),
+        name=name,
+        file=file,
+        object_type="Lightning-callbacks",
     )
 
 

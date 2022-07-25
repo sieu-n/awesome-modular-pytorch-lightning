@@ -1,5 +1,6 @@
 callbacks:
-  - name: FreezeModule
+  FreezeBackbone:
+    name: FreezeModule
     args:
       modules: backbone
       freeze_at_start: true

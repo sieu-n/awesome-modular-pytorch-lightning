@@ -1,5 +1,9 @@
 # hook catalog
-from utils.init_hooks.replace import SetModule, ResNetLowResHead # noqa
+from utils.init_hooks.replace import (  # noqa
+    ReplaceModulesOfType,
+    ResNetLowResHead,
+    SetModule,
+)
 
 # utils
 from ._get import _get

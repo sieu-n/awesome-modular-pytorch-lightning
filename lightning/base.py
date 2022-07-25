@@ -1,15 +1,16 @@
 from copy import deepcopy
-from numpy import isin
-import torch
+
 import catalog.metric
 import catalog.models
 import catalog.modules
 import catalog.TTA_modules
+import torch
 import wandb
+from numpy import isin
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils import rgetattr
-from utils.pretrained import load_model_weights
 from utils.experiment import print_to_end
+from utils.pretrained import load_model_weights
 
 from .common import _LightningModule
 
@@ -17,9 +18,13 @@ from .common import _LightningModule
 class _BaseLightningTrainer(_LightningModule):
     def __init__(self, model_cfg, training_cfg, const_cfg={}) -> None:
         super().__init__()
+
+        print_to_end("=")
         print_to_end("=")
         print("[*] Building model components")
         print_to_end("=")
+        print_to_end("=")
+
         self.const_cfg = const_cfg
         self.training_cfg = training_cfg
         # disable automatic_optimization.
@@ -48,7 +53,7 @@ class _BaseLightningTrainer(_LightningModule):
                 )
         else:
             print("(1/6) `model.backbone` is not specified. Skipping backbone model")
-        
+
         # 2. build modules
         if "modules" in model_cfg:
             print("(2/6) Building modules attached to the backbone model...")
@@ -166,7 +171,8 @@ class _BaseLightningTrainer(_LightningModule):
             if metric_data["next_log"] > 0:
                 continue
             update_kwargs = {
-                key: _make_feedable(res[val]) for key, val in metric_data["update_keys"].items()
+                key: _make_feedable(res[val])
+                for key, val in metric_data["update_keys"].items()
             }
             metric_data["metric"].update(**update_kwargs)
 

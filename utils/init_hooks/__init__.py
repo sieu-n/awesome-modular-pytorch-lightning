@@ -1,1 +1,1 @@
-from .replace import ReplaceModulesOfType, SetModule, ResNetLowResHead # noqa
+from .replace import ReplaceModulesOfType, ResNetLowResHead, SetModule  # noqa

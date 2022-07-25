@@ -34,8 +34,7 @@ class _LightningModule(pl.LightningModule):
             )
         else:
             optimizer = optimizer_builder(
-                filter(lambda p: p.requires_grad, self.parameters()),
-                **optimizer_kwargs
+                filter(lambda p: p.requires_grad, self.parameters()), **optimizer_kwargs
             )
 
         config = {"optimizer": optimizer}

@@ -61,7 +61,8 @@ dataloader:
     num_workers: 4 # 4 -> ~43s, 8 -> ~48s
 
 callbacks:
-  - name: "LearningRateMonitor"
+  LearningRateMonitor:
+    name: "LearningRateMonitor"
     file: "lightning"
     args:
       logging_interval: "epoch"

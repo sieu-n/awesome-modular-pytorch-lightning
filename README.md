@@ -499,7 +499,8 @@ trainer:
 - Refer to: `configs/algorithms/swa.yaml`
 ```
 callbacks:
-  - name: "StochasticWeightAveraging"
+  StochasticWeightAveraging:
+    name: "StochasticWeightAveraging"
     file: "lightning"
     args:
       swa_lrs: 0.02 # typicall x0.2 ~ x0.5 of initial lr

@@ -156,7 +156,6 @@ def initialize_environment(
         with open(filename + ".json", "w") as file:
             json.dump(pretty_cfg, file)
 
-    print_to_end("=")
     return experiment_name
 
 
@@ -172,7 +171,7 @@ def get_timestamp():
     return datetime.now().strftime("%b%d_%H-%M-%S")
 
 
-def print_to_end(char="#", max_len=400):
+def print_to_end(char="#", max_len=100):
     rows, columns = os.popen("stty size", "r").read().split()
     columns = max(int(columns), max_len)
     spaces = char * (columns // len(char))

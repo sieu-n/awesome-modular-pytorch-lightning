@@ -1,9 +1,10 @@
 from copy import deepcopy
-from torch.nn import Module
-from typing import Union, List, Optional, Callable
+from typing import Callable, List, Optional, Union
 
-from .. import rsetattr, rhasattr, rgetattr
 import catalog
+from torch.nn import Module
+
+from .. import rgetattr, rhasattr, rsetattr
 
 
 def SetModule(model: Module, key: str, module_cfg: dict, allow_replace: bool = True):
@@ -21,7 +22,9 @@ def SetModule(model: Module, key: str, module_cfg: dict, allow_replace: bool = T
     )
 
     if rhasattr(model, key):
-        assert allow_replace, f"model already has attribute `{key}`: \
+        assert (
+            allow_replace
+        ), f"model already has attribute `{key}`: \
             {rgetattr(model, key)}. set `allow_replace` to replace"
         print(f"Replacing {rgetattr(model, key)} -> {new_module}")
     else:
@@ -36,7 +39,7 @@ def ReplaceModulesOfType(
     target_module: dict,
     subject_files: Union[List[Optional[str]], Optional[str]] = None,
     allow_subclass: bool = True,
-    module_lambda_func: Callable = lambda layer, module_cfg: module_cfg,
+    module_lambda_func: Callable = lambda module_cfg, layer: module_cfg,
 ):
     """Implementing customized network architectures from other frameworks such as `timm` can be
     tedious. `ReplaceModulesOfType` hook simplify experiments by replacing all modules of
@@ -55,8 +58,10 @@ def ReplaceModulesOfType(
         subject_modules = [catalog.modules.get(t) for t in subject_modules]
     else:
         assert len(subject_files) == len(subject_modules)
-        subject_modules = [catalog.modules.get(t, subject_files[idx])
-                           for idx, t in enumerate(subject_modules)]
+        subject_modules = [
+            catalog.modules.get(t, subject_files[idx])
+            for idx, t in enumerate(subject_modules)
+        ]
 
     for name, layer in model.named_modules():
         is_same_type = False
@@ -73,14 +78,18 @@ def ReplaceModulesOfType(
 
         if is_same_type:
             count += 1
-            _target_module = module_lambda_func(deepcopy(target_module))
-            rsetattr(model, name, catalog.modules.build(
-                name=_target_module["name"],
-                file=_target_module.get("file", None),
-                **_target_module.get("args", {}),
-            ))
+            _target_module = module_lambda_func(deepcopy(target_module), layer)
+            rsetattr(
+                model,
+                name,
+                catalog.modules.build(
+                    name=_target_module["name"],
+                    file=_target_module.get("file", None),
+                    **_target_module.get("args", {}),
+                ),
+            )
 
-    print(f"`ReplaceModulesOfType` found and replaced {count} layers of type {types}.")
+    print(f"`ReplaceModulesOfType` found and replaced {count} layers of type {subject_modules}.")
 
 
 def ResNetLowResHead(model: Module, num_channels: int = 64, pooling: bool = True):
@@ -96,8 +105,8 @@ def ResNetLowResHead(model: Module, num_channels: int = 64, pooling: bool = True
             "kernel_size": (3, 3),
             "stride": (1, 1),
             "padding": (1, 1),
-            "bias": False
-        }
+            "bias": False,
+        },
     }
     maxpool_cfg = {
         "name": "Identity",
