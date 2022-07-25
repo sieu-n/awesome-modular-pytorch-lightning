@@ -18,7 +18,7 @@ Freeze and unfreeze models for finetuning purposes
 """
 import logging
 from argparse import ArgumentError
-from typing import Any, Callable, Dict, Generator, Iterable, List, Optional, Union
+from typing import Any, Dict, Generator, Iterable, List, Optional, Union
 
 import pytorch_lightning as pl
 import torch
@@ -349,7 +349,7 @@ class FreezeModule(BaseFinetuning):
         module: str = None,
         modules: List[str] = None,
         freeze_at_start: bool = True,
-        freeze_at_epoch: int = 0,
+        freeze_at_epoch: int = None,
         unfreeze_at_epoch: int = -1,
         train_bn: bool = True,
         verbose: bool = False,
@@ -365,6 +365,7 @@ class FreezeModule(BaseFinetuning):
             raise ArgumentError("`module` or `modules` must be specified.")
 
         self.freeze_at_start = freeze_at_start
+        assert freeze_at_epoch is None, "NotImplementedError"
         self.freeze_at_epoch = freeze_at_epoch  # TODO: not implemented
         self.unfreeze_at_epoch = unfreeze_at_epoch
         self.train_bn: bool = train_bn
