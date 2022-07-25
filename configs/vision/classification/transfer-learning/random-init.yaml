@@ -76,7 +76,6 @@ callbacks:
       args:
         logging_interval: "epoch"
 
-
 model:
   modules:
     classifier:

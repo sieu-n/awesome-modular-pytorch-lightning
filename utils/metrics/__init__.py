@@ -1,1 +1,1 @@
-from .wrapper import TorchMetric # noqa
+from .wrapper import TorchMetric  # noqa

@@ -1,3 +1,4 @@
+'''
 from collections import OrderedDict
 
 import torch
@@ -282,3 +283,4 @@ class TorchVisionFasterRCNN(_BaseLightningTrainer):
         # x, y = batch
         # todo: mAP
         return 0, 0
+'''

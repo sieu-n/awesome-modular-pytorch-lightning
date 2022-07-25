@@ -352,9 +352,7 @@ class Experiment:
         # callbacks
         callbacks = []
         for name, cfg in callback_cfg.items():
-            callbacks.append(
-                catalog.callbacks.build(**cfg)
-            )
+            callbacks.append(catalog.callbacks.build(**cfg))
         return {
             "logger": logger,
             "callbacks": callbacks,

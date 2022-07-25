@@ -89,7 +89,9 @@ def ReplaceModulesOfType(
                 ),
             )
 
-    print(f"`ReplaceModulesOfType` found and replaced {count} layers of type {subject_modules}.")
+    print(
+        f"`ReplaceModulesOfType` found and replaced {count} layers of type {subject_modules}."
+    )
 
 
 def ResNetLowResHead(model: Module, num_channels: int = 64, pooling: bool = True):

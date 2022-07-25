@@ -1,12 +1,6 @@
-from copy import deepcopy
-
-import catalog.metric
-import catalog.models
-import catalog.modules
-import catalog.TTA_modules
+import catalog
 import torch
 import wandb
-from numpy import isin
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils import rgetattr
 from utils.experiment import print_to_end
@@ -76,7 +70,10 @@ class _BaseLightningTrainer(_LightningModule):
             for metric_name, metric_cfg in metrics.items():
                 subsets_to_compute = metric_cfg.get("when", "val")
                 for subset in subsets_to_compute.split(","):
-                    metric = catalog.metric.build(**metric_cfg)
+                    metric = catalog.metric.build(
+                        name=metric_cfg["name"],
+                        args=metric_cfg.get("args", {})
+                    )
                     # get log frequency
                     interval = metric_cfg.get("interval", 1)
                     if type(interval) == dict:

@@ -101,7 +101,6 @@ callbacks:
       args:
         logging_interval: "epoch"
 
-
 trainer:
   precision: 16
   gradient_clip_val: 1.0
