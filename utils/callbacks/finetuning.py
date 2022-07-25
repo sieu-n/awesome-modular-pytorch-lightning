@@ -382,8 +382,9 @@ class FreezeModule(BaseFinetuning):
     def finetune_function(self, pl_module, current_epoch, optimizer, optimizer_idx):
         # When `current_epoch` is 10, feature_extractor will start training.
         if current_epoch == self.unfreeze_at_epoch:
-            self.unfreeze_and_add_param_group(
-                modules=pl_module.feature_extractor,
-                optimizer=optimizer,
-                train_bn=self.train_bn,
-            )
+            for module_name in self.module_names:
+                self.unfreeze_and_add_param_group(
+                    modules=rgetattr(pl_module, module_name),
+                    optimizer=optimizer,
+                    train_bn=self.train_bn,
+                )
