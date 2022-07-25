@@ -175,7 +175,7 @@ class Experiment:
                 callback_cfg = cfg["callbacks"]
 
         logger_and_callbacks = self._setup_callbacks(
-            callback_list=callback_cfg,
+            callback_cfg=callback_cfg,
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
             tensorboard_cfg=tensorboard_cfg,

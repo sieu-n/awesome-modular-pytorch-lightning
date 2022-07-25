@@ -24,18 +24,20 @@ training:
 
 callbacks:
   ModelCheckpoint:
-    name: ModelCheckpoint
-    file: lightning
+    name: LightningCallback
     args:
-      monitor: "epoch_val/total_loss"
-      mode: "max"
-      save_last: True
-      save_top_k: 1
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/total_loss"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
   LearningRateMonitor:
-    name: "LearningRateMonitor"
-    file: "lightning"
+    name: LightningCallback
     args:
-      logging_interval: "epoch"
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
 
 model:
   mm_model:

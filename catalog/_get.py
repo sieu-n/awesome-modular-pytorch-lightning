@@ -34,7 +34,7 @@ def _get_from_sources(sources: dict, scope: dict, name: str, file=None, object_t
                 )
                 return f
         if name in scope:
-            _get(scope, name, object_type)
+            return _get(scope, name, object_type)
         else:
             raise ValueError(
                 f"{object_type} `{name}` was not defined in list of known sources: {sources}"

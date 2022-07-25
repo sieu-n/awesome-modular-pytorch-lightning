@@ -4,9 +4,9 @@ callbacks:
     # the backbone.conv1 layer should also be fine-tuned.
     args:
       modules:
-        - layer1
-        - layer2
-        - layer3
-        - layer4
+        - backbone.layer1
+        - backbone.layer2
+        - backbone.layer3
+        - backbone.layer4
       freeze_at_start: true
       train_bn: true
