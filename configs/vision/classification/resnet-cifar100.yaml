@@ -15,7 +15,6 @@ training:
 
 validation:
   batch_size: 64
-  metrics:
 
 model:
   TYPE: "custom"

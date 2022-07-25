@@ -3,7 +3,6 @@ import random
 
 import catalog
 import numpy as np
-import pytorch_lightning as pl
 import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
@@ -67,7 +66,10 @@ class Experiment:
         self, dataset_cfg, transform_cfg=None, const_cfg=None, subset_to_get=None
     ):
         print_to_end("=")
+        print_to_end("=")
         print("[*] Building dataset")
+        print_to_end("=")
+        print_to_end("=")
         if const_cfg is None:
             const_cfg = self.const_cfg
 
@@ -156,7 +158,7 @@ class Experiment:
     def setup_callbacks(
         self,
         cfg=None,
-        callback_list=[],
+        callback_cfg={},
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
@@ -169,11 +171,11 @@ class Experiment:
                 assert tensorboard_cfg is None
                 tensorboard_cfg = cfg["tensorboard"]
             if "callbacks" in cfg:
-                assert callback_list == []
-                callback_list = cfg["callbacks"]
+                assert callback_cfg == {}
+                callback_cfg = cfg["callbacks"]
 
         logger_and_callbacks = self._setup_callbacks(
-            callback_list=callback_list,
+            callback_cfg=callback_cfg,
             experiment_name=self.experiment_name,
             wandb_cfg=wandb_cfg,
             tensorboard_cfg=tensorboard_cfg,
@@ -317,8 +319,7 @@ class Experiment:
             # build collate_fn
             if "collate_fn" in subset_dataloader_cfg:
                 subset_dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
-                    name=subset_dataloader_cfg["collate_fn"]["name"],
-                    **subset_dataloader_cfg["collate_fn"].get("args", {}),
+                    subset_dataloader_cfg["collate_fn"]
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(
@@ -333,7 +334,7 @@ class Experiment:
     def _setup_callbacks(
         self,
         experiment_name=None,
-        callback_list=[],
+        callback_cfg={},
         wandb_cfg=None,
         tensorboard_cfg=None,
     ):
@@ -350,12 +351,8 @@ class Experiment:
         )
         # callbacks
         callbacks = []
-        for callback_cfg in callback_list:
-            callbacks.append(catalog.callbacks.build(
-                name=callback_cfg["name"],
-                file=callback_cfg.get("file", None),
-                **callback_cfg.get("args", {})
-            ))
+        for name, cfg in callback_cfg.items():
+            callbacks.append(catalog.callbacks.build(**cfg))
         return {
             "logger": logger,
             "callbacks": callbacks,
@@ -366,6 +363,9 @@ class Experiment:
         lightning_module = catalog.lightning.get(training_cfg["ID"])
         model = lightning_module(model_cfg, training_cfg, self.const_cfg)
 
+        print("Model:")
+        print(model)
+
         if self.debug_cfg and "network_summary" in self.debug_cfg:
             batch_size = 16  # any num:)
             print(f"[*] Model backbone summary(when bs={batch_size}):")
@@ -375,6 +375,7 @@ class Experiment:
             ]
 
             print_model_summary(model, input_size=input_shape)
+
         # load model from path if specified.
         if "state_dict_path" in model_cfg:
             load_model_weights(

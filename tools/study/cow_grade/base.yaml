@@ -85,17 +85,21 @@ dataloader:
     num_workers: 4 # 4 -> ~43s, 8 -> ~48s
 
 callbacks:
-  - name: ModelCheckpoint
-    file: lightning
+  ModelCheckpoint:
+    name: LightningCallback
     args:
-      monitor: "epoch_val/accuracy"
-      mode: "max"
-      save_last: True
-      save_top_k: 1
-  - name: "LearningRateMonitor"
-    file: "lightning"
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/accuracy"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
     args:
-      logging_interval: "epoch"
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
 
 trainer:
   precision: 16
@@ -123,33 +127,37 @@ training:
   metrics:
     loss:
       when: "trn,val,test"
-      name: "MeanMetric"
-      file: "torchmetrics"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
       update:
         value: "cls_loss"
     cohens_kappa:
       when: "trn,val,test"
-      name: "CohenKappa"
-      file: "torchmetrics"
+      name: TorchMetric
       args:
-        num_classes: 5
+        name: "CohenKappa"
+        args:
+          num_classes: 5
       update:
         preds: "logits"
         target: "y"
     confusion_matrix:
       interval: { "trn": 50 }
       when: "trn,val,test"
-      name: "ConfusionMatrix"
-      file: "torchmetrics"
+      name: TorchMetric
       args:
-        num_classes: 5
+        name: "ConfusionMatrix"
+        args:
+          num_classes: 5
       update:
         preds: "logits"
         target: "y"
     accuracy:
       when: "trn,val,test"
-      name: "Accuracy"
-      file: "torchmetrics"
+      name: TorchMetric
+      args:
+        name: "Accuracy"
       update:
         preds: "logits"
         target: "y"

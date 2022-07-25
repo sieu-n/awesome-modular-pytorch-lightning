@@ -13,7 +13,10 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data.dataloader import default_collate
 
-from mmcv.parallel.data_container import DataContainer
+try:
+    from mmcv.parallel.data_container import DataContainer
+except ImportError:
+    pass
 
 
 def mmcv_datacontainer_collate(batch):
@@ -33,14 +36,15 @@ def mmcv_datacontainer_collate(batch):
     """
 
     if not isinstance(batch, Sequence):
-        raise TypeError(f'{batch.dtype} is not supported.')
+        raise TypeError(f"{batch.dtype} is not supported.")
 
     if isinstance(batch[0], DataContainer):
         stacked = 0
         if batch[0].cpu_only:
             stacked = [sample.data for sample in batch]
             return DataContainer(
-                stacked, batch[0].stack, batch[0].padding_value, cpu_only=True)
+                stacked, batch[0].stack, batch[0].padding_value, cpu_only=True
+            )
         elif batch[0].stack:
             assert isinstance(batch[0].data, torch.Tensor)
 
@@ -54,22 +58,20 @@ def mmcv_datacontainer_collate(batch):
                     for dim in range(0, ndim - batch[0].pad_dims):
                         assert batch[0].size(dim) == sample.size(dim)
                     for dim in range(1, batch[0].pad_dims + 1):
-                        max_shape[dim - 1] = max(max_shape[dim - 1],
-                                                 sample.size(-dim))
+                        max_shape[dim - 1] = max(max_shape[dim - 1], sample.size(-dim))
                 padded_samples = []
                 for sample in batch:
                     pad = [0 for _ in range(batch[0].pad_dims * 2)]
                     for dim in range(1, batch[0].pad_dims + 1):
                         pad[2 * dim - 1] = max_shape[dim - 1] - sample.size(-dim)
                     padded_samples.append(
-                        F.pad(
-                            sample.data, pad, value=sample.padding_value))
+                        F.pad(sample.data, pad, value=sample.padding_value)
+                    )
                 stacked = default_collate(padded_samples)
             elif batch[0].pad_dims is None:
                 stacked = default_collate([sample.data for sample in batch])
             else:
-                raise ValueError(
-                    'pad_dims should be either None or integers (1-3)')
+                raise ValueError("pad_dims should be either None or integers (1-3)")
 
         else:
             stacked = [sample.data for sample in batch]
@@ -79,8 +81,7 @@ def mmcv_datacontainer_collate(batch):
         return [mmcv_datacontainer_collate(samples) for samples in transposed]
     elif isinstance(batch[0], Mapping):
         return {
-            key: mmcv_datacontainer_collate([d[key] for d in batch])
-            for key in batch[0]
+            key: mmcv_datacontainer_collate([d[key] for d in batch]) for key in batch[0]
         }
     else:
         return default_collate(batch)

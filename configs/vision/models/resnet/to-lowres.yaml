@@ -1,0 +1,4 @@
+model:
+  init_hook:
+    low_res:
+      name: "ResNetLowResHead"

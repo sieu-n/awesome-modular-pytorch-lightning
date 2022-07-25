@@ -8,5 +8,5 @@ def get(name):
     return _get(globals(), name, "Dataset-mapping")
 
 
-def build(name, *args, **kwargs):
-    return get(name)(*args, **kwargs)
+def build(name, args={}, *_args, **kwargs):
+    return get(name)(*_args, **args, **kwargs)

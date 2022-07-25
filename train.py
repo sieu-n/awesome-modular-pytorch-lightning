@@ -1,5 +1,6 @@
 import os
 from argparse import ArgumentParser
+from pathlib import Path
 
 import pytorch_lightning as pl
 import torch
@@ -14,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--group", type=str, default=None)
     parser.add_argument("--offline", action="store_true", default=False)
     parser.add_argument("--root_dir", type=str, default=None)
+    parser.add_argument("--save_path", type=str, default=None)
 
     args = parser.parse_args()
     cfg = read_configs(args.configs)
@@ -62,10 +64,20 @@ if __name__ == "__main__":
     )
 
     # save weights
-    save_path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
-    if not os.path.exists(save_path_root):
-        os.makedirs(save_path_root)
-    torch.save(model.state_dict(), f"{experiment.exp_dir}/{save_path}")
+    if args.save_path is None:
+        path_root = os.path.dirname(f"{experiment.exp_dir}/{save_path}")
+        filename = f"{experiment.experiment_name}.pth"
+    else:
+        suffix = Path(args.save_path).suffix
+        if suffix == "":
+            save_path_root = args.save_path
+            filename = f"{experiment.experiment_name}.pth"
+        else:
+            path_root = os.path.dirname(args.save_path)
+            filename = Path(args.save_path).name
+    if not os.path.exists(path_root):
+        os.makedirs(path_root)
+    torch.save(model.state_dict(), f"{path_root}/{filename}")
     # test
     res = pl_trainer.test(model, val_dataloader)
 

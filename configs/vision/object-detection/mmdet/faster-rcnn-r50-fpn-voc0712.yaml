@@ -3,7 +3,7 @@ name: "faster-rcnn-r50-fpn-voc0712"
 training:
   ID: "MMDetectionTrainer"
 
-  epochs: 12  # `1x` schedule
+  epochs: 12 # `1x` schedule
   lr: 0.01
 
   optimizer: "sgd"
@@ -23,17 +23,21 @@ training:
       interval: "epoch"
 
 callbacks:
-  - name: ModelCheckpoint
-    file: lightning
+  ModelCheckpoint:
+    name: LightningCallback
     args:
-      monitor: "epoch_val/accuracy"
-      mode: "max"
-      save_last: True
-      save_top_k: 1
-  - name: "LearningRateMonitor"
-    file: "lightning"
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/total_loss"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
     args:
-      logging_interval: "epoch"
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
 
 model:
   mm_model:

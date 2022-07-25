@@ -8,8 +8,7 @@ from torch import nn
 
 
 class ClassificationTrainer(_BaseLightningTrainer):
-    def __init__(self, model_cfg, training_cfg, *args, **kwargs):
-        super().__init__(model_cfg, training_cfg, *args, **kwargs)
+    def init(self, model_cfg, training_cfg):
         # mixup and cutmix for classification
         self.mixup_cutmix = None
         if "mixup_cutmix" in training_cfg:

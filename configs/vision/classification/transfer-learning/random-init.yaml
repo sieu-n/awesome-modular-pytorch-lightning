@@ -34,40 +34,47 @@ training:
   metrics:
     loss:
       when: "trn,val,test"
-      name: "MeanMetric"
-      file: "torchmetrics"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
       update:
         value: "cls_loss"
     confusion_matrix:
       interval: { "trn": 50, "val": 5 }
       when: "trn,val,test"
-      name: "ConfusionMatrix"
-      file: "torchmetrics"
+      name: TorchMetric
       args:
-        num_classes: "{const.num_classes}"
+        name: "ConfusionMatrix"
+        args:
+          num_classes: "{const.num_classes}"
       update:
         preds: "logits"
         target: "y"
     accuracy:
       when: "trn,val,test"
-      name: "Accuracy"
-      file: "torchmetrics"
+      name: TorchMetric
+      args:
+        name: "Accuracy"
       update:
         preds: "logits"
         target: "y"
 
 callbacks:
-  - name: ModelCheckpoint
-    file: lightning
+  ModelCheckpoint:
+    name: LightningCallback
     args:
-      monitor: "epoch_val/accuracy"
-      mode: "max"
-      save_last: True
-      save_top_k: 1
-  - name: "LearningRateMonitor"
-    file: "lightning"
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/accuracy"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
     args:
-      logging_interval: "epoch"
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
 
 model:
   modules:
