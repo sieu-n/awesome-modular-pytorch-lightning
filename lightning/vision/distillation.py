@@ -44,12 +44,13 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             super().init(model_cfg, training_cfg)
             assert "distillation" in training_cfg
 
-            print_to_end("=")
-            print("[*] Setting `DistillationTrainer` wrapper for knowledge distillation.")
+            print_to_end("-")
+            print("[*] Configuring `DistillationTrainer` wrapper for knowledge distillation.")
             distill_cfg = training_cfg["distillation"]
 
             # create teacher model
-            print("(1/4) Creating teacher model for knowldege distillation")
+            print_to_end(".")
+            print("<1/4> Creating teacher model for knowldege distillation")
             teacher_cfg = distill_cfg["teacher"]
             if "model" in teacher_cfg and "training" in teacher_cfg:
                 assert "cfg" not in teacher_cfg
@@ -78,11 +79,12 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             else:
                 raise ValueError(f"Recieved invalid arguments for teacher model: {teacher_cfg.keys()}")
 
+            print_to_end(".")
             self.t_model.eval()
             for param in self.t_model.parameters():
                 param.requires_grad = False
             # attach hooks
-            print("(2/4) Setting up hooks model to teacher & student for knowldege distillation")
+            print("<2/4> Hooks to teacher & student for knowldege distillation")
             if "hooks" in distill_cfg:
                 self.use_s_hook = False
                 self.use_t_hook = False
@@ -94,14 +96,14 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
                     self.t_hook = Hook(network=self.t_model, cfg=distill_cfg["hooks"]["teacher"])
 
             # build criterion
-            print("(3/4) Creating criterion for computing knowledge distillation loss.")
+            print("<3/4> Criterion for computing knowledge distillation loss.")
             criterion_cfg = distill_cfg["criterion"]
             self.distillation_criterion = catalog.distillation.build(
                 name=criterion_cfg["name"],
                 args=criterion_cfg["args"],
             )
             # more arguments
-            print("(4/4) Creating criterion for computing knowledge distillation loss:")
+            print("<4/4> Additional arguments for knowledge distillation.")
             self.kd_is_enabled = True
             if "early_stop_epoch" in distill_cfg:
                 assert "early_stop_step" not in distill_cfg, "Only one should be specified."
@@ -130,13 +132,13 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
 
         def get_kd_loss(self, x):
             if self.use_s_hook:
-                s_out = self.s_hook.get_all(device=x.device)
+                s_out = self.s_hook.get_all(device=self.device)
             else:
                 s_out = {}
 
             if self.use_t_hook:  # get teacher forward.
                 _, _ = self.t_model(x)
-                t_out = self.t_hook.get_all(device=x.device)
+                t_out = self.t_hook.get_all(device=self.device)
             else:
                 t_out = {}
             return self.distillation_criterion(s_out, t_out)

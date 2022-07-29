@@ -8,7 +8,7 @@ class Hook():
         layer in a network.
         """
         self.hooks = []
-        self.hook_cache = {}
+        self.forward_cache = {}
         self._network = network
 
         if cfg is not None:
@@ -51,8 +51,8 @@ class Hook():
                 elif hasattr(output, "device"):
                     device_idx = output.device.index
 
-                if device_idx not in self.hook_cache:
-                    self._hook_cache[device_idx] = {}
+                if device_idx not in self.forward_cache:
+                    self.forward_cache[device_idx] = {}
 
                 assert mode in ("output", "input")
                 if mode == "output":
@@ -63,7 +63,7 @@ class Hook():
                 if idx is not None:
                     f = f[idx].detach()
 
-                self._hook_cache[output.device.index][name] = f
+                self.forward_cache[output.device.index][name] = f
             return hook
 
         if network is None:
@@ -71,13 +71,13 @@ class Hook():
 
         layer = rgetattr(network, layer_name)
         layer.register_forward_hook(save_to(name, mode=mode, idx=idx))
-        self.hooks.append(layer(name))
+        self.hooks.append(name)
 
     def get(self, key, device=None):
         if device is None:
-            assert len(self._hook_cache) == 1, f"Current `device` must be provided when \
-                using multi-node training. GPU used: {self._hook_cache}"
-            device_index = list(self._hook_cache.keys())[0]
+            assert len(self.forward_cache) == 1, f"Current `device` must be provided when \
+                using multi-node training. GPU used: {self.forward_cache}"
+            device_index = list(self.forward_cache.keys())[0]
         else:
             device_index = device.index
-        return self._hook_cache[device_index][key]
+        return self.forward_cache[device_index][key]

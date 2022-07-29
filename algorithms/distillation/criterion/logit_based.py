@@ -26,11 +26,11 @@ class DistillLogits(nn.Module):
             implementation after calling `super().forward(s_hook, t_hook)` inside
             the subclass.
         """
-        y_s, y_t = self.parse_hooks(s_hook, t_hook)
+        y_s, y_t = self.get_logits(s_hook, t_hook)
         loss = self.compute_loss(y_s, y_t)
         return loss, {"teacher_logits": y_t}
 
-    def parse_logits(self, s_hook, t_hook):
+    def get_logits(self, s_hook, t_hook):
         assert isinstance(s_hook, dict) and len(s_hook) == 1, f"Invalid value \
             were passed to criterion from student hook, got {s_hook} of type {type(s_hook)}"
         assert isinstance(t_hook, dict) and len(t_hook) == 1, f"Invalid value \
