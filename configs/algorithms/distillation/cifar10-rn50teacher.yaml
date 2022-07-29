@@ -1,16 +1,65 @@
 training:
+  ID: DistillationTrainer
+  base_ID: ClassificationTrainer
   distillation:
     criterion:
       name: "LogitKLCriterion"
       args:
         alpha: 1.0
         T: 3
-    teacher:
-      cfg:
     hooks:
       student:
         logit:
-          layer_name:
+          layer_name: "classifier"
       teacher:
         logit:
-          layer_name:
+          layer_name: "classifier"
+
+    teacher:
+      training:
+        ID: ClassificationTrainer
+      model:
+        backbone:
+          ID: resnet50
+          TYPE: timm
+          cfg:
+            pretrained: false
+          out_features: 2048
+        init_hook:
+          low_res:
+            name: ResNetLowResHead
+        modules:
+          classifier:
+            args:
+              dropout: 0.2
+              in_features: 2048
+              num_classes: 10
+              reduction: gap
+              return_logits: true
+            input: output
+            name: ClassificationHead
+          loss_fn:
+            name: CrossEntropyLoss
+
+      const:
+        label_map:
+        - airplane
+        - automobile
+        - bird
+        - cat
+        - deer
+        - dog
+        - frog
+        - horse
+        - ship
+        - truck
+        normalization_mean:
+        - 0.4914
+        - 0.4822
+        - 0.4465
+        normalization_std:
+        - 0.2023
+        - 0.1994
+        - 0.201
+        num_classes: 10
+        task: image classification

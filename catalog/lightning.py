@@ -1,7 +1,11 @@
-from lightning.vision.classification import ClassificationTrainer  # noqa E403
-from lightning.vision.mmdetection import MMDetectionTrainer  # noqa E403
-from utils.pretrained import load_model_weights
+# lightningmodule catalog.
+from lightning.vision import (  # noqa
+    ClassificationTrainer,
+    DistillationTrainer,
+    MMDetectionTrainer,
+)
 
+from utils.pretrained import load_model_weights
 from ._get import _get
 
 

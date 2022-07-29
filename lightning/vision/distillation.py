@@ -78,6 +78,9 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             else:
                 raise ValueError(f"Recieved invalid arguments for teacher model: {teacher_cfg.keys()}")
 
+            self.t_model.eval()
+            for param in self.t_model.parameters():
+                param.requires_grad = False
             # attach hooks
             print("(2/4) Setting up hooks model to teacher & student for knowldege distillation")
             if "hooks" in distill_cfg:
