@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 from algorithms.augmentation.mixup import MixupCutmix
-from algorithms.knowledge_distillation import TeacherModelKD
 from algorithms.rdrop import compute_kl_loss
 from lightning.base import _BaseLightningTrainer
 from torch import nn
@@ -13,13 +12,6 @@ class ClassificationTrainer(_BaseLightningTrainer):
         self.mixup_cutmix = None
         if "mixup_cutmix" in training_cfg:
             self.mixup_cutmix = MixupCutmix(**training_cfg["mixup_cutmix"])
-        # knowledge distillation using the method of: Distilling the Knowledge in a Neural Network, 2015
-        if "kd" in training_cfg:
-            kd_cfg = training_cfg["kd"]
-            self.kd_alpha = kd_cfg["alpha"]
-            self.kd_teacher_model = TeacherModelKD(
-                kd_cfg["teacher_model"], training_cfg=kd_cfg["teacher_training"]
-            )
         # rdrop: R-Drop: Regularized Dropout for Neural Networks, NeurIPS-2021
         if "rdrop" in training_cfg:
             self.rdrop = True
@@ -63,6 +55,15 @@ class ClassificationTrainer(_BaseLightningTrainer):
         logits = pred["logits"]
 
         loss = self.classification_loss(logits, y)
+
+        # r-drop
+        if hasattr(self, "rdrop") and self.rdrop is True:
+            # loss = self.rdrop_forward(x, y, logits, loss)
+            feature = pred["feature"]
+            loss = self.fast_rdrop_forward(feature, y, logits, loss)
+
+        self.log("step/train_loss", loss)
+
         # for logging
         res = {
             "y": y if y.ndim == 1 else y.argmax(dim=1),
@@ -70,21 +71,7 @@ class ClassificationTrainer(_BaseLightningTrainer):
             "prob": pred["prob"],
             "cls_loss": loss,
         }
-        # r-drop
-        if hasattr(self, "rdrop") and self.rdrop is True:
-            # loss = self.rdrop_forward(x, y, logits, loss)
-            feature = pred["feature"]
-            loss = self.fast_rdrop_forward(feature, y, logits, loss)
 
-        # knowledge distillation
-        if hasattr(self, "kd_teacher_model"):
-            kd_loss = self.get_kd_loss(logits, x, y)
-            loss += kd_loss * self.kd_alpha
-
-            self.log("step/kd_loss", kd_loss)
-            res["kd_loss"] = kd_loss
-
-        self.log("step/train_loss", loss)
         assert "loss" not in res
         res["loss"] = loss
         return loss, res
@@ -120,18 +107,6 @@ class ClassificationTrainer(_BaseLightningTrainer):
             self.log(f"step/{name}_loss", val)
             loss += val * weight
         return loss
-
-    def get_kd_loss(self, logits, x, y):
-        prob_s = F.log_softmax(logits, dim=-1)
-        with torch.no_grad():
-            input_kd = self.kd_teacher_model.normalize_input(
-                x,
-                mean=self.const_cfg["normalization_mean"],
-                std=self.const_cfg["normalization_std"],
-            )
-            out_t = self.kd_teacher_model(input_kd.detach())
-            prob_t = F.softmax(out_t, dim=-1)
-        return F.kl_div(prob_s, prob_t, reduction="batchmean")
 
     def rdrop_forward(self, x, y, logits1, loss1):
         logits2 = self(x)

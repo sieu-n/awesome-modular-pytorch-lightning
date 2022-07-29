@@ -1,0 +1,16 @@
+training:
+  distillation:
+    criterion:
+      name: "LogitKLCriterion"
+      args:
+        alpha: 1.0
+        T: 3
+    teacher:
+      cfg:
+    hooks:
+      student:
+        logit:
+          layer_name:
+      teacher:
+        logit:
+          layer_name:

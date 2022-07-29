@@ -359,9 +359,9 @@ class Experiment:
         }
 
     def setup_model(self, model_cfg, training_cfg):
-        # model
-        lightning_module = catalog.lightning.get(training_cfg["ID"])
-        model = lightning_module(model_cfg, training_cfg, self.const_cfg)
+        model = catalog.lightning.build_from_cfg(
+            model_cfg, training_cfg, self.const_cfg
+        )
 
         print("Model:")
         print(model)
@@ -375,13 +375,4 @@ class Experiment:
             ]
 
             print_model_summary(model, input_size=input_shape)
-
-        # load model from path if specified.
-        if "state_dict_path" in model_cfg:
-            load_model_weights(
-                model=model,
-                state_dict_path=model_cfg["state_dict_path"],
-                is_ckpt=model_cfg.get("is_ckpt", False),
-            )
-
         return model
