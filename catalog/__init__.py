@@ -4,6 +4,7 @@ from . import (  # noqa
     collate_fn,
     dataset,
     dataset_mapping,
+    distillation,
     init_hooks,
     lightning,
     metric,

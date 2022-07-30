@@ -187,3 +187,18 @@ def compile_links(cfg):
     while is_compiled:
         compiled_cfg, is_compiled = recurse_iter(compiled_cfg)
     return compiled_cfg
+
+
+class dict2obj(object):
+    """
+    Simple conversion of a recursive dictionary into an object. Note that lists
+    are preserved.
+    https://gist.github.com/byron2r/2657437
+    """
+
+    def __init__(self, d):
+        for a, b in d.items():
+            if isinstance(b, (list, tuple)):
+                setattr(self, a, [dict2obj(x) if isinstance(x, dict) else x for x in b])
+            else:
+                setattr(self, a, dict2obj(b) if isinstance(b, dict) else b)

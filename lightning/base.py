@@ -2,8 +2,8 @@ import catalog
 import torch
 import wandb
 from sklearn.metrics import ConfusionMatrixDisplay
-from utils import rgetattr
 from utils.experiment import print_to_end
+from utils.hook import Hook
 from utils.pretrained import load_model_weights
 
 from .common import _LightningModule
@@ -71,8 +71,7 @@ class _BaseLightningTrainer(_LightningModule):
                 subsets_to_compute = metric_cfg.get("when", "val")
                 for subset in subsets_to_compute.split(","):
                     metric = catalog.metric.build(
-                        name=metric_cfg["name"],
-                        args=metric_cfg.get("args", {})
+                        name=metric_cfg["name"], args=metric_cfg.get("args", {})
                     )
                     # get log frequency
                     interval = metric_cfg.get("interval", 1)
@@ -95,17 +94,9 @@ class _BaseLightningTrainer(_LightningModule):
 
         # 5. setup feature-extraction hooks
         # TODO: implement FeatureExtractor callback instead
-        self._hook_cache = {}
         if "feature_hooks" in model_cfg:
             print("(5/6) Setting up hooks for feature-extraction")
-            feature_hooks = model_cfg["feature_hooks"]
-            for hook_name, hook_cfg in feature_hooks.items():
-                self.setup_hook(
-                    network=self,
-                    key=hook_name,
-                    layer_name=hook_cfg["layer_name"],
-                    **hook_cfg.get("cfg", {}),
-                )
+            self.hook = Hook(network=self, cfg=model_cfg["feature_hooks"])
         else:
             print("(5/6) `model.feature_hooks` is not specified.")
 
@@ -198,37 +189,6 @@ class _BaseLightningTrainer(_LightningModule):
             else:
                 # typical metrics
                 self.log(log_key, res)
-
-    def setup_hook(self, network, key, layer_name, mode="output", idx=None):
-        if not hasattr(self, "_hook_cache"):
-            self._hook_cache = {}
-
-        def save_to(key, mode="output", idx=None):
-            def hook(m, i, output):
-                # initialize array for device
-                self._hook_cache[output.device.index] = self._hook_cache.get(
-                    output.device.index, {}
-                )
-                assert mode in ("output", "input")
-                if mode == "output":
-                    f = output.detach()
-                elif mode == "input":
-                    f = i.detach()
-
-                if idx is not None:
-                    f = f[idx]
-                f = f.detach()
-
-                self._hook_cache[output.device.index][key] = f
-
-            return hook
-
-        layer = rgetattr(network, layer_name)
-        layer.register_forward_hook(save_to(key, mode=mode, idx=idx))
-
-    def get_hook(self, key, device=None):
-        device_index = device.index
-        return self._hook_cache[device_index][key]
 
     def init(self):
         raise NotImplementedError()

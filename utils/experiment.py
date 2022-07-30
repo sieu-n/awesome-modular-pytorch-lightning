@@ -150,11 +150,11 @@ def initialize_environment(
 
         print(f"Saving config to: {filename}.yaml")
         with open(filename + ".yaml", "w") as file:
-            yaml.dump(pretty_cfg, file, allow_unicode=True, default_flow_style=False)
+            yaml.dump(cfg, file, allow_unicode=True, default_flow_style=False)
 
         print(f"Saving config to: {filename}.json")
         with open(filename + ".json", "w") as file:
-            json.dump(pretty_cfg, file)
+            json.dump(cfg, file)
 
     return experiment_name
 
