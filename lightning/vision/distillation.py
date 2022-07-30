@@ -49,8 +49,8 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             distill_cfg = training_cfg["distillation"]
 
             # create teacher model
-            print_to_end(".")
             print("<1/4> Creating teacher model for knowldege distillation")
+            print_to_end(".")
             teacher_cfg = distill_cfg["teacher"]
             if "model" in teacher_cfg and "training" in teacher_cfg:
                 assert "cfg" not in teacher_cfg
@@ -92,7 +92,7 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
                     self.use_s_hook = True
                     self.s_hook = Hook(network=self, cfg=distill_cfg["hooks"]["student"])
                 if "teacher" in distill_cfg["hooks"]:
-                    self.use_t_hook = False
+                    self.use_t_hook = True
                     self.t_hook = Hook(network=self.t_model, cfg=distill_cfg["hooks"]["teacher"])
 
             # build criterion
@@ -137,7 +137,7 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
                 s_out = {}
 
             if self.use_t_hook:  # get teacher forward.
-                _, _ = self.t_model(x)
+                _ = self.t_model(x)
                 t_out = self.t_hook.get_all(device=self.device)
             else:
                 t_out = {}
@@ -158,10 +158,10 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
 
             # compute kd loss
             if self.kd_is_enabled:
-                kd_loss, kd_res = self.get_kd_loss(batch)
-                self.log(kd_loss, "step/kd_loss")
+                kd_loss, kd_res = self.get_kd_loss(batch["images"])
+                self.log("step/kd_loss", kd_loss)
 
-                loss = loss * self.kd_scale_main_loss + kd_loss * self.alpha
+                loss = loss * self.kd_scale_main_loss + kd_loss
                 if kd_res is not None:
                     res.update(kd_res)
             return loss, res

@@ -2,6 +2,7 @@ training:
   ID: DistillationTrainer
   base_ID: ClassificationTrainer
   distillation:
+    scale_main_loss: 1.0
     criterion:
       name: "LogitKLCriterion"
       args:
@@ -11,6 +12,8 @@ training:
       student:
         logit:
           layer_name: "classifier"
+        some_feature:
+          layer_name: "backbone.layer3.1.act2"
       teacher:
         logit:
           layer_name: "classifier"
