@@ -1,12 +1,8 @@
-debug:
-  view_train_augmentation:
-    resize_to: [256, 256] # resize so class text is displayed.
-  network_summary:
-    input_shape: [3, 32, 32]
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "TorchvisionDataset"
+    
+    file: "torchvision"
     args:
       name: "CIFAR10"
       args:
@@ -14,13 +10,11 @@ dataset:
   dataset_subset_cfg:
     trn:
       args:
-        args:
-          download: True
-          train: True
+        download: True
+        train: True
     val:
       args:
-        args:
-          train: False
+        train: False
   initial_transform:
     name: "TupleToClassificationData"
 
@@ -58,10 +52,10 @@ transform:
   ]
 # other useful configs.
 const:
-  task: "image classification"
+  task: "joint lifting"
   normalization_mean: [0.4914, 0.4822, 0.4465]
   normalization_std: [0.2023, 0.1994, 0.2010]
-  num_classes: 10
+  num_joints: 10
   label_map:
     - "airplane"
     - "automobile"
