@@ -1,5 +1,6 @@
 from algorithms.metrics import ( # noqa
     TorchMetric,
+    SubsetMetric,
     MPJPE
 )
 

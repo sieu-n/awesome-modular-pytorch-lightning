@@ -67,10 +67,11 @@ class Human36AnnotationDataset(Dataset):
                         subject_data["joint"][action_idx][subaction_idx][frame_idx]
                     ),
                     "idx": {
-                        "action_idx": action_idx,
-                        "subaction_idx": subaction_idx,
-                        "camera_idx": camera_idx,
-                        "frame_idx": frame_idx,
+                        "suject_idx": int(subject_id),
+                        "action_idx": int(action_idx),
+                        "subaction_idx": int(subaction_idx),
+                        "camera_idx": int(camera_idx),
+                        "frame_idx": int(frame_idx),
                     },
                     "meta": sample_meta,
                     "bbox": subject_data["data"]["annotations"][sample_idx],

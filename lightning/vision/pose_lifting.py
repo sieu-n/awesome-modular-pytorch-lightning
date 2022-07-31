@@ -28,6 +28,12 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "meta": dict,
             "location": tensor(batch_size),
             "camera": Human36Camera,
+            "idx": {
+                "action_idx": list,
+                "subaction_idx": list,
+                "camera_idx": list,
+                "frame_idx": list,
+            }
         }
         """
         assert "joint_2d" in batch
@@ -47,16 +53,16 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         self.log("step/train_loss", loss)
 
         # for logging
-        camera = batch["camera"]
+        camera = batch["camera"].data
         location = batch["location"]
         res = {
             "joints_gt_camera": y,
-            "joints_gt_global": self.decode(y, location, camera),
+            "joints_gt_global": self.decode(y.cpu(), location.cpu(), camera),
             "joints_2d": x,
             "reconstruction_camera": reconstruction,
-            "reconstruction_global": self.decode(reconstruction, location, camera),
+            "reconstruction_global": self.decode(reconstruction.cpu().detach(), location.cpu(), camera),
             "loss": loss,
-            "action_idx": batch["meta"]["action_idx"],
+            "action_idx": batch["idx"]["action_idx"],
         }
         return loss, res
 
@@ -86,7 +92,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         loss = self.loss_fn(reconstruction, y)
 
         # for logging
-        camera = batch["camera"]
+        camera = batch["camera"].data
         location = batch["location"]
         return {
             "joints_gt_camera": y,
@@ -95,7 +101,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "reconstruction_camera": reconstruction,
             "reconstruction_global": self.decode(reconstruction.cpu(), location.cpu(), camera),
             "loss": loss,
-            "action_idx": batch["meta"]["action_idx"],
+            "action_idx": batch["idx"]["action_idx"],
         }
 
     def _predict_step(self, batch, batch_idx=0):
@@ -136,4 +142,4 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
         # to world coord
         joints = [cameras[idx].camera_to_world_coord(joint) for idx, joint in enumerate(joints)]
-        return joints
+        return torch.tensor(joints)

@@ -35,16 +35,22 @@ training:
       when: "trn"
       name: TorchMetric
       args:
-        NAME: "MeanMetric"
+        name: "MeanMetric"
       update:
         value: "loss"
+    # compute action-wise MPJPE loss
     mpjpe:
       when: "val,test"
-      name: MPJPE
+      name: SubsetMetric
+      args:
+        name: MPJPE
+        num_subsets: 17
+        get_avg: True
+
       update:
         reconstructed_joints: "reconstruction_global"
         gt_joints: "joints_gt_global"
-
+        subset: "action_idx"
     # protocol 2
     #pmpjpe:
     # protocol 3

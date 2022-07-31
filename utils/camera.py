@@ -36,7 +36,6 @@ class Human36Camera:
         Returns
         X_cam: Nx3 3d points in camera coordinates
         """
-        P = deepcopy(P)
         assert len(P.shape) == 2
         assert P.shape[1] == 3
 
@@ -51,7 +50,6 @@ class Human36Camera:
         Returns
             X_cam: Nx3 points in world coordinates
         """
-        P = deepcopy(P)
         assert len(P.shape) == 2
         assert P.shape[1] == 3
 

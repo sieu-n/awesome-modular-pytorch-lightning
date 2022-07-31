@@ -60,12 +60,12 @@ class CollectDataContainer(_BaseTransform):
         if cpu_only is None:
             cpu_only = [False] * len(keys)
         else:
-            assert len(stack) == len(cpu_only), f"cpu_only must have length {len(keys)} but found {len(cpu_only)}"
+            assert len(keys) == len(cpu_only), f"cpu_only must have length {len(keys)} but found {len(cpu_only)}"
         self.cpu_only = cpu_only
         if stack is None:
             stack = [False] * len(keys)
         else:
-            assert len(stack) == len(keys), f"stack must have length {len(keys)} but found {len(stack)}"
+            assert len(keys) == len(stack), f"stack must have length {len(keys)} but found {len(stack)}"
         self.stack = stack
 
     def __call__(self, d):

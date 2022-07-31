@@ -47,8 +47,8 @@ transform:
         {
           "name": CollectDataContainer,
           "args": {
-            "keys": ["camera"],
-            "cpu_only": [true],
+            "keys": ["camera", "meta"],
+            "cpu_only": [true, true],
           }
         },
         {
