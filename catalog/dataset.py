@@ -1,5 +1,5 @@
 # dataset catalog
-from data.dataset.vision import TorchvisionDataset, MMDetectionDataset
+from data.dataset.vision import TorchvisionDataset, MMDetectionDataset # noqa
 # utils
 from ._get import _get
 

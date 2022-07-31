@@ -1,0 +1,25 @@
+# create single frame annotation dataset
+dataset:
+  dataset_base_cfg:
+    name: "Human36AnnotationDataset"
+    args:
+      base_dir: "./human36m"
+  dataset_subset_cfg:
+    trn:
+      args:
+        subjects:
+          - 1
+          - 5
+          - 6
+          - 7
+          - 8
+    val:
+      args:
+        subjects:
+          - 9
+          - 11
+
+# other useful configs.
+const:
+  task: "joint lifting"
+  num_joints: 17

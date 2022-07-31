@@ -14,7 +14,6 @@ from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
 from utils.logging import create_logger
-from utils.pretrained import load_model_weights
 from utils.visualization.utils import plot_samples_from_dataset
 
 
@@ -223,10 +222,9 @@ class Experiment:
                 dataset_cfg["dataset_base_cfg"], dataset_subset_cfg
             )
             # create dataset.
-            datasets[subset_key] = catalog.dataset.build_dataset(
-                dataset_type=dataset_subset_cfg["file"],
-                name=dataset_subset_cfg.get("name", ""),
-                **dataset_subset_cfg.get("args", {}),
+            datasets[subset_key] = catalog.dataset.build(
+                name=dataset_subset_cfg["name"],
+                args=dataset_subset_cfg.get("args", {}),
             )
 
         # return every subset as a dictionary if `subset` is None
@@ -319,7 +317,8 @@ class Experiment:
             # build collate_fn
             if "collate_fn" in subset_dataloader_cfg:
                 subset_dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
-                    subset_dataloader_cfg["collate_fn"]
+                    name=subset_dataloader_cfg["collate_fn"]["name"],
+                    args=subset_dataloader_cfg["collate_fn"].get("args", {})
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(

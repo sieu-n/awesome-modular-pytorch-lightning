@@ -37,17 +37,19 @@ def parse_args():
 
 def download(url, dir, download_from="url", output="", unzip=True, delete=False, threads=1):
     def download_one(url, dir):
-        f = dir / Path(url).name
-        if Path(url).is_file():
-            Path(url).rename(f)
-        elif not f.exists():
-            print("Downloading {} to {}".format(url, f))
-            if download_from == "url":
+        dir = os.path.join(dir, output)
+        if download_from == "url":
+            f = dir / Path(url).name
+            if Path(url).is_file():
+                Path(url).rename(f)
+            elif not f.exists():
+                print("Downloading {} to {}".format(url, f))
                 torch.hub.download_url_to_file(url, os.path.join(f), progress=True)
-            elif download_from == "gdrive":
-                gdown.download(id=url, output=os.path.join(f, output), quiet=False)
-            else:
-                raise ValueError("Invalid download type: {}".format(download_from))
+        elif download_from == "gdrive":
+            f = gdown.download(id=url, output=dir, quiet=False)
+            f = Path(f)
+        else:
+            raise ValueError("Invalid download type: {}".format(download_from))
 
         if unzip and f.suffix in (".zip", ".tar"):
             print("Unzipping {}".format(f.name))
@@ -115,7 +117,7 @@ def main():
             "1hmvXEUYfqy8dhfZuPLRatXlLAk3lKrzR",
         ],
     )
-    url = data2url.get(args.dataset_name, None)
+    _url = data2url.get(args.dataset_name, None)
     gdrive_id = data2gdrive_id.get(args.dataset_name, None)
 
     output = ""
@@ -123,12 +125,14 @@ def main():
     if args.dataset_name == "human36m_images":
         output = "images/"
 
-    if url is not None:
+    if _url is not None:
         print("Dowloading from URLs")
         download_from = "url"
+        url = _url
     elif gdrive_id is not None:
         print("Dowloading from Google Drive")
         download_from = "gdrive"
+        url = gdrive_id
     else:
         raise ValueError("Invalid name: %s" % args.dataset_name)
 

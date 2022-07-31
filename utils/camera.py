@@ -4,8 +4,8 @@ from copy import deepcopy
 
 class Human36Camera():
     """
-    Create camera class for transforming 3D coordinates with regards to the camera based on the data and camera format
-    from the Human3.6M dataset.
+    Create camera class for transforming coordinates with regards to the camera
+    for the Human3.6M 3D pose estimation dataset.
 
     Parameters
     ----------

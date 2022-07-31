@@ -12,8 +12,6 @@ training:
       student:
         logit:
           layer_name: "classifier"
-        some_feature:
-          layer_name: "backbone.layer3.1.act2"
       teacher:
         logit:
           layer_name: "classifier"
