@@ -1,8 +1,4 @@
 # create single frame annotation dataset
-debug:
-  network_summary:
-    input_shape: [64, 17, 3]
-
 dataset:
   dataset_base_cfg:
     name: "Human36AnnotationDataset"

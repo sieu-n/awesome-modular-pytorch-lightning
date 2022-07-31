@@ -3,12 +3,16 @@
 
 name: "3D-Pose-Estimation"
 
+debug:
+  network_summary:
+    input_shape: [64, 17, 3]
+
 dataloader:
   base_dataloader:
     batch_size: 64
 
 training:
-  ID: "ClassificationTrainer"
+  ID: "PoseLiftingTrainer"
 
   epochs: 200
   lr: 0.001
@@ -27,11 +31,24 @@ training:
   metrics:
     # TODO
     # protocol 1
+    loss:
+      when: "trn"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "loss"
     mpjpe:
+      when: "val,test"
+      name: MPJPE
+      update:
+        reconstructed_joints: "reconstruction_global"
+        gt_joints: "joints_gt_global"
+
     # protocol 2
-    pmpjpe:
+    #pmpjpe:
     # protocol 3
-    nmpjpe:
+    #nmpjpe:
 
 callbacks:
   ModelCheckpoint:
@@ -60,17 +77,7 @@ model:
       num_blocks: 2
       num_joints: "{const.num_joints}"
   modules:
-    classifier:
-      name: ClassificationHead
-      input: "output"
-      args:
-        reduction: "gap"
-        in_features: "{model.backbone.out_features}"
-        dropout: 0.2
-        num_classes: "{const.num_classes}"
-        return_logits: True # return logits instead of softmax probability.
-    loss_fn:
-      name: "CrossEntropyLoss"
-
+    loss_fn: 
+      name: "MSELoss"
 wandb:
   project: "human36m-3d-pose-estimation-single-frame"

@@ -29,5 +29,5 @@ class CenterAroundJoint(_BaseTransform):
         self.center_joint_idx = center_joint_idx
 
     def __call__(self, d):
-        d["joint"], _ = center_around_joint(d["joint"], self.center_joint_idx)
+        d["joint"], d["location"] = center_around_joint(d["joint"], self.center_joint_idx)
         return d

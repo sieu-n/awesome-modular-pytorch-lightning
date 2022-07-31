@@ -31,7 +31,7 @@ class _BaseLightningTrainer(_LightningModule):
         # 1. build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
-            print(f"(1/6) Building backbone model: {backbone_cfg['ID']}")
+            print(f"(1/6) Building backbone model: {backbone_cfg['name']}")
             self.backbone = catalog.backbone.build(
                 name=backbone_cfg["name"],
                 args=backbone_cfg.get("args", {}),

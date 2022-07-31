@@ -1,7 +1,10 @@
 from typing import List, Union
 
 import torch
-
+try:
+    from mmcv.parallel import DataContainer
+except ImportError:
+    pass
 from .base import _BaseTransform
 
 
@@ -37,4 +40,19 @@ class RemoveKeys(_BaseTransform):
     def __call__(self, d):
         for k in self.keys:
             d.pop(k)
+        return d
+
+
+class CollectDataContainer(_BaseTransform):
+    """
+    keys: List[str]
+        list of keys to wrap inside `DataContainer` object.
+    """
+    def __init__(self, keys: List[str], *args, **kwargs):
+        super(RemoveKeys, self).__init__(*args, **kwargs)
+        self.keys = keys
+
+    def __call__(self, d):
+        for k in self.keys:
+            d[k] = DataContainer(d[k])
         return d
