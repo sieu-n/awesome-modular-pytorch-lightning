@@ -1,9 +1,9 @@
 import warnings
 
-from utils.experiment import print_to_end
-from utils.configs import read_configs
-from utils.hook import Hook
 import catalog
+from utils.configs import read_configs
+from utils.experiment import print_to_end
+from utils.hook import Hook
 
 
 def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs):
@@ -45,7 +45,9 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             assert "distillation" in training_cfg
 
             print_to_end("-")
-            print("[*] Configuring `DistillationTrainer` wrapper for knowledge distillation.")
+            print(
+                "[*] Configuring `DistillationTrainer` wrapper for knowledge distillation."
+            )
             distill_cfg = training_cfg["distillation"]
 
             # create teacher model
@@ -55,12 +57,15 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             if "model" in teacher_cfg and "training" in teacher_cfg:
                 assert "cfg" not in teacher_cfg
                 if "state_dict_path" not in teacher_cfg["model"]:
-                    warnings.warn("`training.distillation.teacher.model.state_dict_path` \
-                        is not specified, the teacher model might be starting from a random state.", RuntimeWarning)
+                    warnings.warn(
+                        "`training.distillation.teacher.model.state_dict_path` \
+                        is not specified, the teacher model might be starting from a random state.",
+                        RuntimeWarning,
+                    )
                 self.t_model = catalog.lightning.build_from_cfg(
                     model_cfg=teacher_cfg["model"],
                     training_cfg=teacher_cfg["training"],
-                    const_cfg=teacher_cfg.get("const", {})
+                    const_cfg=teacher_cfg.get("const", {}),
                 )
 
             elif "cfg" in teacher_cfg:  # geneate model from path to config files.
@@ -68,16 +73,21 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
                 _teacher_cfg = read_configs(teacher_cfg["cfg"])
 
                 if "state_dict_path" not in _teacher_cfg["model"]:
-                    warnings.warn("`training.distillation.teacher.model.state_dict_path` \
-                        is not specified, the teacher model might be starting from a random state.", RuntimeWarning)
+                    warnings.warn(
+                        "`training.distillation.teacher.model.state_dict_path` \
+                        is not specified, the teacher model might be starting from a random state.",
+                        RuntimeWarning,
+                    )
                 self.t_model = catalog.lightning.build_from_cfg(
                     model_cfg=_teacher_cfg["model"],
                     training_cfg=_teacher_cfg["training"],
-                    const_cfg=_teacher_cfg.get("const", {})
+                    const_cfg=_teacher_cfg.get("const", {}),
                 )
 
             else:
-                raise ValueError(f"Recieved invalid arguments for teacher model: {teacher_cfg.keys()}")
+                raise ValueError(
+                    f"Recieved invalid arguments for teacher model: {teacher_cfg.keys()}"
+                )
 
             print_to_end(".")
             self.t_model.eval()
@@ -90,10 +100,14 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
                 self.use_t_hook = False
                 if "student" in distill_cfg["hooks"]:
                     self.use_s_hook = True
-                    self.s_hook = Hook(network=self, cfg=distill_cfg["hooks"]["student"])
+                    self.s_hook = Hook(
+                        network=self, cfg=distill_cfg["hooks"]["student"]
+                    )
                 if "teacher" in distill_cfg["hooks"]:
                     self.use_t_hook = True
-                    self.t_hook = Hook(network=self.t_model, cfg=distill_cfg["hooks"]["teacher"])
+                    self.t_hook = Hook(
+                        network=self.t_model, cfg=distill_cfg["hooks"]["teacher"]
+                    )
 
             # build criterion
             print("<3/4> Criterion for computing knowledge distillation loss.")
@@ -106,11 +120,15 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             print("<4/4> Additional arguments for knowledge distillation.")
             self.kd_is_enabled = True
             if "early_stop_epoch" in distill_cfg:
-                assert "early_stop_step" not in distill_cfg, "Only one should be specified."
+                assert (
+                    "early_stop_step" not in distill_cfg
+                ), "Only one should be specified."
                 print("early_stop_epoch:", distill_cfg["early_stop_epoch"])
                 self.kd_early_stop_epoch = distill_cfg["early_stop_epoch"]
             if "early_stop_step" in distill_cfg:
-                assert "early_stop_epoch" not in distill_cfg, "Only one should be specified."
+                assert (
+                    "early_stop_epoch" not in distill_cfg
+                ), "Only one should be specified."
                 print("early_stop_step:", distill_cfg["early_stop_step"])
                 self.kd_early_stop_step = distill_cfg["early_stop_step"]
             """
@@ -147,12 +165,16 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
             loss, res = super()._training_step(batch, *args)
 
             # check early stopping
-            if hasattr(self, "kd_early_stop_epoch") and \
-                    self.kd_early_stop_epoch == self.current_epoch:
+            if (
+                hasattr(self, "kd_early_stop_epoch")
+                and self.kd_early_stop_epoch == self.current_epoch
+            ):
                 print("Early-stopping knowledge distillation.")
                 self.kd_is_enabled = False
-            if hasattr(self, "kd_early_stop_step") and \
-                    self.kd_early_stop_step == self.global_step:
+            if (
+                hasattr(self, "kd_early_stop_step")
+                and self.kd_early_stop_step == self.global_step
+            ):
                 print("Early-stopping knowledge distillation.")
                 self.kd_is_enabled = False
 
@@ -165,4 +187,5 @@ def DistillationTrainer(model_cfg, training_cfg, const_cfg=None, *args, **kwargs
                 if kd_res is not None:
                     res.update(kd_res)
             return loss, res
+
     return _DistillationTrainer(model_cfg, training_cfg, const_cfg, *args, **kwargs)

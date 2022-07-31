@@ -1,13 +1,18 @@
+from typing import List, Union
+
 import torch
-from typing import Union, List
+
+from .base import _BaseTransform
 
 
-class ToTensor():
+class ToTensor(_BaseTransform):
     """
     keys: List[str]
         list of keys to convert.
     """
-    def __init__(self, keys: Union[None, List[str]] = None):
+
+    def __init__(self, keys: Union[None, List[str]] = None, *args, **kwargs):
+        super(ToTensor, self).__init__(*args, **kwargs)
         self.keys = keys
 
     def __call__(self, d):
@@ -19,12 +24,14 @@ class ToTensor():
             return d
 
 
-class RemoveKeys():
+class RemoveKeys(_BaseTransform):
     """
     keys: List[str]
         list of keys to remove.
     """
-    def __init__(self, keys):
+
+    def __init__(self, keys: List[str], *args, **kwargs):
+        super(RemoveKeys, self).__init__(*args, **kwargs)
         self.keys = keys
 
     def __call__(self, d):

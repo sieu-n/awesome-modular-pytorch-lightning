@@ -1,1 +1,1 @@
-from .logit_based import LogitKLCriterion, LogitMSECriterion # noqa
+from .logit_based import LogitKLCriterion, LogitMSECriterion  # noqa

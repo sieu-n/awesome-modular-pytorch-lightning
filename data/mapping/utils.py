@@ -10,6 +10,7 @@ class PrecomputeDataset(Dataset):
     training when the entire dataset can be cached. Be aware to apply data
     augmentations after applying this dataset.
     """
+
     def __init__(self, base_dataset):
         self.memory = [base_dataset[x] for x in range(len(base_dataset))]
 
@@ -36,6 +37,7 @@ class ClassBalanceTrainValSplit(RemapIndices):
     Split base dataset into two subsets and use one of them. The validation set
     is chosen to have the same number of samples on each class.
     """
+
     def __init__(self, base_dataset, subset, count, seed=42, const_cfg=None):
         rng = random.Random(seed)
 
@@ -73,6 +75,7 @@ class TrainValSplit(RemapIndices):
     """
     Split base dataset into two subsets and use one of them based on the `subset` value.
     """
+
     def __init__(
         self,
         base_dataset,

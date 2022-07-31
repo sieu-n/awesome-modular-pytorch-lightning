@@ -4,8 +4,8 @@ from lightning.vision import (  # noqa
     DistillationTrainer,
     MMDetectionTrainer,
 )
-
 from utils.pretrained import load_model_weights
+
 from ._get import _get
 
 

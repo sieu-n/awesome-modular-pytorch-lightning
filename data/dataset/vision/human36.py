@@ -1,10 +1,10 @@
-from copy import deepcopy
-import os
 import json
-import numpy as np
-from tqdm import tqdm
-from torch.utils.data import Dataset
+import os
+from copy import deepcopy
 
+import numpy as np
+from torch.utils.data import Dataset
+from tqdm import tqdm
 from utils.camera import Human36Camera
 
 
@@ -37,7 +37,9 @@ class Human36AnnotationDataset(Dataset):
         self.sampler = []
 
         for idx, subject_id in enumerate(subjects):
-            print(f"Loading data from subject `{subject_id}` ({idx + 1} / {len(subjects)})...")
+            print(
+                f"Loading data from subject `{subject_id}` ({idx + 1} / {len(subjects)})..."
+            )
             subject_data = self.load_subject_data(subject_id)
 
             # build cameras
@@ -47,8 +49,13 @@ class Human36AnnotationDataset(Dataset):
             }
 
             # load data
-            for sample_idx, sample_meta in tqdm(enumerate(subject_data["data"]["images"])):
-                assert subject_data["data"]["annotations"][sample_idx]["id"] == subject_data["data"]["images"][sample_idx]["id"]
+            for sample_idx, sample_meta in tqdm(
+                enumerate(subject_data["data"]["images"])
+            ):
+                assert (
+                    subject_data["data"]["annotations"][sample_idx]["id"]
+                    == subject_data["data"]["images"][sample_idx]["id"]
+                )
                 action_idx = str(sample_meta["action_idx"])
                 subaction_idx = str(sample_meta["subaction_idx"])
                 camera_idx = str(sample_meta["cam_idx"])
@@ -56,7 +63,9 @@ class Human36AnnotationDataset(Dataset):
 
                 key = (action_idx, subaction_idx, camera_idx, frame_idx)
                 self.data[key] = {
-                    "joint": np.array(subject_data["joint"][action_idx][subaction_idx][frame_idx]),
+                    "joint": np.array(
+                        subject_data["joint"][action_idx][subaction_idx][frame_idx]
+                    ),
                     "meta": sample_meta,
                     "bbox": subject_data["data"]["annotations"][sample_idx],
                     "camera": self.cameras[subject_id][camera_idx],
@@ -65,8 +74,12 @@ class Human36AnnotationDataset(Dataset):
 
     def load_subject_data(self, subject_id):
         def load_json_data(subject_id, data_type):
-            data_path = os.path.join(self.base_dir, f'annotations/Human36M_subject{subject_id}_{data_type}.json')
+            data_path = os.path.join(
+                self.base_dir,
+                f"annotations/Human36M_subject{subject_id}_{data_type}.json",
+            )
             return json.load(open(data_path))
+
         return {
             "data": load_json_data(subject_id, "data"),
             "camera": load_json_data(subject_id, "camera"),
@@ -100,6 +113,7 @@ class Human36AnnotationDatasetBase(Dataset):
         Subjects to use while creating dataset. The common preocedure is to use
         subjects [1, 5, 6, 7, 8] for training and [9, 11] for validation.
     """
+
     def __init__(self, base_dir, subjects):
         self.base_dir = base_dir
         self.subjects = subjects
@@ -110,16 +124,26 @@ class Human36AnnotationDatasetBase(Dataset):
         self.data = {}
         self.sampler = []
         for idx, subject_id in enumerate(subjects):
-            print(f"Loading data from subject `{subject_id}` ({idx + 1} / {len(subjects)})...")
+            print(
+                f"Loading data from subject `{subject_id}` ({idx + 1} / {len(subjects)})..."
+            )
             subject_data = self.load_subject_data(subject_id)
             self.data[subject_id] = {}
             # build cameras
-            self.cameras[subject_id] = {idx: Human36Camera(**camera[idx]) for idx in subject_data["camera"].keys()}
+            self.cameras[subject_id] = {
+                idx: Human36Camera(**camera[idx])
+                for idx in subject_data["camera"].keys()
+            }
 
             _joint_data = {}
             # load data
-            for sample_idx, sample_meta in tqdm(enumerate(subject_data["data"]["images"])):
-                assert subject_data["data"]["annotations"][sample_idx]["id"] == subject_data["data"]["images"][sample_idx]["id"]
+            for sample_idx, sample_meta in tqdm(
+                enumerate(subject_data["data"]["images"])
+            ):
+                assert (
+                    subject_data["data"]["annotations"][sample_idx]["id"]
+                    == subject_data["data"]["images"][sample_idx]["id"]
+                )
                 action_idx = str(sample_meta["action_idx"])
                 subaction_idx = str(sample_meta["subaction_idx"])
                 frame_idx = int(sample_meta["frame_idx"])
@@ -136,18 +160,21 @@ class Human36AnnotationDatasetBase(Dataset):
                     print(f"Creating: {CLIP_IDX}")
                 self.data[CLIP_IDX][frame_idx] = _data
 
-
                 if CLIP_IDX not in _joint_data:
                     _joint_data[CLIP_IDX] = {}
-                _joint_data[CLIP_IDX][frame_idx] = np.array(subject_data["joint"][action_idx][subaction_idx][str(frame_idx)])
-                self.sampler.append({
-                    "key": CLIP_IDX,
-                    "subject": subject_id, 
-                    "action": action_idx,
-                    "subaction": subaction_idx,
-                    "camera": camera_idx,
-                    "frame": frame_idx, 
-                })
+                _joint_data[CLIP_IDX][frame_idx] = np.array(
+                    subject_data["joint"][action_idx][subaction_idx][str(frame_idx)]
+                )
+                self.sampler.append(
+                    {
+                        "key": CLIP_IDX,
+                        "subject": subject_id,
+                        "action": action_idx,
+                        "subaction": subaction_idx,
+                        "camera": camera_idx,
+                        "frame": frame_idx,
+                    }
+                )
         # organize joints into list
         for CLIP_IDX in _joint_data:
             d = _joint_data[CLIP_IDX]
@@ -156,11 +183,14 @@ class Human36AnnotationDatasetBase(Dataset):
             self.joint_data[CLIP_IDX] = d
             print(f"Creating: {CLIP_IDX}", "  d.shape:", d.shape)
 
-
     def load_subject_data(self, subject_id):
         def load_json_data(subject_id, data_type):
-            data_path = os.path.join(self.base_dir, f'annotations/Human36M_subject{subject_id}_{data_type}.json')
+            data_path = os.path.join(
+                self.base_dir,
+                f"annotations/Human36M_subject{subject_id}_{data_type}.json",
+            )
             return json.load(open(data_path))
+
         return {
             "data": load_json_data(subject_id, "data"),
             "camera": load_json_data(subject_id, "camera"),
@@ -182,7 +212,7 @@ class Human36AnnotationDatasetBase(Dataset):
         sample_left = max(frame_idx - sample_width, 0)
         sample_right = min(frame_idx + sample_width + 1, len(_data) - 1)
 
-        joints = joints[sample_left: sample_right]
+        joints = joints[sample_left:sample_right]
         if frame_idx - sample_width < 0:
             pad_len = sample_width - frame_idx
             padded = np.tile(joints[0], (pad_len, 1, 1))

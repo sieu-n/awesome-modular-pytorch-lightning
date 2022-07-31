@@ -2,13 +2,15 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
+from PIL import Image
+
 from ..base import _BaseTransform
 from .util import str2interpolation
-from PIL import Image
 
 
 class _ImageTransform(_BaseTransform):
-    def __init__(self, key="images"):
+    def __init__(self, key="images", *args, **kwargs):
+        super(_ImageTransform, self).__init__(*args, **kwargs)
         self.key = key
 
     def __call__(self, d):
@@ -167,6 +169,7 @@ class ImageToTensor(_ImageTransform):
     torchvision.transform is intended for 2d / 3d images. General conversion
     should be done using `data.transforms.common.ToTensor` instead.
     """
+
     def transform(self, image):
         return TF.to_tensor(image)
 

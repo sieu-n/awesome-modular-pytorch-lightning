@@ -153,18 +153,18 @@ model = timm.create_model("resnet50", pretrained=True)
 ```
 
 To use `timm` models,
-- set `model.backbone.TYPE` to `timm`.
-- set `model.backbone.ID` to the model name.
+- set `model.backbone.name` to `TimmNetwork`.
+- set `model.backbone.args.name` to the model name.
 - set additional arguments in `model.backbone.cfg`.
-- set `model.backbone.out_features` to the number of output channels.
 - Refer to: `configs/vision/models/resnet/resnet50-timm.yaml`
 ```
 model:
   backbone:
-    TYPE: "timm"
-    ID: "resnet50"
-    cfg:
-      pretrained: True
+    name: "TimmNetwork"
+    args:
+      name: "resnet50"
+      args:
+        pretrained: True
     out_features: 2048
 ```
 
@@ -179,19 +179,20 @@ model = torchvision.models.resnet50()
 ```
 
 To use `timm` models,
-- set `model.backbone.TYPE` to `torchvision`.
-- set `model.backbone.ID` to the model name.
-- set additional arguments in `models.backbone.cfg`.
-- set `model.backbone.out_features` to the number of output channels.
+- set `model.backbone.name` to `TorchvisionNetwork`.
+- set `model.backbone.args.name` to the model name.
+- set additional arguments in `models.backbone.args`.
+- set `model.backbone.drop_after` to only use feature extractor.
 - Refer to: `configs/vision/models/resnet/resnet50-torchvision.yaml`
 ```
 model:
   backbone:
-    TYPE: "torchvision"
-    ID: "resnet50"
-    cfg:
-      pretrained: False
-    drop_after: "avgpool"
+    name: "TorchvisionNetwork"
+    args:
+      name: "resnet50"
+      args:
+        pretrained: False
+      drop_after: "avgpool"
     out_features: 2048
 ```
 
@@ -520,10 +521,11 @@ callbacks:
 ```yaml
 model:
   backbone:
-    TYPE: "timm"
-    ID: "resnet50"
-    cfg:
-      pretrained: False
+    name: "TimmNetwork"
+    args:
+      name: "resnet50"
+      args:
+        pretrained: False
     out_features: 2048
 
     weights:

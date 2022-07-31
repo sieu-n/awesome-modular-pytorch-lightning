@@ -28,22 +28,17 @@ transform:
     [
       "trn,val",
       [
-        {"name": "Create2DProjection"},
-        {"name": "WorldToCameraCoord"},
-        {"name": "CenterAroundJoint"},
-        {
-          "name": "ToTensor",
-          "args": {
-            "keys": ["joint", "joint_2d"]
-          }
-        },
+        { "name": "Create2DProjection" },
+        { "name": "WorldToCameraCoord" },
+        { "name": "CenterAroundJoint" },
+        { "name": "ToTensor", "args": { "keys": ["joint", "joint_2d"] } },
         {
           "name": "Normalize",
           "args":
             {
               "mean": "{const.normalization_mean}",
               "std": "{const.normalization_std}",
-              "key": "joint"
+              "key": "joint",
             },
         },
         {
@@ -52,7 +47,7 @@ transform:
             {
               "mean": "{const.normalization_mean_2d}",
               "std": "{const.normalization_std_2d}",
-              "key": "joint_2d"
+              "key": "joint_2d",
             },
         },
       ],

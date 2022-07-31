@@ -1,9 +1,5 @@
+from data.transforms.common import RemoveKeys, ToTensor  # noqa
 from data.transforms.vision import *  # noqa
-from data.transforms.common import ( # noqa
-    ToTensor,
-    RemoveKeys,
-)
-
 
 from ._get import _get
 

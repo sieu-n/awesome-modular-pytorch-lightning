@@ -1,35 +1,33 @@
-from .classification import ( # noqa
-    TupleToClassificationData,
+from .classification import (  # noqa
     ClassificationLabelEncoder,
     RandomResizedCropAndInterpolation,
     RandomRotation,
     TrivialAugmentWide,
+    TupleToClassificationData,
 )
-from .detection import ( # noqa
-    DetectionCropToRatio,
+from .detection import (  # noqa
     DetectionConstrainImageSize,
+    DetectionCropToRatio,
     DetectionHFlip,
     DetectionVFlip,
-    YOLObbox2Pytorch,
-    Pytorchbbox2YOLO,
-    MMdetDataset2Torchvision,
     DetectionVOCLabelTransform,
+    MMdetDataset2Torchvision,
+    Pytorchbbox2YOLO,
+    YOLObbox2Pytorch,
 )
-from .pose_lifting import ( # noqa
-    WorldToCameraCoord,
-    CameraToWorldCoord,
-    Create2DProjection,
-)
-from .pose import ( # noqa
-    CenterAroundJoint
-)
-from .image import ( # noqa
-    Normalize,
+from .image import (  # noqa
     ColorJitter,
-    UnNormalize,
     CutOut,
     ImageToTensor,
+    Normalize,
+    Resize,
     ToPIL,
-    Resize
+    UnNormalize,
+)
+from .pose import CenterAroundJoint  # noqa
+from .pose_lifting import (  # noqa
+    CameraToWorldCoord,
+    Create2DProjection,
+    WorldToCameraCoord,
 )
 from .util import TorchTransforms  # noqa

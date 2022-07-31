@@ -21,10 +21,11 @@ training:
         ID: ClassificationTrainer
       model:
         backbone:
-          ID: resnet50
-          TYPE: timm
-          cfg:
-            pretrained: false
+          name: "TimmNetwork"
+          args:
+            name: resnet50
+            args:
+              pretrained: false
           out_features: 2048
         init_hook:
           low_res:
@@ -44,23 +45,23 @@ training:
 
       const:
         label_map:
-        - airplane
-        - automobile
-        - bird
-        - cat
-        - deer
-        - dog
-        - frog
-        - horse
-        - ship
-        - truck
+          - airplane
+          - automobile
+          - bird
+          - cat
+          - deer
+          - dog
+          - frog
+          - horse
+          - ship
+          - truck
         normalization_mean:
-        - 0.4914
-        - 0.4822
-        - 0.4465
+          - 0.4914
+          - 0.4822
+          - 0.4465
         normalization_std:
-        - 0.2023
-        - 0.1994
-        - 0.201
+          - 0.2023
+          - 0.1994
+          - 0.201
         num_classes: 10
         task: image classification

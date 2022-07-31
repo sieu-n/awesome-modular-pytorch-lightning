@@ -1,11 +1,12 @@
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class DistillLogits(nn.Module):
     """
     Base class for criterions that implement logit-based knowledge distillation.
     """
+
     def compute_loss(self, y_s, y_t):
         raise NotImplementedError()
 
@@ -31,9 +32,13 @@ class DistillLogits(nn.Module):
         return loss, {"teacher_logits": y_t}
 
     def get_logits(self, s_hook, t_hook):
-        assert isinstance(s_hook, dict) and len(s_hook) == 1, f"Invalid value \
+        assert (
+            isinstance(s_hook, dict) and len(s_hook) == 1
+        ), f"Invalid value \
             were passed to criterion from student hook, got {s_hook} of type {type(s_hook)}"
-        assert isinstance(t_hook, dict) and len(t_hook) == 1, f"Invalid value \
+        assert (
+            isinstance(t_hook, dict) and len(t_hook) == 1
+        ), f"Invalid value \
             were passed to criterion from teacher hook, got {t_hook} of type {type(t_hook)}"
 
         return next(iter(s_hook.values())), next(iter(t_hook.values()))
@@ -50,6 +55,7 @@ class LogitKLCriterion(DistillLogits):
     T: float
         temperature term that is applied to soften the logits of the teacher and student.
     """
+
     def __init__(self, alpha: float, T: float) -> None:
         super().__init__()
         self.alpha = alpha
@@ -73,6 +79,7 @@ class LogitMSECriterion(DistillLogits):
     T: float
         temperature term that is applied to soften the logits of the teacher and student.
     """
+
     def __init__(self, alpha: float, T: float) -> None:
         super().__init__()
         self.alpha = alpha

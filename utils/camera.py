@@ -1,8 +1,9 @@
-import numpy as np
 from copy import deepcopy
 
+import numpy as np
 
-class Human36Camera():
+
+class Human36Camera:
     """
     Create camera class for transforming coordinates with regards to the camera
     for the Human3.6M 3D pose estimation dataset.
@@ -18,6 +19,7 @@ class Human36Camera():
     T: list
         3x1 Camera translation parameters
     """
+
     def __init__(self, R, c, f, t):
         self.R = np.array(R)
         self.c = np.array(c)
@@ -81,7 +83,7 @@ class Human36Camera():
 
         X = self.world_to_camera_coord(P).T
         XX = X[:2, :] / X[2, :]
-        r2 = XX[0, :]**2 + XX[1, :]**2
+        r2 = XX[0, :] ** 2 + XX[1, :] ** 2
 
         # don't consider camer focal coefficients for now.
         # N = P.shape[0]
@@ -92,6 +94,8 @@ class Human36Camera():
         Proj = (self.f.reshape(-1, 1) * XX) + self.c.reshape(-1, 1)
         Proj = Proj.T
 
-        D = X[2, ]
+        D = X[
+            2,
+        ]
 
         return Proj, D, r2

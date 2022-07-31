@@ -32,12 +32,9 @@ class _BaseLightningTrainer(_LightningModule):
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
             print(f"(1/6) Building backbone model: {backbone_cfg['ID']}")
-
-            self.backbone = catalog.models.build_backbone(
-                name=backbone_cfg["ID"],
-                model_type=backbone_cfg["TYPE"],
-                drop_after=backbone_cfg.get("drop_after", None),
-                **backbone_cfg.get("cfg", {}),
+            self.backbone = catalog.backbone.build(
+                name=backbone_cfg["name"],
+                args=backbone_cfg.get("args", {}),
             )
             # load backbone weights from url / filepath
             if "weights" in backbone_cfg:

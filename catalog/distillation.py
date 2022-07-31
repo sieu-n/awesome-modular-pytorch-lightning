@@ -1,5 +1,5 @@
 # list of criterions(loss functions) for knowledge distillation
-from algorithms.distillation.criterion import ( # noqa
+from algorithms.distillation.criterion import (  # noqa
     LogitKLCriterion,
     LogitMSECriterion,
 )

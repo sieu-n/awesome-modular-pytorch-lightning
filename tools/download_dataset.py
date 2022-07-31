@@ -1,11 +1,12 @@
 # reference: https://github.com/open-mmlab/mmdetection/blob/master/tools/misc/download_dataset.py
 import argparse
-from itertools import repeat
 import os
+from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from tarfile import TarFile
 from zipfile import ZipFile
+
 try:
     import gdown
 except ImportError:
@@ -35,7 +36,9 @@ def parse_args():
     return args
 
 
-def download(url, dir, download_from="url", output="", unzip=True, delete=False, threads=1):
+def download(
+    url, dir, download_from="url", output="", unzip=True, delete=False, threads=1
+):
     def download_one(url, dir):
         dir = os.path.join(dir, output)
         if download_from == "url":
@@ -104,9 +107,7 @@ def main():
         ],
     )
     data2gdrive_id = dict(
-        human36m_annotation=[
-            "1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"
-        ],
+        human36m_annotation=["1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"],
         human36m_images=[
             "1AKpQOuRmsWgVJwHAPvUiXlnaXJdeBSYf",
             "1abMytHP_BdBaOMzkelRYf77jrTDZyfRZ",
@@ -136,7 +137,15 @@ def main():
     else:
         raise ValueError("Invalid name: %s" % args.dataset_name)
 
-    download(url, dir=path, download_from=download_from, output=output, unzip=args.unzip, delete=args.delete, threads=args.threads)
+    download(
+        url,
+        dir=path,
+        download_from=download_from,
+        output=output,
+        unzip=args.unzip,
+        delete=args.delete,
+        threads=args.threads,
+    )
 
 
 if __name__ == "__main__":

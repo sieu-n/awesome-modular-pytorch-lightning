@@ -316,7 +316,7 @@ class Experiment:
             if "collate_fn" in subset_dataloader_cfg:
                 subset_dataloader_cfg["collate_fn"] = catalog.collate_fn.build(
                     name=subset_dataloader_cfg["collate_fn"]["name"],
-                    args=subset_dataloader_cfg["collate_fn"].get("args", {})
+                    args=subset_dataloader_cfg["collate_fn"].get("args", {}),
                 )
             # build dataloader
             dataloaders[subset] = DataLoader(

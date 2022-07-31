@@ -64,6 +64,7 @@ class RandomOrder:
     """
     Compose transforms but in a random order
     """
+
     def __init__(self, transforms):
         self.transforms = transforms
 
