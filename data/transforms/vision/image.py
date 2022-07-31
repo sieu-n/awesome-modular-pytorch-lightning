@@ -2,8 +2,8 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-from data.transforms.base import _BaseTransform
-from data.transforms.vision.util import str2interpolation
+from ..base import _BaseTransform
+from .util import str2interpolation
 from PIL import Image
 
 

@@ -1,4 +1,5 @@
 import copy
+from ..base import _BaseTransform
 
 
 def center_around_joint(P, center_joint_idx=0):
@@ -21,8 +22,9 @@ def center_around_joint(P, center_joint_idx=0):
     return P_relative, root_position
 
 
-class CenterAroundJoint():
-    def __init__(self, center_joint_idx=0):
+class CenterAroundJoint(_BaseTransform):
+    def __init__(self, center_joint_idx=0, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.center_joint_idx = center_joint_idx
 
     def __call__(self, d):

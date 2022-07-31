@@ -1,3 +1,10 @@
+from .classification import ( # noqa
+    TupleToClassificationData,
+    ClassificationLabelEncoder,
+    RandomResizedCropAndInterpolation,
+    RandomRotation,
+    TrivialAugmentWide,
+)
 from .detection import ( # noqa
     DetectionCropToRatio,
     DetectionConstrainImageSize,
@@ -8,7 +15,14 @@ from .detection import ( # noqa
     MMdetDataset2Torchvision,
     DetectionVOCLabelTransform,
 )
-from .pose_lifting import * # noqa
+from .pose_lifting import ( # noqa
+    WorldToCameraCoord,
+    CameraToWorldCoord,
+    Create2DProjection,
+)
+from .pose import ( # noqa
+    CenterAroundJoint
+)
 from .image import ( # noqa
     Normalize,
     ColorJitter,

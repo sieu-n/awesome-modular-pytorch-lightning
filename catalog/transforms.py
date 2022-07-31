@@ -1,7 +1,9 @@
-from data.transforms.vision.classification import *  # noqa
-from data.transforms.vision.detection import *  # noqa
-from data.transforms.vision.image import *  # noqa
-from data.transforms.vision.util import *  # noqa
+from data.transforms.vision import *  # noqa
+from data.transforms.common import ( # noqa
+    ToTensor,
+    RemoveKeys,
+)
+
 
 from ._get import _get
 
