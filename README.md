@@ -77,9 +77,10 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/utils/train.yaml
 ```
 
-## `Experiment` factory class
+## `Experiment` and `catalog`
 
-LightCollections can also be used as a library for extending your pytorch lightning code. `train.py` simply conveys the config file to the `Experiment` class defined in `main.py` to build components such as dataset, dataloaders, models, and callbacks.
+LightCollections can also be used as a library for extending your pytorch lightning code. `train.py` simply conveys the config file to the `Experiment` class defined in `main.py` to build components such as dataset, dataloaders, models, and callbacks, which in tern uses components defined in `catatlog`.
+
 ```Python
     ...
     experiment = Experiment(cfg)

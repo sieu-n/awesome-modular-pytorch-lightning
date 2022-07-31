@@ -5,7 +5,7 @@ name: "3D-Pose-Estimation"
 
 debug:
   network_summary:
-    input_shape: [64, 17, 3]
+    input_shape: [17, 2]
 
 dataloader:
   base_dataloader:
@@ -35,7 +35,7 @@ training:
       when: "trn"
       name: TorchMetric
       args:
-        name: "MeanMetric"
+        NAME: "MeanMetric"
       update:
         value: "loss"
     mpjpe:

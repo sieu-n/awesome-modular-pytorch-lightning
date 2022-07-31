@@ -1,9 +1,5 @@
 import torch
-import torch.nn.functional as F
-from algorithms.augmentation.mixup import MixupCutmix
-from algorithms.rdrop import compute_kl_loss
 from lightning.base import _BaseLightningTrainer
-from torch import nn
 
 
 class PoseLiftingTrainer(_BaseLightningTrainer):
@@ -14,7 +10,8 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
     """
     def init(self, model_cfg, training_cfg):
         # mixup and cutmix for classification
-        pass
+        self.normalization_mean = torch.tensor(self.const_cfg["normalization_mean"])
+        self.normalization_std = torch.tensor(self.const_cfg["normalization_std"])
 
     def forward(self, x):
         reconstruction = self.backbone(x)
@@ -37,6 +34,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         assert "joint" in batch
         assert "location" in batch
         assert "meta" in batch
+        assert "idx" in batch
         assert "camera" in batch
 
         x, y = batch["joint_2d"], batch["joint"]
@@ -60,7 +58,6 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "loss": loss,
             "action_idx": batch["meta"]["action_idx"],
         }
-
         return loss, res
 
     def evaluate(self, batch, stage=None):
@@ -78,6 +75,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         assert "joint" in batch
         assert "location" in batch
         assert "meta" in batch
+        assert "idx" in batch
         assert "camera" in batch
 
         x, y = batch["joint_2d"], batch["joint"]
@@ -92,10 +90,10 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         location = batch["location"]
         return {
             "joints_gt_camera": y,
-            "joints_gt_global": self.decode(y, location, camera),
+            "joints_gt_global": self.decode(y.cpu(), location.cpu(), camera),
             "joints_2d": x,
             "reconstruction_camera": reconstruction,
-            "reconstruction_global": self.decode(reconstruction, location, camera),
+            "reconstruction_global": self.decode(reconstruction.cpu(), location.cpu(), camera),
             "loss": loss,
             "action_idx": batch["meta"]["action_idx"],
         }
@@ -106,14 +104,15 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         pred = self(x)
         return pred["logits"]
 
-    def decode(self, joints, locations, camera):
+    def decode(self, joints, locations, cameras):
         """
         joints: tensor
             bs x 17 x 3 shaped 3d joints denoting relative locations in camera
             coordinates.
         locations: tensor
             bs shaped locations denoting global hip joint location
-
+        cameras: list[Human36Camera]
+            bs number of cameras for each joint.
         Returns
         -------
         joints: tensor
@@ -121,14 +120,20 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         """
         # unnormalize
         batch_size = joints.size(0)
-        normalization_mean = torch.tile(self.normalization_mean, (batch_size, 3, 1)).permute(0, 2, 1).to(DEVICE)
-        normalization_std = torch.tile(self.normalization_std, (batch_size, 3, 1)).permute(0, 2, 1).to(DEVICE)
+        DEVICE = joints.device
+
+        normalization_mean = torch.tile(
+            self.normalization_mean, (batch_size, 3, 1)
+        ).permute(0, 2, 1).to(DEVICE)
+        normalization_std = torch.tile(
+            self.normalization_std, (batch_size, 3, 1)
+        ).permute(0, 2, 1).to(DEVICE)
 
         joints = joints * normalization_std + normalization_mean
 
         # decenter
-        joints = locations + joints
+        joints = locations.tile(17, 1, 1).permute(1, 0, 2) + joints
 
         # to world coord
-        joints = camera.camera_to_world_coord(joints)
+        joints = [cameras[idx].camera_to_world_coord(joint) for idx, joint in enumerate(joints)]
         return joints

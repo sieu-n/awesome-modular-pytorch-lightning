@@ -66,6 +66,12 @@ class Human36AnnotationDataset(Dataset):
                     "joint": np.array(
                         subject_data["joint"][action_idx][subaction_idx][frame_idx]
                     ),
+                    "idx": {
+                        "action_idx": action_idx,
+                        "subaction_idx": subaction_idx,
+                        "camera_idx": camera_idx,
+                        "frame_idx": frame_idx,
+                    },
                     "meta": sample_meta,
                     "bbox": subject_data["data"]["annotations"][sample_idx],
                     "camera": self.cameras[subject_id][camera_idx],

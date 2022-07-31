@@ -13,10 +13,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data.dataloader import default_collate
 
-try:
-    from mmcv.parallel.data_container import DataContainer
-except ImportError:
-    pass
+from utils.data_container import DataContainer
 
 
 def mmcv_datacontainer_collate(batch):

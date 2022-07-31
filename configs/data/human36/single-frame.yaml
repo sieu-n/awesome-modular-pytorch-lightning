@@ -1,9 +1,16 @@
 # create single frame annotation dataset
+dataloader:
+  base_dataloader: # depends on hardware:)
+    collate_fn:
+      # use `mmcv.parallel.DataContainer` to send Camera object.
+      name: mmcv_datacontainer_collate
+
 dataset:
   dataset_base_cfg:
     name: "Human36AnnotationDataset"
     args:
       base_dir: "./human36m"
+
   dataset_subset_cfg:
     trn:
       args:
@@ -18,6 +25,15 @@ dataset:
         subjects:
           - 9
           - 11
+  mapping:
+    [
+      [
+        "trn,val",
+        [
+          {"name": "PrecomputeDataset"}
+        ]
+      ]
+    ]
 
 transform:
   [
@@ -28,6 +44,13 @@ transform:
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         { "name": "ToTensor", "args": { "keys": ["joint", "joint_2d"] } },
+        {
+          "name": CollectDataContainer,
+          "args": {
+            "keys": ["camera"],
+            "cpu_only": [true],
+          }
+        },
         {
           "name": "Normalize",
           "args":

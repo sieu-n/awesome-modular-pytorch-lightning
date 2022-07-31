@@ -2,7 +2,7 @@ from typing import List, Union
 
 import torch
 try:
-    from mmcv.parallel import DataContainer
+    from utils.data_container import DataContainer
 except ImportError:
     pass
 from .base import _BaseTransform
@@ -19,7 +19,7 @@ class ToTensor(_BaseTransform):
         self.keys = keys
 
     def __call__(self, d):
-        if self.key is None:
+        if self.keys is None:
             return torch.tensor(d)
         else:
             for k in self.keys:
@@ -48,11 +48,27 @@ class CollectDataContainer(_BaseTransform):
     keys: List[str]
         list of keys to wrap inside `DataContainer` object.
     """
-    def __init__(self, keys: List[str], *args, **kwargs):
-        super(RemoveKeys, self).__init__(*args, **kwargs)
+    def __init__(
+        self,
+        keys: List[str],
+        cpu_only: List[bool] = None,
+        stack: List[bool] = None,
+        *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
         self.keys = keys
+        if cpu_only is None:
+            cpu_only = [False] * len(keys)
+        else:
+            assert len(stack) == len(cpu_only), f"cpu_only must have length {len(keys)} but found {len(cpu_only)}"
+        self.cpu_only = cpu_only
+        if stack is None:
+            stack = [False] * len(keys)
+        else:
+            assert len(stack) == len(keys), f"stack must have length {len(keys)} but found {len(stack)}"
+        self.stack = stack
 
     def __call__(self, d):
-        for k in self.keys:
-            d[k] = DataContainer(d[k])
+        for idx, k in enumerate(self.keys):
+            d[k] = DataContainer(d[k], cpu_only=self.cpu_only[idx])
         return d

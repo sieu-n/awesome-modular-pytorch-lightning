@@ -11,8 +11,8 @@ class PrecomputeDataset(Dataset):
     augmentations after applying this dataset.
     """
 
-    def __init__(self, base_dataset):
-        self.memory = [base_dataset[x] for x in range(len(base_dataset))]
+    def __init__(self, base_dataset, const_cfg=None):
+        self.memory = [base_dataset[x] for x in tqdm(range(len(base_dataset)))]
 
     def __len__(self):
         return len(self.memory)
