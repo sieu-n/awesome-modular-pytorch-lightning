@@ -1,6 +1,3 @@
-debug:
-  view_train_augmentation:
-    is_xywh: False
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:

@@ -243,7 +243,7 @@ transform: [
     [
       "trn,val,test",
       [
-        { "name": "ToTensor", "args": {} },
+        { "name": "ImageToTensor", "args": {} },
         {
           "name": "Normalize",
           "args":

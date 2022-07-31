@@ -54,6 +54,13 @@ training:
 
 debug:
   view_train_augmentation:
+    save_to: "vis/training_samples.png"
+    subplot_dim: [4, 4]
+    plot_size: 5
+    
+    normalization_mean: "{const.normalization_mean}"
+    normalization_std: "{const.normalization_std}"
+    
     is_xywh: False
     bbox_unnormalization: False
     preprocess_f: convert-mmdetbbox

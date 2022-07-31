@@ -4,12 +4,6 @@ VERBOSE: "DEFAULT"
 DEBUG_MODE: False
 seed: True
 
-debug:
-  view_train_augmentation:
-    save_to: "vis/training_samples.png"
-    subplot_dim: [4, 4]
-    plot_size: 5
-
 trainer:
   strategy: "dp"
   accumulate_grad_batches: 1

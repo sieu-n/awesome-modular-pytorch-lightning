@@ -8,8 +8,14 @@ from PIL import Image
 
 
 class _ImageTransform(_BaseTransform):
+    def __init__(self, key="images"):
+        self.key = key
+
     def __call__(self, d):
-        d["images"] = self.transform(d["images"])
+        if self.key is None:
+            d = self.transform(d)
+        else:
+            d[self.key] = self.transform(d[self.key])
         return d
 
 
@@ -156,7 +162,11 @@ class CutOut(_ImageTransform):
         return Image.fromarray(image)
 
 
-class ToTensor(_ImageTransform):
+class ImageToTensor(_ImageTransform):
+    """
+    torchvision.transform is intended for 2d / 3d images. General conversion
+    should be done using `data.transforms.common.ToTensor` instead.
+    """
     def transform(self, image):
         return TF.to_tensor(image)
 

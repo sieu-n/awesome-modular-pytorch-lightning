@@ -17,7 +17,7 @@ class Human36AnnotationDataset(Dataset):
             - joint: 17 x 3 array of 3d joints
             - meta: metadata of frame
             - bbox: Ground-truth bounding boxes provided in the annotation file
-            - camera: `Human36Camera` instance of that frame
+            - camera: `utils.camera.Human36Camera` instance of that frame
         `self.data` can be parsed by specifying the action, subaction, camera, and frame
         index. This dataset can be used to implement single-frame 2d -> 3d lifting algorithms.
 

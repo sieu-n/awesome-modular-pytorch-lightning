@@ -136,8 +136,6 @@ class Experiment:
                     datasets["trn"],
                     task=self.const_cfg["task"],
                     unnormalize=True,
-                    normalization_mean=self.const_cfg["normalization_mean"],
-                    normalization_std=self.const_cfg["normalization_std"],
                     root_dir=self.exp_dir,
                     label_map=self.const_cfg["label_map"]
                     if "label_map" in self.const_cfg

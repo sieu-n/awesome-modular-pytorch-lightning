@@ -1,5 +1,9 @@
 # dataset catalog
-from data.dataset.vision import TorchvisionDataset, MMDetectionDataset # noqa
+from data.dataset.vision import ( # noqa
+    TorchvisionDataset,
+    MMDetectionDataset,
+    Human36AnnotationDataset,
+)
 # utils
 from ._get import _get
 
