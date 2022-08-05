@@ -39,6 +39,9 @@ transform:
           "args": {
             "keys": ["joint", "joint_2d"],
             "name": "ToTensor",
+            "args": {
+              "dtype": "float"
+            }
           }
         },
         {

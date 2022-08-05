@@ -4,7 +4,7 @@ import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from ..base import _BaseTransform, _KeyTransform
+from ..base import _KeyTransform
 from .util import str2interpolation
 
 

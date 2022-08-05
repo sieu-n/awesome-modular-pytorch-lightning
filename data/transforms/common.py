@@ -1,3 +1,4 @@
+import torch
 import torchvision.transforms.functional as TF
 try:
     from utils.data_container import DataContainer
@@ -12,11 +13,22 @@ class ToTensor(_KeyTransform):
         list of keys to convert.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, dtype=None, *args, **kwargs):
         super(ToTensor, self).__init__(*args, **kwargs)
+        self.dtype = dtype
 
     def transform(self, t):
-        return TF.to_tensor(t)
+        dtype_map = {
+            None: None,
+            "float32": torch.float32,
+            "float64": torch.float64,
+            "uint8": torch.uint8,
+            "bool": torch.bool,
+            "long": torch.long,
+            "int": torch.int,
+            "float": torch.float,
+        }
+        return torch.tensor(t, dtype=dtype_map[self.dtype])
 
 
 class RemoveKeys(_BaseTransform):
@@ -59,5 +71,5 @@ class CollectDataContainer(_KeyTransform):
         self.cpu_only = cpu_only
         self.stack = stack
 
-    def __call__(self, D):
+    def transform(self, D):
         return DataContainer(D, cpu_only=self.cpu_only, stack=self.stack)

@@ -1,5 +1,5 @@
 import random
-import catalog.transforms
+import catalog
 from torch.utils.data import Dataset
 
 
@@ -52,17 +52,18 @@ class _KeyTransform:
             d = self.transform(d)
         else:
             d[self.key] = self.transform(d[self.key])
-
+        return d
 
 class MultipleKeyTransform(_BaseTransform):
     def __init__(self, keys, name, args={}, *_args, **kwargs):
-        super(MultipleKeyTransform, self).__init__(*args, **kwargs)
+        super(MultipleKeyTransform, self).__init__(*_args, **kwargs)
         self.ts = [catalog.transforms.build(name=name, args=args, key=k) for k in keys]
         self.keys = keys
 
     def __call__(self, d):
         for t in self.ts:
             d = t(d)
+        return d
 
 
 class ApplyTransforms(Dataset):
