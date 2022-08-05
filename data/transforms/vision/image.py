@@ -4,21 +4,14 @@ import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from ..base import _BaseTransform
+from ..base import _BaseTransform, _KeyTransform
 from .util import str2interpolation
 
 
-class _ImageTransform(_BaseTransform):
+class _ImageTransform(_KeyTransform):
     def __init__(self, key="images", *args, **kwargs):
         super(_ImageTransform, self).__init__(*args, **kwargs)
         self.key = key
-
-    def __call__(self, d):
-        if self.key is None:
-            d = self.transform(d)
-        else:
-            d[self.key] = self.transform(d[self.key])
-        return d
 
 
 class Normalize(_ImageTransform):
@@ -28,9 +21,9 @@ class Normalize(_ImageTransform):
 
         Parameters
         ----------
-        mean: list, len=3
+        mean: list
             mean values of (r, g, b) channels to use for normalizing.
-        std: list, len=3
+        std: list
             stddev values of (r, g, b) channels to use for normalizing.
         """
         super().__init__(**kwargs)
@@ -41,6 +34,27 @@ class Normalize(_ImageTransform):
         for t, m, s in zip(image, self.mean, self.std):
             t.sub_(m).div_(s)
         return image
+
+
+class FastNormalize(_ImageTransform):
+    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), **kwargs):
+        """
+        Normalize input image with predefined mean/std. This implementation is
+        faster when number of channels is larger.
+
+        Parameters
+        ----------
+        mean: list
+            mean values of (r, g, b) channels to use for normalizing.
+        std: list
+            stddev values of (r, g, b) channels to use for normalizing.
+        """
+        super().__init__(**kwargs)
+        self.mean = torch.tensor(mean).unsqueeze(1)
+        self.std = torch.tensor(std).unsqueeze(1)
+
+    def transform(self, image):
+        return (image - self.mean) / self.std
 
 
 class ColorJitter(_ImageTransform):

@@ -1,4 +1,6 @@
-# create single frame annotation dataset
+# create multi-frame annotation dataset proposed in the paper:
+# 3D human pose estimation in video with temporal convolutions and semi-supervised training
+
 dataloader:
   base_dataloader: # depends on hardware:)
     collate_fn:
@@ -34,21 +36,12 @@ transform:
         { "name": "Create2DProjection" },
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
+        { "name": "ToTensor", "args": { "keys": ["joint", "joint_2d"] } },
         {
-          "name": "MultipleKeyTransform",
-          "args": {
-            "keys": ["joint", "joint_2d"],
-            "name": "ToTensor",
-          }
-        },
-        {
-          "name": "MultipleKeyTransform",
+          "name": CollectDataContainer,
           "args": {
             "keys": ["camera", "meta"],
-            "name": "CollectDataContainer",
-            "args": {
-              "cpu_only": True
-            }
+            "cpu_only": [true, true],
           }
         },
         {

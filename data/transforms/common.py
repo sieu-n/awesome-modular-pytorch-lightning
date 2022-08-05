@@ -1,30 +1,22 @@
-from typing import List, Union
-
-import torch
+import torchvision.transforms.functional as TF
 try:
     from utils.data_container import DataContainer
 except ImportError:
     pass
-from .base import _BaseTransform
+from .base import _BaseTransform, _KeyTransform
 
 
-class ToTensor(_BaseTransform):
+class ToTensor(_KeyTransform):
     """
     keys: List[str]
         list of keys to convert.
     """
 
-    def __init__(self, keys: Union[None, List[str]] = None, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ToTensor, self).__init__(*args, **kwargs)
-        self.keys = keys
 
-    def __call__(self, d):
-        if self.keys is None:
-            return torch.tensor(d)
-        else:
-            for k in self.keys:
-                d[k] = torch.tensor(d[k], dtype=torch.float32)
-            return d
+    def transform(self, t):
+        return TF.to_tensor(t)
 
 
 class RemoveKeys(_BaseTransform):
@@ -32,9 +24,8 @@ class RemoveKeys(_BaseTransform):
     keys: List[str]
         list of keys to remove.
     """
-
-    def __init__(self, keys: List[str], *args, **kwargs):
-        super(RemoveKeys, self).__init__(*args, **kwargs)
+    def __init__(self, keys, *args, **kwargs):
+        super(RemoveKeys, self).__init__(*keys, **kwargs)
         self.keys = keys
 
     def __call__(self, d):
@@ -43,32 +34,30 @@ class RemoveKeys(_BaseTransform):
         return d
 
 
-class CollectDataContainer(_BaseTransform):
+class RenameKeys(_BaseTransform):
+    def __init__(self, mapper: dict, *args, **kwargs):
+        super(RemoveKeys, self).__init__(*args, **kwargs)
+        self.mapper = mapper
+
+    def __call__(self, d):
+        for k, v in self.mapper:
+            d[v] = d.pop(k)
+
+
+class CollectDataContainer(_KeyTransform):
     """
     keys: List[str]
         list of keys to wrap inside `DataContainer` object.
     """
     def __init__(
         self,
-        keys: List[str],
-        cpu_only: List[bool] = None,
-        stack: List[bool] = None,
+        cpu_only: bool = False,
+        stack: bool = False,
         *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.keys = keys
-        if cpu_only is None:
-            cpu_only = [False] * len(keys)
-        else:
-            assert len(keys) == len(cpu_only), f"cpu_only must have length {len(keys)} but found {len(cpu_only)}"
         self.cpu_only = cpu_only
-        if stack is None:
-            stack = [False] * len(keys)
-        else:
-            assert len(keys) == len(stack), f"stack must have length {len(keys)} but found {len(stack)}"
         self.stack = stack
 
-    def __call__(self, d):
-        for idx, k in enumerate(self.keys):
-            d[k] = DataContainer(d[k], cpu_only=self.cpu_only[idx])
-        return d
+    def __call__(self, D):
+        return DataContainer(D, cpu_only=self.cpu_only, stack=self.stack)

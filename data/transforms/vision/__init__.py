@@ -18,6 +18,7 @@ from .detection import (  # noqa
 from .image import (  # noqa
     ColorJitter,
     CutOut,
+    FastNormalize,
     ImageToTensor,
     Normalize,
     Resize,
