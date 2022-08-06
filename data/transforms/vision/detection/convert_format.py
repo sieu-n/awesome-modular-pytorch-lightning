@@ -1,7 +1,4 @@
-try:
-    from mmcv.parallel.data_container import DataContainer
-except ImportError:
-    pass
+from utils.data_container import DataContainer
 
 from data.transforms.base import _BaseTransform
 from utils.bbox import (

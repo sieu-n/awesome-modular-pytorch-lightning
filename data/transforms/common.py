@@ -1,9 +1,6 @@
 import torch
 import torchvision.transforms.functional as TF
-try:
-    from utils.data_container import DataContainer
-except ImportError:
-    pass
+from utils.data_container import DataContainer
 from .base import _BaseTransform, _KeyTransform
 
 

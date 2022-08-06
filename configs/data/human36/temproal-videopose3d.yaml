@@ -9,8 +9,9 @@ dataloader:
 
 dataset:
   dataset_base_cfg:
-    name: "Human36AnnotationDataset"
+    name: "Human36AnnotationTemporalDataset"
     args:
+      receptive_field: 243
       base_dir: "./human36m"
 
   dataset_subset_cfg:
@@ -33,15 +34,27 @@ transform:
     [
       "trn,val",
       [
-        { "name": "Create2DProjection" },
+        { "name": "Create2DProjectionTemporal" },
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
-        { "name": "ToTensor", "args": { "keys": ["joint", "joint_2d"] } },
         {
-          "name": CollectDataContainer,
+          "name": "MultipleKeyTransform",
+          "args": {
+            "keys": ["joint", "joint_2d"],
+            "name": "ToTensor",
+            "args": {
+              "dtype": "float"
+            }
+          }
+        },
+        {
+          "name": "MultipleKeyTransform",
           "args": {
             "keys": ["camera", "meta"],
-            "cpu_only": [true, true],
+            "name": "CollectDataContainer",
+            "args": {
+              "cpu_only": True
+            }
           }
         },
         {
