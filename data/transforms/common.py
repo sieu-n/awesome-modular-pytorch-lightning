@@ -36,7 +36,7 @@ class RemoveKeys(_BaseTransform):
     """
 
     def __init__(self, keys, *args, **kwargs):
-        super(RemoveKeys, self).__init__(*keys, **kwargs)
+        super(RemoveKeys, self).__init__(*args, **kwargs)
         self.keys = keys
 
     def __call__(self, d):

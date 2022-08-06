@@ -1,1 +1,1 @@
-from .single_view import PoseLiftingSingleFrameMLP  # noqa
+from .single_view import PoseLiftingSingleFrameMLP, PoseLiftingTemporalConv  # noqa

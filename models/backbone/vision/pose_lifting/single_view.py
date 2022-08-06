@@ -159,7 +159,7 @@ class PoseLiftingTemporalConv(nn.Module):
 
     def __init__(
         self,
-        kernel_sizes=[3, 3, 3, 3],
+        kernel_sizes=[3, 3, 3, 3, 3],
         num_features=1024,
         dropout=0.25,
         num_layers=2,
@@ -184,7 +184,7 @@ class PoseLiftingTemporalConv(nn.Module):
         )
 
         res_blocks = []
-        for i in range(self.num_blocks):
+        for i in range(1, self.num_blocks):
             res_blocks.append(
                 TemporalConvBlock(
                     features=num_features,

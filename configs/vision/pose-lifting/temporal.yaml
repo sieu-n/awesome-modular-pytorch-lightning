@@ -86,6 +86,7 @@ model:
         - 3
         - 3
         - 3
+        - 3
       num_joints: "{const.num_joints}"
   modules:
     loss_fn:
