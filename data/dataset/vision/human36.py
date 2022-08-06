@@ -60,7 +60,7 @@ class Human36AnnotationDataset(Dataset):
                 action_idx = str(sample_meta["action_idx"])
                 subaction_idx = str(sample_meta["subaction_idx"])
                 camera_idx = str(sample_meta["cam_idx"])
-                frame_idx = str(sample_meta["frame_idx"])
+                frame_idx = int(sample_meta["frame_idx"])
 
                 key = (action_idx, subaction_idx, camera_idx, frame_idx)
                 # save joint data
@@ -137,7 +137,7 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         # organize based on `scene_key``
         print("Organizing frames based on `scene_key`(action_idx, subaction_idx, camera_idx)")
         _joint_data = {}
-        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(self.joint_data.keys()):
+        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(list(self.joint_data.keys())):
             scene_key = (action_idx, subaction_idx, camera_idx)
             if scene_key not in _joint_data:
                 _joint_data[scene_key] = {}
@@ -145,9 +145,9 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         assert len(self.joint_data) == 0, f"Expected dict to be empty, but contains: {self.joint_data}"
         # organize joints into list
         print("Grouping dictionaries into numpy lists")
-        for CLIP_IDX in tqdm(_joint_data):
-            d = _joint_data[CLIP_IDX]
-            self.joint_data[CLIP_IDX] = np.array([d[frame_idx] for frame_idx in range(len(d))])
+        for scene_key in tqdm(_joint_data):
+            d = _joint_data[scene_key]
+            self.joint_data[scene_key] = np.array([d[frame_idx] for frame_idx in range(len(d))])
 
     def __getitem__(self, idx):
         action_idx, subaction_idx, camera_idx, frame_idx = self.sampler[idx]
