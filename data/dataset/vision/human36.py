@@ -14,12 +14,13 @@ class Human36AnnotationDataset(Dataset):
         Base class for human36 annotations dataset. The `__init__` method collects
         and caches the annotation data of every actor. `self.data` is a dictionary
         that contains the following attributes:
-            - joint: 17 x 3 array of 3d joints
             - meta: metadata of frame
             - bbox: Ground-truth bounding boxes provided in the annotation file
             - camera: `utils.camera.Human36Camera` instance of that frame
         `self.data` can be parsed by specifying the action, subaction, camera, and frame
-        index. This dataset can be used to implement single-frame 2d -> 3d lifting algorithms.
+        index. The 3d joint coordinates are saved in a separate dictionary `joint_data`
+        which is indexed by the same keys.
+        This dataset can be used to implement single-frame 2d -> 3d lifting algorithms.
 
         Parameters
         ----------
@@ -60,10 +61,10 @@ class Human36AnnotationDataset(Dataset):
                 action_idx = str(sample_meta["action_idx"])
                 subaction_idx = str(sample_meta["subaction_idx"])
                 camera_idx = str(sample_meta["cam_idx"])
-                frame_idx = int(sample_meta["frame_idx"])
+                frame_idx = str(sample_meta["frame_idx"])
 
-                key = (action_idx, subaction_idx, camera_idx, frame_idx)
                 # save joint data
+                key = (action_idx, subaction_idx, int(camera_idx), int(frame_idx))
                 self.joint_data[key] = np.array(
                     subject_data["joint"][action_idx][subaction_idx][frame_idx]
                 )
@@ -81,6 +82,26 @@ class Human36AnnotationDataset(Dataset):
                     "camera": self.cameras[subject_id][camera_idx],
                 }
                 self.sampler.append(key)
+        self.reorder_joints(self.joint_data)
+
+    def reorder_joints(self, joint_data):
+        """
+        Reorder joints so data of each scene is a numpy array of shape (# camera, # frames, 17, 3)
+        """
+        # organize based on `scene_key` = (action_idx, subaction_idx)
+        print("Organizing frames based on `scene_key`(action_idx, subaction_idx)")
+        _joint_data = {}
+        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(list(joint_data.keys())):
+            scene_key = (action_idx, subaction_idx)
+            if scene_key not in _joint_data:
+                _joint_data[scene_key] = {}
+            _joint_data[scene_key][frame_idx] = joint_data.pop((action_idx, subaction_idx, camera_idx, frame_idx))
+        assert len(self.joint_data) == 0, f"Expected dict to be empty, but contains: {self.joint_data}"
+        # organize joints into numpy arrays
+        print("Grouping dictionaries into numpy array")
+        for scene_key in tqdm(_joint_data):
+            d = _joint_data[scene_key]
+            self.joint_data[scene_key] = np.array([d[frame_idx] for frame_idx in range(len(d))])
 
     def load_subject_data(self, subject_id):
         def load_json_data(subject_id, data_type):
@@ -102,9 +123,12 @@ class Human36AnnotationDataset(Dataset):
     def __getitem__(self, idx):
         # {meta(from data), }
         key = self.sampler[idx]
+        action_idx, subaction_idx, camera_idx, frame_idx = key
+        joint_key = (action_idx, subaction_idx)
+
         return {
             **deepcopy(self.data[key]),
-            **{"joint": deepcopy(self.joint_data[key])}
+            **{"joint": deepcopy(self.joint_data[joint_key][frame_idx])}
         }
 
 
@@ -131,23 +155,6 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         """
         super().__init__(*args, **kwargs)
         self.receptive_field = receptive_field
-        # for faster access to temporaly nearby joints, group frames based on
-        # temporal axis into arrays of shape [frames, 17, 3]
-
-        # organize based on `scene_key``
-        print("Organizing frames based on `scene_key`(action_idx, subaction_idx, camera_idx)")
-        _joint_data = {}
-        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(list(self.joint_data.keys())):
-            scene_key = (action_idx, subaction_idx, camera_idx)
-            if scene_key not in _joint_data:
-                _joint_data[scene_key] = {}
-            _joint_data[scene_key][frame_idx] = self.joint_data.pop((action_idx, subaction_idx, camera_idx, frame_idx))
-        assert len(self.joint_data) == 0, f"Expected dict to be empty, but contains: {self.joint_data}"
-        # organize joints into list
-        print("Grouping dictionaries into numpy lists")
-        for scene_key in tqdm(_joint_data):
-            d = _joint_data[scene_key]
-            self.joint_data[scene_key] = np.array([d[frame_idx] for frame_idx in range(len(d))])
 
     def __getitem__(self, idx):
         action_idx, subaction_idx, camera_idx, frame_idx = self.sampler[idx]
@@ -177,5 +184,5 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
                 "temporal_joints": joints,
                 "joint": joints[sample_width],
             },
-            **self.data[key]
+            **deepcopy(self.data[key])
         }

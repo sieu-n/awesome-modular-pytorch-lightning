@@ -35,6 +35,7 @@ transform:
       "trn,val",
       [
         { "name": "Create2DProjectionTemporal" },
+        { "name": "RemoveKeys", "args": {"keys": ["temporal_joints"]}},
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         {

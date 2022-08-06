@@ -34,7 +34,7 @@ class Create2DProjectionTemporal(_BaseTransform):
         assert "joint_2d" not in d
         cam = d["camera"]
         proj_2d = np.array([
-            cam.project_to_2D(d["temporal_joints"][idx]) for idx in range(len(d["joint"]))
+            cam.project_to_2D(d["temporal_joints"][idx])[0] for idx in range(len(d["temporal_joints"]))
         ])
 
         d["joint_2d"] = proj_2d
