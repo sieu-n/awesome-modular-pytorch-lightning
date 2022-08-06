@@ -1,5 +1,3 @@
-from utils.data_container import DataContainer
-
 from data.transforms.base import _BaseTransform
 from utils.bbox import (
     normalize_bbox,
@@ -7,6 +5,7 @@ from utils.bbox import (
     x1y1x2y2_to_xywh,
     xywh_to_x1y1x2y2,
 )
+from utils.data_container import DataContainer
 
 
 class YOLObbox2Pytorch(_BaseTransform):

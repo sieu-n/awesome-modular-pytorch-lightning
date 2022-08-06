@@ -1,7 +1,8 @@
-import timm
-from utils.models import drop_layers_after
 from typing import Optional
+
+import timm
 from torchvision import models
+from utils.models import drop_layers_after
 
 
 def TimmNetwork(

@@ -8,13 +8,13 @@ import torch
 
 
 def assert_tensor_type(func: Callable) -> Callable:
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         if not isinstance(args[0].data, torch.Tensor):
             raise AttributeError(
-                f'{args[0].__class__.__name__} has no attribute '
-                f'{func.__name__} for type {args[0].datatype}')
+                f"{args[0].__class__.__name__} has no attribute "
+                f"{func.__name__} for type {args[0].datatype}"
+            )
         return func(*args, **kwargs)
 
     return wrapper
@@ -23,6 +23,7 @@ def assert_tensor_type(func: Callable) -> Callable:
 try:
     from mmcv.parallel import DataContainer
 except ImportError:
+
     class DataContainer:
         """A container for any type of objects.
 
@@ -40,12 +41,14 @@ except ImportError:
         - pad_dims specifies the number of last few dimensions to do padding
         """
 
-        def __init__(self,
-                    data: Union[torch.Tensor, np.ndarray],
-                    stack: bool = False,
-                    padding_value: int = 0,
-                    cpu_only: bool = False,
-                    pad_dims: int = 2):
+        def __init__(
+            self,
+            data: Union[torch.Tensor, np.ndarray],
+            stack: bool = False,
+            padding_value: int = 0,
+            cpu_only: bool = False,
+            pad_dims: int = 2,
+        ):
             self._data = data
             self._cpu_only = cpu_only
             self._stack = stack
@@ -54,7 +57,7 @@ except ImportError:
             self._pad_dims = pad_dims
 
         def __repr__(self) -> str:
-            return f'{self.__class__.__name__}({repr(self.data)})'
+            return f"{self.__class__.__name__}({repr(self.data)})"
 
         def __len__(self) -> int:
             return len(self._data)

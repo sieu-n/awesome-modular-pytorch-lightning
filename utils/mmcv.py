@@ -2,7 +2,6 @@ from collections import OrderedDict
 from typing import Union
 
 import torch
-
 from utils.data_container import DataContainer
 
 

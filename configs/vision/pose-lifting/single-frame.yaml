@@ -83,7 +83,7 @@ model:
       num_blocks: 2
       num_joints: "{const.num_joints}"
   modules:
-    loss_fn: 
+    loss_fn:
       name: "MSELoss"
 wandb:
   project: "human36m-3d-pose-estimation-single-frame"

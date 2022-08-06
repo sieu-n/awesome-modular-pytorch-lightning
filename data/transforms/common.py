@@ -1,6 +1,7 @@
 import torch
 import torchvision.transforms.functional as TF
 from utils.data_container import DataContainer
+
 from .base import _BaseTransform, _KeyTransform
 
 
@@ -33,6 +34,7 @@ class RemoveKeys(_BaseTransform):
     keys: List[str]
         list of keys to remove.
     """
+
     def __init__(self, keys, *args, **kwargs):
         super(RemoveKeys, self).__init__(*keys, **kwargs)
         self.keys = keys
@@ -58,12 +60,8 @@ class CollectDataContainer(_KeyTransform):
     keys: List[str]
         list of keys to wrap inside `DataContainer` object.
     """
-    def __init__(
-        self,
-        cpu_only: bool = False,
-        stack: bool = False,
-        *args, **kwargs
-    ):
+
+    def __init__(self, cpu_only: bool = False, stack: bool = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cpu_only = cpu_only
         self.stack = stack

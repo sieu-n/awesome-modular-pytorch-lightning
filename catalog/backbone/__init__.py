@@ -1,5 +1,5 @@
 # model catalog
-from models.backbone.vision import * # noqa
+from models.backbone.vision import *  # noqa
 
 # utils
 from .._get import _get

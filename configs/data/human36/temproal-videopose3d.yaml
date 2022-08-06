@@ -35,28 +35,26 @@ transform:
       "trn,val",
       [
         { "name": "Create2DProjectionTemporal" },
-        { "name": "RemoveKeys", "args": {"keys": ["temporal_joints"]}},
+        { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         {
           "name": "MultipleKeyTransform",
-          "args": {
-            "keys": ["joint", "joint_2d"],
-            "name": "ToTensor",
-            "args": {
-              "dtype": "float"
-            }
-          }
+          "args":
+            {
+              "keys": ["joint", "joint_2d"],
+              "name": "ToTensor",
+              "args": { "dtype": "float" },
+            },
         },
         {
           "name": "MultipleKeyTransform",
-          "args": {
-            "keys": ["camera", "meta"],
-            "name": "CollectDataContainer",
-            "args": {
-              "cpu_only": True
-            }
-          }
+          "args":
+            {
+              "keys": ["camera", "meta"],
+              "name": "CollectDataContainer",
+              "args": { "cpu_only": True },
+            },
         },
         {
           "name": "FastNormalize",

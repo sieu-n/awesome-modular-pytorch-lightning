@@ -8,6 +8,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         - A simple yet effective baseline for 3d human pose estimation
     where single 2d pose is given as input for making predictions about the 3d pose.
     """
+
     def init(self, model_cfg, training_cfg):
         # mixup and cutmix for classification
         self.normalization_mean = torch.tensor(self.const_cfg["normalization_mean"])
@@ -60,7 +61,9 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "joints_gt_global": self.decode(y.cpu(), location.cpu(), camera),
             "joints_2d": x,
             "reconstruction_camera": reconstruction,
-            "reconstruction_global": self.decode(reconstruction.cpu().detach(), location.cpu(), camera),
+            "reconstruction_global": self.decode(
+                reconstruction.cpu().detach(), location.cpu(), camera
+            ),
             "loss": loss,
             "action_idx": batch["idx"]["action_idx"],
         }
@@ -99,7 +102,9 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "joints_gt_global": self.decode(y.cpu(), location.cpu(), camera),
             "joints_2d": x,
             "reconstruction_camera": reconstruction,
-            "reconstruction_global": self.decode(reconstruction.cpu(), location.cpu(), camera),
+            "reconstruction_global": self.decode(
+                reconstruction.cpu(), location.cpu(), camera
+            ),
             "loss": loss,
             "action_idx": batch["idx"]["action_idx"],
         }
@@ -128,12 +133,16 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         batch_size = joints.size(0)
         DEVICE = joints.device
 
-        normalization_mean = torch.tile(
-            self.normalization_mean, (batch_size, 3, 1)
-        ).permute(0, 2, 1).to(DEVICE)
-        normalization_std = torch.tile(
-            self.normalization_std, (batch_size, 3, 1)
-        ).permute(0, 2, 1).to(DEVICE)
+        normalization_mean = (
+            torch.tile(self.normalization_mean, (batch_size, 3, 1))
+            .permute(0, 2, 1)
+            .to(DEVICE)
+        )
+        normalization_std = (
+            torch.tile(self.normalization_std, (batch_size, 3, 1))
+            .permute(0, 2, 1)
+            .to(DEVICE)
+        )
 
         joints = joints * normalization_std + normalization_mean
 
@@ -141,5 +150,8 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         joints = locations.tile(17, 1, 1).permute(1, 0, 2) + joints
 
         # to world coord
-        joints = [cameras[idx].camera_to_world_coord(joint) for idx, joint in enumerate(joints)]
+        joints = [
+            cameras[idx].camera_to_world_coord(joint)
+            for idx, joint in enumerate(joints)
+        ]
         return torch.tensor(joints)

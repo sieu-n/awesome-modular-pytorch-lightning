@@ -1,26 +1,27 @@
 # Implement supervised procedure in the paper:
 # 3D human pose estimation in video with temporal convolutions and semi-supervised training
 
-name: "3D-Pose-Estimation"
+name: "3D-Pose-Estimation-Temporal-Convolution"
 
 debug:
   network_summary:
-    input_shape: [17, 2]
+    input_shape: [243, 17, 2]
 
 dataloader:
   base_dataloader:
-    batch_size: 64
+    batch_size: 1024
 
 training:
   ID: "PoseLiftingTrainer"
 
-  epochs: 200
+  epochs: 80
   lr: 0.001
 
-  optimizer: "adamw"
+  optimizer: "adam"
   optimizer_cfg:
     lr: "{training.lr}"
     weight_decay: 0.0
+    amsgrad: True
 
   lr_scheduler:
     name: "cosine"
@@ -75,15 +76,19 @@ callbacks:
 
 model:
   backbone:
-    name: "PoseLiftingSingleFrameMLP"
+    name: "PoseLiftingTemporalConv"
     args:
       num_features: 1024
-      dropout: 0.5
+      dropout: 0.25
       num_layers: 2
-      num_blocks: 2
+      kernel_sizes:
+        - 3
+        - 3
+        - 3
+        - 3
       num_joints: "{const.num_joints}"
   modules:
-    loss_fn: 
+    loss_fn:
       name: "MSELoss"
 wandb:
-  project: "human36m-3d-pose-estimation-single-frame"
+  project: "human36m-3d-pose-estimation-temporal"

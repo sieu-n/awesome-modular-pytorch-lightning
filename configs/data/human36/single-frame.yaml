@@ -36,23 +36,21 @@ transform:
         { "name": "CenterAroundJoint" },
         {
           "name": "MultipleKeyTransform",
-          "args": {
-            "keys": ["joint", "joint_2d"],
-            "name": "ToTensor",
-            "args": {
-              "dtype": "float"
-            }
-          }
+          "args":
+            {
+              "keys": ["joint", "joint_2d"],
+              "name": "ToTensor",
+              "args": { "dtype": "float" },
+            },
         },
         {
           "name": "MultipleKeyTransform",
-          "args": {
-            "keys": ["camera", "meta"],
-            "name": "CollectDataContainer",
-            "args": {
-              "cpu_only": True
-            }
-          }
+          "args":
+            {
+              "keys": ["camera", "meta"],
+              "name": "CollectDataContainer",
+              "args": { "cpu_only": True },
+            },
         },
         {
           "name": "FastNormalize",

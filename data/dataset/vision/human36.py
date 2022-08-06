@@ -86,22 +86,31 @@ class Human36AnnotationDataset(Dataset):
 
     def reorder_joints(self, joint_data):
         """
-        Reorder joints so data of each scene is a numpy array of shape (# camera, # frames, 17, 3)
+        Reorder joints so data of each scene is a numpy array of shape (# frames, 17, 3)
+        Works in an inplace fashion.
         """
         # organize based on `scene_key` = (action_idx, subaction_idx)
         print("Organizing frames based on `scene_key`(action_idx, subaction_idx)")
         _joint_data = {}
-        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(list(joint_data.keys())):
+        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(
+            list(joint_data.keys())
+        ):
             scene_key = (action_idx, subaction_idx)
             if scene_key not in _joint_data:
                 _joint_data[scene_key] = {}
-            _joint_data[scene_key][frame_idx] = joint_data.pop((action_idx, subaction_idx, camera_idx, frame_idx))
-        assert len(self.joint_data) == 0, f"Expected dict to be empty, but contains: {self.joint_data}"
+            _joint_data[scene_key][frame_idx] = joint_data.pop(
+                (action_idx, subaction_idx, camera_idx, frame_idx)
+            )
+        assert (
+            len(joint_data) == 0
+        ), f"Expected dict to be empty, but contains: {joint_data}"
         # organize joints into numpy arrays
         print("Grouping dictionaries into numpy array")
         for scene_key in tqdm(_joint_data):
             d = _joint_data[scene_key]
-            self.joint_data[scene_key] = np.array([d[frame_idx] for frame_idx in range(len(d))])
+            joint_data[scene_key] = np.array(
+                [d[frame_idx] for frame_idx in range(len(d))]
+            )
 
     def load_subject_data(self, subject_id):
         def load_json_data(subject_id, data_type):
@@ -128,7 +137,7 @@ class Human36AnnotationDataset(Dataset):
 
         return {
             **deepcopy(self.data[key]),
-            **{"joint": deepcopy(self.joint_data[joint_key][frame_idx])}
+            **{"joint": deepcopy(self.joint_data[joint_key][frame_idx])},
         }
 
 
@@ -158,14 +167,18 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
 
     def __getitem__(self, idx):
         action_idx, subaction_idx, camera_idx, frame_idx = self.sampler[idx]
-        key, joint_key = (action_idx, subaction_idx, camera_idx, frame_idx), (action_idx, subaction_idx, camera_idx)
+        key, joint_key = (action_idx, subaction_idx, camera_idx, frame_idx), (
+            action_idx,
+            subaction_idx,
+            camera_idx,
+        )
         num_frames = len(self.joint_data[joint_key])
 
         sample_width = self.receptive_field // 2
         sample_left = max(frame_idx - sample_width, 0)
         sample_right = min(frame_idx + sample_width + 1, num_frames - 1)
 
-        joints = deepcopy(self.joint_data[joint_key][sample_left: sample_right])
+        joints = deepcopy(self.joint_data[joint_key][sample_left:sample_right])
         if frame_idx - sample_width < 0:
             # pad left
             pad_len = sample_width - frame_idx
@@ -184,5 +197,5 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
                 "temporal_joints": joints,
                 "joint": joints[sample_width],
             },
-            **deepcopy(self.data[key])
+            **deepcopy(self.data[key]),
         }

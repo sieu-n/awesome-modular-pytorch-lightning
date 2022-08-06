@@ -1,4 +1,5 @@
 import random
+
 import catalog
 from torch.utils.data import Dataset
 
@@ -53,6 +54,7 @@ class _KeyTransform:
         else:
             d[self.key] = self.transform(d[self.key])
         return d
+
 
 class MultipleKeyTransform(_BaseTransform):
     def __init__(self, keys, name, args={}, *_args, **kwargs):

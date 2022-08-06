@@ -1,8 +1,8 @@
 from .noise import InstanceIndependantNoise  # noqa
-from .utils import ( # noqa
+from .utils import (  # noqa
+    ClassBalanceTrainValSplit,
     PrecomputeDataset,
     RemapIndices,
-    ClassBalanceTrainValSplit,
-    TrainValSplit,
     SubsetDataset,
+    TrainValSplit,
 )

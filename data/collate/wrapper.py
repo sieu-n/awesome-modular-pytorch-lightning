@@ -12,7 +12,6 @@ from collections.abc import Mapping, Sequence
 import torch
 import torch.nn.functional as F
 from torch.utils.data.dataloader import default_collate
-
 from utils.data_container import DataContainer
 
 
