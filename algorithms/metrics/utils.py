@@ -33,3 +33,8 @@ class SubsetMetric(torchmetrics.Metric):
             avg_res = sum(r.values()) / len(r)
             r.update({"AVERAGE": avg_res})
         return r
+
+    def reset(self):
+        self.name2idx = {}
+        for m in self.metrics:
+            m.reset()

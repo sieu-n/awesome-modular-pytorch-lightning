@@ -55,7 +55,7 @@ transform:
           }
         },
         {
-          "name": "Normalize",
+          "name": "FastNormalize",
           "args":
             {
               "mean": "{const.normalization_mean}",
@@ -64,7 +64,7 @@ transform:
             },
         },
         {
-          "name": "Normalize",
+          "name": "FastNormalize",
           "args":
             {
               "mean": "{const.normalization_mean_2d}",
