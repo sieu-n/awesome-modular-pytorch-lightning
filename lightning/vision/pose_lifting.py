@@ -48,8 +48,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
         pred = self(x)
         reconstruction = pred["joints"]
-        print("----------")
-        print(reconstruction.shape)
+
         loss = self.loss_fn(reconstruction, y)
 
         self.log("step/train_loss", loss)
