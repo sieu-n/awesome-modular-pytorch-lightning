@@ -14,7 +14,7 @@ trainer:
 dataloader:
   base_dataloader:
     num_workers: 2
-    pin_memory: True
+    pin_memory: False
     shuffle: True
     prefetch_factor: 2
   trn:

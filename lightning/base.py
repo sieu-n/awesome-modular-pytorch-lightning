@@ -186,7 +186,7 @@ class _BaseLightningTrainer(_LightningModule):
             else:
                 # typical metrics
                 if isinstance(res, dict):
-                    for k in res.keys():
+                    for k in list(res.keys()):
                         res[f"{log_key}/{k}"] = res.pop(k)
                     self.log_dict(res)
                 else:
