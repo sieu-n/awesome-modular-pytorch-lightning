@@ -39,13 +39,21 @@ transform:
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         {
-          "name": "MultipleKeyTransform",
+          "name": "ToTensor",
           "args":
             {
-              "keys": ["joint", "joint_2d"],
-              "name": "ToTensor",
+              "key": "joint",
+              "dtype": "float",
+            },
+        },
+        {
+          "name": "ToTensor",
+          "args":
+            {
+              "key": "joint_2d",
+              "dtype": "float",
               # (243, 17, 3) -> (17, 3, 243)
-              "args": { "dtype": "float", "channel_axis": [1, 2] },
+              "channel_axis": [1, 2],
             },
         },
         {

@@ -182,7 +182,9 @@ class PoseLiftingTemporalConv(nn.Module):
         self.is_dense = False
 
         self.expand = nn.Sequential(
+            # bs, num_joints, 3, 243
             nn.Flatten(1, -2),
+            # bs, num_joints * 3, 243
             nn.Conv1d(num_joints * 2, num_features, kernel_sizes[0], bias=False),
             nn.BatchNorm1d(num_features),
             nn.ReLU(),
@@ -203,8 +205,14 @@ class PoseLiftingTemporalConv(nn.Module):
                 )
             )
         self.res_blocks = nn.ModuleList(res_blocks)
-
-        self.shrink = nn.Conv1d(num_features, num_joints * 3, 1)
+        self.shrink = nn.Sequential(
+            nn.Conv1d(num_features, num_joints * 3, 1),
+            # bs, num_joints * 3, 1
+            nn.Flatten(1, 2),
+            # bs, num_joints * 3
+            nn.Unflatten(1, (num_joints, 3))
+            # bs, num_joints, 3
+        )
 
     def forward(self, x):
         if self.is_dense:
@@ -214,8 +222,7 @@ class PoseLiftingTemporalConv(nn.Module):
             # assume that input is of shape (batch_size, 17, 2, receptive_field)
             assert x.shape[1:] == torch.Size([self.num_joints, 2, self.receptive_field]), \
                 f"Sparse mode expected elements of shape {self.receptive_field}, got shape {x.shape}."
-        # flatten (17, 2) to 34 using view
-        x = self.expand(x.reshape(x.size(0), self.num_joints * 2, x.size(3)))
+        x = self.expand(x)
         for block in self.res_blocks:
             x = block(x)
         return self.shrink(x).squeeze(1)

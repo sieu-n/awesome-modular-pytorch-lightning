@@ -5,7 +5,7 @@ name: "3D-Pose-Estimation-Temporal-Convolution"
 
 debug:
   network_summary:
-    input_shape: [243, 17, 2]
+    input_shape: ["{const.receptive_field}", 17, 2]
 
 dataloader:
   base_dataloader:
@@ -93,3 +93,6 @@ model:
       name: "MSELoss"
 wandb:
   project: "human36m-3d-pose-estimation-temporal"
+
+const:
+  receptive_field: 243
