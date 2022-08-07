@@ -2,6 +2,8 @@ import catalog.metric
 import torchmetrics
 from torch import nn
 
+from typing import Iterable
+
 
 def TorchMetric(name, args={}):
     return getattr(torchmetrics, name)(**args)
@@ -10,6 +12,17 @@ def TorchMetric(name, args={}):
 class SubsetMetric(torchmetrics.Metric):
     """
     Separately measure metric for each subset of the dataset.
+
+    Parameters
+    ----------
+    name: str
+        Name of base metric.
+    args: dict
+        Arguments for the base metric.
+    num_subsets: int
+        Number of subsets that separate the dataset.
+    get_avg: bool, default: False
+        Returns the average of all the subsets if specified.
     """
 
     def __init__(
@@ -23,11 +36,13 @@ class SubsetMetric(torchmetrics.Metric):
         self.name2idx = {}
         self.get_avg = get_avg
 
-    def update(self, subset: str, *args, **kwargs):
-        if subset not in self.name2idx:
-            self.name2idx[subset] = len(self.name2idx)
-        idx = self.name2idx[subset]
-        return self.metrics[idx].update(*args, **kwargs)
+    def update(self, subset: Iterable, *args, **kwargs):
+        for s in subset:
+            if s not in self.name2idx:
+                self.name2idx[s] = len(self.name2idx)
+            idx = self.name2idx[s]
+
+            self.metrics[idx].update(*args, **kwargs)
 
     def compute(self):
         r = {
