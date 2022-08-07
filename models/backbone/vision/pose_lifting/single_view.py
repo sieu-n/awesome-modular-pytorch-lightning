@@ -218,4 +218,4 @@ class PoseLiftingTemporalConv(nn.Module):
         x = self.expand(x.reshape(x.size(0), self.num_joints * 2, x.size(3)))
         for block in self.res_blocks:
             x = block(x)
-        return self.shrink(x).reshape(x.size(0), self.num_joints, 3)
+        return self.shrink(x).squeeze(1)

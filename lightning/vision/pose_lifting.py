@@ -48,7 +48,8 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
         pred = self(x)
         reconstruction = pred["joints"]
-
+        print("----------")
+        print(reconstruction.shape)
         loss = self.loss_fn(reconstruction, y)
 
         self.log("step/train_loss", loss)
@@ -132,17 +133,10 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         # unnormalize
         batch_size = joints.size(0)
         DEVICE = joints.device
+        ndim = self.normalization_mean.ndim
 
-        normalization_mean = (
-            torch.tile(self.normalization_mean, (batch_size, 3, 1))
-            .permute(0, 2, 1)
-            .to(DEVICE)
-        )
-        normalization_std = (
-            torch.tile(self.normalization_std, (batch_size, 3, 1))
-            .permute(0, 2, 1)
-            .to(DEVICE)
-        )
+        normalization_mean = self.normalization_mean.repeat([batch_size] + [1] * ndim).to(DEVICE)
+        normalization_std = self.normalization_std.repeat([batch_size] + [1] * ndim).to(DEVICE)
 
         joints = joints * normalization_std + normalization_mean
 

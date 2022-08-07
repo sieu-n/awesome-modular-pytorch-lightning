@@ -185,7 +185,12 @@ class _BaseLightningTrainer(_LightningModule):
                     self.log(log_key, res)
             else:
                 # typical metrics
-                self.log(log_key, res)
+                if isinstance(res, dict):
+                    for k in res.keys():
+                        res[f"{log_key}/{k}"] = res.pop(k)
+                    self.log_dict(res)
+                else:
+                    self.log(log_key, res)
 
     def init(self):
         raise NotImplementedError()
