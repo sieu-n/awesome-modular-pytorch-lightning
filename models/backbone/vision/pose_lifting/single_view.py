@@ -1,5 +1,6 @@
 import numpy as np
 from torch import nn
+import torch
 
 
 class LBRD(nn.Module):
@@ -103,7 +104,7 @@ class TemporalConvBlock(nn.Module):
         self.layers = nn.ModuleList(
             [
                 nn.Sequential(
-                    nn.Conv1d(features, features, kernel_size, bias=False),
+                    nn.Conv1d(features, features, 1, bias=False),
                     nn.BatchNorm1d(features),
                     nn.ReLU(),
                     nn.Dropout(p=dropout),
@@ -123,7 +124,7 @@ class TemporalConvBlock(nn.Module):
         if self.residual:
             # Due to valid convolutions, we slice the residuals (left and right, symmetrically) to
             # match the shape of subsequent tensors.
-            skip_con = skip_con[self.slice_pad : -self.slice_pad]
+            skip_con = skip_con[..., self.slice_pad : -self.slice_pad]
             x = skip_con + x
         return x
 
@@ -168,6 +169,7 @@ class PoseLiftingTemporalConv(nn.Module):
         super().__init__()
         self.receptive_field = np.prod(kernel_sizes)
         self.num_blocks = len(kernel_sizes)
+        self.num_joints = num_joints
         # e.g. if kernel_sizes=[3, 3, 3, 3] then sparse_dilations=[3, 9, 27, 81]
         self.sparse_dilations = []
         temp = 1
@@ -177,6 +179,7 @@ class PoseLiftingTemporalConv(nn.Module):
         self.is_dense = False
 
         self.expand = nn.Sequential(
+            nn.Flatten(1, -2),
             nn.Conv1d(num_joints * 2, num_features, kernel_sizes[0], bias=False),
             nn.BatchNorm1d(num_features),
             nn.ReLU(),
@@ -189,11 +192,11 @@ class PoseLiftingTemporalConv(nn.Module):
                 TemporalConvBlock(
                     features=num_features,
                     kernel_size=kernel_sizes[i],
-                    dilation=self.sparse_dilations[i],
+                    dilation=self.sparse_dilations[i - 1],
                     dropout=dropout,
                     num_layers=num_layers,
                     residual=True,
-                    slice_pad=(kernel_sizes[i] - 1) * self.sparse_dilations[i] // 2,
+                    slice_pad=(kernel_sizes[i] - 1) * self.sparse_dilations[i - 1] // 2,
                 )
             )
         self.res_blocks = nn.ModuleList(res_blocks)
@@ -205,10 +208,10 @@ class PoseLiftingTemporalConv(nn.Module):
             assert x.ndim == 4
         else:
             assert x.ndim == 4
-            assert (
-                x.size(1) == self.receptive_field
-            ), f"Sparse mode expected sequence of len \
-                {self.receptive_field}, got shape {x.shape}."
+            # assume that input is of shape (batch_size, receptive_field, 17, 2)
+            assert x.shape[1:] == torch.Size([self.receptive_field, self.num_joints, 2]), \
+                f"Sparse mode expected elements of shape {self.receptive_field}, got shape {x.shape}."
+            x = torch.permute(torch.flatten(x, 2), (0, 2, 1))
         x = self.expand(x)
         for block in self.res_blocks:
             x = block(x)

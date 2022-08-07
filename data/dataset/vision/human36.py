@@ -170,7 +170,6 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         key, joint_key = (action_idx, subaction_idx, camera_idx, frame_idx), (
             action_idx,
             subaction_idx,
-            camera_idx,
         )
         num_frames = len(self.joint_data[joint_key])
 
