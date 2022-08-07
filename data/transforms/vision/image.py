@@ -37,7 +37,7 @@ class Normalize(_ImageTransform):
 
 
 class FastNormalize(_ImageTransform):
-    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), **kwargs):
+    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), ndim=None, **kwargs):
         """
         Normalize input image with predefined mean/std. This implementation is
         faster when number of channels is larger.
@@ -48,12 +48,28 @@ class FastNormalize(_ImageTransform):
             mean values of (r, g, b) channels to use for normalizing.
         std: list
             stddev values of (r, g, b) channels to use for normalizing.
+        ndim: int, optional
+            ndim of the input image, for RGB images set to 3 for videos set to
+            4. If not specified, automatically chosen using input.
         """
         super().__init__(**kwargs)
-        self.mean = torch.tensor(mean).unsqueeze(1)
-        self.std = torch.tensor(std).unsqueeze(1)
+        self.mean = torch.tensor(mean)
+        self.std = torch.tensor(std)
+
+        self.ndim = ndim
+        if self.ndim is not None:
+            self.correct_dims(self.ndim)
+
+    def correct_dims(self, ndim):
+        assert self.mean.ndim == self.std.ndim
+        for _ in range(ndim - self.mean.ndim):
+            self.mean = torch.unsqueeze(self.mean, -1)
+            self.std = torch.unsqueeze(self.std, -1)
 
     def transform(self, image):
+        if image.ndim != self.mean.ndim:
+            self.correct_dims(image.ndim)
+
         return (image - self.mean) / self.std
 
 

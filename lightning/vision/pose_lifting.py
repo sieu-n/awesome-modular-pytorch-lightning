@@ -65,7 +65,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
                 reconstruction.cpu().detach(), location.cpu(), camera
             ),
             "loss": loss,
-            "action_idx": batch["idx"]["action_idx"],
+            "action_idx": batch["idx"]["action_idx"].cpu().numpy(),
         }
         return loss, res
 
@@ -106,7 +106,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
                 reconstruction.cpu(), location.cpu(), camera
             ),
             "loss": loss,
-            "action_idx": batch["idx"]["action_idx"],
+            "action_idx": batch["idx"]["action_idx"].cpu().numpy(),
         }
 
     def _predict_step(self, batch, batch_idx=0):

@@ -1,21 +1,28 @@
 import torch
-import torchvision.transforms.functional as TF
 from utils.data_container import DataContainer
 
 from .base import _BaseTransform, _KeyTransform
 
+from typing import List
+
 
 class ToTensor(_KeyTransform):
     """
+    Convert content of dictionary to `torch.Tensor` object.
+
+    Parameters
+    ----------
     keys: List[str]
         list of keys to convert.
+    dtype: object, optional
+        Target dtype of tensor to convert.
+    channel_axis: List[int], optional
+        When specified, the order of channels will be changed so these channels
+        appear first.
     """
 
-    def __init__(self, dtype=None, *args, **kwargs):
+    def __init__(self, dtype: object = None, channel_axis: List[int] = None, *args, **kwargs):
         super(ToTensor, self).__init__(*args, **kwargs)
-        self.dtype = dtype
-
-    def transform(self, t):
         dtype_map = {
             None: None,
             "float32": torch.float32,
@@ -26,7 +33,18 @@ class ToTensor(_KeyTransform):
             "int": torch.int,
             "float": torch.float,
         }
-        return torch.tensor(t, dtype=dtype_map[self.dtype])
+        if dtype in dtype_map:
+            self.dtype = dtype_map[dtype]
+        else:
+            self.dtype = dtype
+        self.channel_axis = channel_axis
+
+    def transform(self, t):
+        t = torch.tensor(t, dtype=self.dtype)
+        if self.channel_axis is not None:
+            dim_order = self.channel_axis + list(set(range(5)) - set(self.channel_axis))
+            t = torch.permute(t, dim_order)
+        return t
 
 
 class RemoveKeys(_BaseTransform):

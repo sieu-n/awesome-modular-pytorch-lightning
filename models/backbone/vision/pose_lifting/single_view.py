@@ -2,6 +2,8 @@ import numpy as np
 from torch import nn
 import torch
 
+from typing import List
+
 
 class LBRD(nn.Module):
     """
@@ -136,7 +138,6 @@ class PoseLiftingTemporalConv(nn.Module):
         - 3D human pose estimation in video with temporal convolutions and semi-supervised training
 
     TODO
-    - write docstring
     - bn momentum
     - dense model conversion
     - metric
@@ -150,21 +151,23 @@ class PoseLiftingTemporalConv(nn.Module):
         Dropout factor.
     num_layers : int
         Number of layers per residual block.
-    num_blocks : int
-        Number of residual blocks.
+    kernel_sizes : List
+        Kernel sizes of each residual block. The receptive field of the model is
+        computed as the product of all kernel sizes. Number of blocks are equal
+        to the length of this list.
     num_joints : int
         Number of joints in the pose model(Human 3.6M has 17 joints). The input
-        of the model is 2 * num_joints 2D coordinates and output is 3 * num_joints
-        3D coordinates.
+        of the model is a stream of 2 * num_joints 2D coordinates and output is
+        3 * num_joints 3D coordinates.
     """
 
     def __init__(
         self,
-        kernel_sizes=[3, 3, 3, 3, 3],
-        num_features=1024,
-        dropout=0.25,
-        num_layers=2,
-        num_joints=17,
+        kernel_sizes: List[int] = [3, 3, 3, 3, 3],
+        num_features: int = 1024,
+        dropout: float = 0.25,
+        num_layers: int = 2,
+        num_joints: int = 17,
     ):
         super().__init__()
         self.receptive_field = np.prod(kernel_sizes)
@@ -208,11 +211,11 @@ class PoseLiftingTemporalConv(nn.Module):
             assert x.ndim == 4
         else:
             assert x.ndim == 4
-            # assume that input is of shape (batch_size, receptive_field, 17, 2)
-            assert x.shape[1:] == torch.Size([self.receptive_field, self.num_joints, 2]), \
+            # assume that input is of shape (batch_size, 17, 2, receptive_field)
+            assert x.shape[1:] == torch.Size([self.num_joints, 2, self.receptive_field]), \
                 f"Sparse mode expected elements of shape {self.receptive_field}, got shape {x.shape}."
-            x = torch.permute(torch.flatten(x, 2), (0, 2, 1))
-        x = self.expand(x)
+        # flatten (17, 2) to 34 using view
+        x = self.expand(x.reshape(x.size(0), self.num_joints * 2, x.size(3)))
         for block in self.res_blocks:
             x = block(x)
-        return self.shrink(x).reshape(x.size(0), 17, 3)
+        return self.shrink(x).reshape(x.size(0), self.num_joints, 3)

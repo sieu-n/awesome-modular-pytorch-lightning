@@ -10,6 +10,7 @@ trainer:
   check_val_every_n_epoch: 5
   precision: 32
 
+# change values based on setting
 dataloader:
   base_dataloader:
     num_workers: 2
