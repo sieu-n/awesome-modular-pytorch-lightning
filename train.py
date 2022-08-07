@@ -30,7 +30,7 @@ if __name__ == "__main__":
     experiment.initialize_environment(cfg=cfg)
     datasets = experiment.setup_dataset(
         dataset_cfg=cfg["dataset"],
-        transform_cfg=cfg["transform"],
+        transform_cfg=cfg.get("transform", {}),
     )
     dataloaders = experiment.setup_dataloader(
         datasets=datasets,

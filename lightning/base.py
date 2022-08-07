@@ -31,13 +31,10 @@ class _BaseLightningTrainer(_LightningModule):
         # 1. build backbone
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
-            print(f"(1/6) Building backbone model: {backbone_cfg['ID']}")
-
-            self.backbone = catalog.models.build_backbone(
-                name=backbone_cfg["ID"],
-                model_type=backbone_cfg["TYPE"],
-                drop_after=backbone_cfg.get("drop_after", None),
-                **backbone_cfg.get("cfg", {}),
+            print(f"(1/6) Building backbone model: {backbone_cfg['name']}")
+            self.backbone = catalog.backbone.build(
+                name=backbone_cfg["name"],
+                args=backbone_cfg.get("args", {}),
             )
             # load backbone weights from url / filepath
             if "weights" in backbone_cfg:
@@ -188,7 +185,12 @@ class _BaseLightningTrainer(_LightningModule):
                     self.log(log_key, res)
             else:
                 # typical metrics
-                self.log(log_key, res)
+                if isinstance(res, dict):
+                    for k in list(res.keys()):
+                        res[f"{log_key}/{k}"] = res.pop(k)
+                    self.log_dict(res)
+                else:
+                    self.log(log_key, res)
 
     def init(self):
         raise NotImplementedError()

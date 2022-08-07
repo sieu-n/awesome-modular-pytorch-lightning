@@ -1,10 +1,16 @@
 # reference: https://github.com/open-mmlab/mmdetection/blob/master/tools/misc/download_dataset.py
 import argparse
+import os
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from tarfile import TarFile
 from zipfile import ZipFile
+
+try:
+    import gdown
+except ImportError:
+    print("Gdown is not imported. Please install by `pip install gdown` if required.")
 
 import torch
 
@@ -30,14 +36,24 @@ def parse_args():
     return args
 
 
-def download(url, dir, unzip=True, delete=False, threads=1):
+def download(
+    url, dir, download_from="url", output="", unzip=True, delete=False, threads=1
+):
     def download_one(url, dir):
-        f = dir / Path(url).name
-        if Path(url).is_file():
-            Path(url).rename(f)
-        elif not f.exists():
-            print("Downloading {} to {}".format(url, f))
-            torch.hub.download_url_to_file(url, f, progress=True)
+        dir = os.path.join(dir, output)
+        if download_from == "url":
+            f = dir / Path(url).name
+            if Path(url).is_file():
+                Path(url).rename(f)
+            elif not f.exists():
+                print("Downloading {} to {}".format(url, f))
+                torch.hub.download_url_to_file(url, os.path.join(f), progress=True)
+        elif download_from == "gdrive":
+            f = gdown.download(id=url, output=dir, quiet=False)
+            f = Path(f)
+        else:
+            raise ValueError("Invalid download type: {}".format(download_from))
+
         if unzip and f.suffix in (".zip", ".tar"):
             print("Unzipping {}".format(f.name))
             if f.suffix == ".zip":
@@ -90,11 +106,46 @@ def main():
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar",
         ],
     )
-    url = data2url.get(args.dataset_name, None)
-    if url is None:
-        print("Only support COCO, VOC, and LVIS now!")
-        return
-    download(url, dir=path, unzip=args.unzip, delete=args.delete, threads=args.threads)
+    data2gdrive_id = dict(
+        human36m_annotation=["1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"],
+        human36m_images=[
+            "1AKpQOuRmsWgVJwHAPvUiXlnaXJdeBSYf",
+            "1abMytHP_BdBaOMzkelRYf77jrTDZyfRZ",
+            "1YvdnaMGqTcdgs4U4dYAFi2QxcmvSxCHc",
+            "1alTStw-TWIhrtEEA3aJXqKzDkvl7Qes9",
+            "1q69fYsAhlABXk_rFOUzDtNIEFWuYmJOP",
+            "1gud5GEmFtlOwLabnIiE-s3EgFQjDppHH",
+            "1hmvXEUYfqy8dhfZuPLRatXlLAk3lKrzR",
+        ],
+    )
+    _url = data2url.get(args.dataset_name, None)
+    gdrive_id = data2gdrive_id.get(args.dataset_name, None)
+
+    output = ""
+
+    if args.dataset_name == "human36m_images":
+        output = "images/"
+
+    if _url is not None:
+        print("Dowloading from URLs")
+        download_from = "url"
+        url = _url
+    elif gdrive_id is not None:
+        print("Dowloading from Google Drive")
+        download_from = "gdrive"
+        url = gdrive_id
+    else:
+        raise ValueError("Invalid name: %s" % args.dataset_name)
+
+    download(
+        url,
+        dir=path,
+        download_from=download_from,
+        output=output,
+        unzip=args.unzip,
+        delete=args.delete,
+        threads=args.threads,
+    )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 # callback catalog
-from utils.callbacks import FreezeModule, LightningCallback  # noqa
+from utils.callbacks import *  # noqa
 
 # utils
 from ._get import _get

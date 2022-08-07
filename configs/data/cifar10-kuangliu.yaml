@@ -1,23 +1,34 @@
 debug:
   view_train_augmentation:
+    save_to: "vis/training_samples.png"
+
+    normalization_mean: "{const.normalization_mean}"
+    normalization_std: "{const.normalization_std}"
+
+    subplot_dim: [4, 4]
+    plot_size: 5
     resize_to: [256, 256] # resize so class text is displayed.
   network_summary:
     input_shape: [3, 32, 32]
+
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "CIFAR10"
-    file: "torchvision"
+    name: "TorchvisionDataset"
     args:
-      root: "./cifar10"
+      name: "CIFAR10"
+      args:
+        root: "./cifar10"
   dataset_subset_cfg:
     trn:
       args:
-        download: True
-        train: True
+        args:
+          download: True
+          train: True
     val:
       args:
-        train: False
+        args:
+          train: False
   initial_transform:
     name: "TupleToClassificationData"
 
@@ -41,7 +52,7 @@ transform:
     [
       "trn,val",
       [
-        { "name": "ToTensor", "args": {} },
+        { "name": "ImageToTensor", "args": {} },
         {
           "name": "Normalize",
           "args":

@@ -1,0 +1,98 @@
+# Implement supervised procedure in the paper:
+# 3D human pose estimation in video with temporal convolutions and semi-supervised training
+
+name: "3D-Pose-Estimation-Temporal-Convolution"
+
+debug:
+  network_summary:
+    input_shape: ["{const.receptive_field}", 17, 2]
+
+dataloader:
+  base_dataloader:
+    batch_size: 1024
+
+training:
+  ID: "PoseLiftingTrainer"
+
+  epochs: 80
+  lr: 0.001
+
+  optimizer: "adam"
+  optimizer_cfg:
+    lr: "{training.lr}"
+    weight_decay: 0.0
+    amsgrad: True
+
+  lr_scheduler:
+    name: "cosine"
+    args:
+      T_max: "{training.epochs}"
+    cfg:
+      interval: "epoch"
+  metrics:
+    # TODO
+    # protocol 1
+    loss:
+      when: "trn"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "loss"
+    # compute action-wise MPJPE loss
+    mpjpe:
+      when: "val,test"
+      name: SubsetMetric
+      args:
+        name: MPJPE
+        num_subsets: 17
+        get_avg: True
+
+      update:
+        reconstructed_joints: "reconstruction_global"
+        gt_joints: "joints_gt_global"
+        subset: "action_idx"
+    # protocol 2
+    #pmpjpe:
+    # protocol 3
+    #nmpjpe:
+
+callbacks:
+  ModelCheckpoint:
+    name: LightningCallback
+    args:
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/mpjpe"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
+    args:
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
+
+model:
+  backbone:
+    name: "PoseLiftingTemporalConv"
+    args:
+      num_features: 1024
+      dropout: 0.25
+      num_layers: 2
+      kernel_sizes:
+        - 3
+        - 3
+        - 3
+        - 3
+        - 3
+      num_joints: "{const.num_joints}"
+  modules:
+    loss_fn:
+      name: "MSELoss"
+wandb:
+  project: "human36m-3d-pose-estimation-temporal"
+
+const:
+  receptive_field: 243

@@ -1,7 +1,7 @@
 from utils import rgetattr
 
 
-class Hook():
+class Hook:
     def __init__(self, network=None, cfg=None):
         """
         Create and record hooks that record forward / backward passes of a
@@ -24,7 +24,9 @@ class Hook():
         if type(cfg) == list:
             cfg = {idx: val for idx, val in enumerate(cfg)}
         else:
-            assert isinstance(cfg, dict), f"`build_from_cfg` expected a list or dict, got \
+            assert isinstance(
+                cfg, dict
+            ), f"`build_from_cfg` expected a list or dict, got \
                 {cfg} of type {type(cfg)}."
 
         for hook_name, hook_cfg in cfg.items():
@@ -35,11 +37,14 @@ class Hook():
                 **hook_cfg.get("args", {}),
             )
 
-    def register_forward_hook(self, name, layer_name, network=None, mode="output", idx=None):
+    def register_forward_hook(
+        self, name, layer_name, network=None, mode="output", idx=None
+    ):
         """
         Attach a new forward hook to `layer_name` layer in `network`. The
         results can be retrieved through calling `get_hook`.
         """
+
         def save_to(name, mode="output", idx=None):
             def hook(m, i, output):
                 # initialize array for device
@@ -64,6 +69,7 @@ class Hook():
                     f = f[idx].detach()
 
                 self.forward_cache[output.device.index][name] = f
+
             return hook
 
         if network is None:
@@ -75,7 +81,9 @@ class Hook():
 
     def get(self, key, device=None):
         if device is None:
-            assert len(self.forward_cache) == 1, f"Current `device` must be provided when \
+            assert (
+                len(self.forward_cache) == 1
+            ), f"Current `device` must be provided when \
                 using multi-node training. GPU used: {self.forward_cache}"
             device_index = list(self.forward_cache.keys())[0]
         else:

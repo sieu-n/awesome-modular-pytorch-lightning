@@ -2,11 +2,7 @@ from collections import OrderedDict
 from typing import Union
 
 import torch
-
-try:
-    from mmcv.parallel import DataContainer
-except ImportError:
-    pass
+from utils.data_container import DataContainer
 
 
 def unpack_datacontainers(datacontainers):

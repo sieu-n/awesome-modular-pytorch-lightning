@@ -1,7 +1,6 @@
-from data.transforms.vision.classification import *  # noqa F401
-from data.transforms.vision.detection import *  # noqa F401
-from data.transforms.vision.image import *  # noqa F401
-from data.transforms.vision.util import *  # noqa F401
+from data.transforms.base import MultipleKeyTransform  # noqa
+from data.transforms.common import CollectDataContainer, RemoveKeys, ToTensor  # noqa
+from data.transforms.vision import *  # noqa
 
 from ._get import _get
 

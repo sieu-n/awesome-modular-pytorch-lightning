@@ -1,5 +1,6 @@
 import random
 
+import catalog
 from torch.utils.data import Dataset
 
 
@@ -21,8 +22,50 @@ class _BaseTransform:
         else:
             self.const_cfg = const_cfg
 
-    def __call__(self, x, y):
+    def __call__(self, d):
         raise NotImplementedError
+
+
+class _KeyTransform:
+    """
+    Apply transform to certain key. Implement transformation by overriding `transform`.
+    """
+
+    def __init__(self, key=None, const_cfg=None):
+        if const_cfg is None:
+            print(
+                f"`const_cfg` was not specified while initializing `{self}`. This might lead to unexpected behaviour."
+            )
+        else:
+            self.const_cfg = const_cfg
+        self.key = key
+
+    def transform(self):
+        raise NotImplementedError
+
+    def __call__(self, d):
+        """
+        Parameters
+        ----------
+        d: dict
+        """
+        if self.key is None:
+            d = self.transform(d)
+        else:
+            d[self.key] = self.transform(d[self.key])
+        return d
+
+
+class MultipleKeyTransform(_BaseTransform):
+    def __init__(self, keys, name, args={}, *_args, **kwargs):
+        super(MultipleKeyTransform, self).__init__(*_args, **kwargs)
+        self.ts = [catalog.transforms.build(name=name, args=args, key=k) for k in keys]
+        self.keys = keys
+
+    def __call__(self, d):
+        for t in self.ts:
+            d = t(d)
+        return d
 
 
 class ApplyTransforms(Dataset):
@@ -61,6 +104,10 @@ class ComposeTransforms:
 
 
 class RandomOrder:
+    """
+    Compose transforms but in a random order
+    """
+
     def __init__(self, transforms):
         self.transforms = transforms
 

@@ -77,9 +77,23 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/utils/train.yaml
 ```
 
-## `Experiment` factory class
+- Supervised VideoPose3D 3D-pose estimation on `Human3.6M` dataset
+```
+!python tools/download_dataset.py --dataset-name human36m_annotation --unzip --save-dir human36m --delete --unzip
 
-LightCollections can also be used as a library for extending your pytorch lightning code. `train.py` simply conveys the config file to the `Experiment` class defined in `main.py` to build components such as dataset, dataloaders, models, and callbacks.
+!python train.py --name Temporal-baseline-bs1024-lr0.001 --config \
+    configs/vision/pose-lifting/temporal.yaml \
+    configs/data/human36/temproal-videopose3d.yaml \
+    configs/data/human36/normalization.yaml \
+    configs/device/gpu.yaml \
+    configs/utils/wandb.yaml \
+    configs/utils/train.yaml
+```
+
+## `Experiment` and `catalog`
+
+LightCollections can also be used as a library for extending your pytorch lightning code. `train.py` simply conveys the config file to the `Experiment` class defined in `main.py` to build components such as dataset, dataloaders, models, and callbacks, which in tern uses components defined in `catatlog`.
+
 ```Python
     ...
     experiment = Experiment(cfg)
@@ -153,18 +167,18 @@ model = timm.create_model("resnet50", pretrained=True)
 ```
 
 To use `timm` models,
-- set `model.backbone.TYPE` to `timm`.
-- set `model.backbone.ID` to the model name.
+- set `model.backbone.name` to `TimmNetwork`.
+- set `model.backbone.args.name` to the model name.
 - set additional arguments in `model.backbone.cfg`.
-- set `model.backbone.out_features` to the number of output channels.
 - Refer to: `configs/vision/models/resnet/resnet50-timm.yaml`
 ```
 model:
   backbone:
-    TYPE: "timm"
-    ID: "resnet50"
-    cfg:
-      pretrained: True
+    name: "TimmNetwork"
+    args:
+      name: "resnet50"
+      args:
+        pretrained: True
     out_features: 2048
 ```
 
@@ -179,19 +193,20 @@ model = torchvision.models.resnet50()
 ```
 
 To use `timm` models,
-- set `model.backbone.TYPE` to `torchvision`.
-- set `model.backbone.ID` to the model name.
-- set additional arguments in `models.backbone.cfg`.
-- set `model.backbone.out_features` to the number of output channels.
+- set `model.backbone.name` to `TorchvisionNetwork`.
+- set `model.backbone.args.name` to the model name.
+- set additional arguments in `models.backbone.args`.
+- set `model.backbone.drop_after` to only use feature extractor.
 - Refer to: `configs/vision/models/resnet/resnet50-torchvision.yaml`
 ```
 model:
   backbone:
-    TYPE: "torchvision"
-    ID: "resnet50"
-    cfg:
-      pretrained: False
-    drop_after: "avgpool"
+    name: "TorchvisionNetwork"
+    args:
+      name: "resnet50"
+      args:
+        pretrained: False
+      drop_after: "avgpool"
     out_features: 2048
 ```
 
@@ -243,7 +258,7 @@ transform: [
     [
       "trn,val,test",
       [
-        { "name": "ToTensor", "args": {} },
+        { "name": "ImageToTensor", "args": {} },
         {
           "name": "Normalize",
           "args":
@@ -520,10 +535,11 @@ callbacks:
 ```yaml
 model:
   backbone:
-    TYPE: "timm"
-    ID: "resnet50"
-    cfg:
-      pretrained: False
+    name: "TimmNetwork"
+    args:
+      name: "resnet50"
+      args:
+        pretrained: False
     out_features: 2048
 
     weights:

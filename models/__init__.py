@@ -1,1 +1,1 @@
-from . import vision  # noqa F401
+from . import heads  # noqa F401

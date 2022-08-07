@@ -1,4 +1,4 @@
-from utils.metrics import TorchMetric  # noqa
+from algorithms.metrics import MPJPE, SubsetMetric, TorchMetric  # noqa
 
 from ._get import _get
 

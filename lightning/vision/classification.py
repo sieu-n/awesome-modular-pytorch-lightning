@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from algorithms.augmentation.mixup import MixupCutmix
 from algorithms.rdrop import compute_kl_loss
 from lightning.base import _BaseLightningTrainer

@@ -126,6 +126,7 @@ def compile_links(cfg):
         _cfg = cfg
         for k in s.split("."):
             if type(_cfg) == dict:
+                assert k in _cfg, f"While compiling link to {s}, {k} was not found."
                 _cfg = _cfg[k]
             elif type(_cfg) == list or type(_cfg) == tuple:
                 _cfg = _cfg[int(k)]

@@ -1,0 +1,80 @@
+# create single frame annotation dataset
+dataloader:
+  base_dataloader: # depends on hardware:)
+    collate_fn:
+      # use `mmcv.parallel.DataContainer` to send Camera object.
+      name: mmcv_datacontainer_collate
+
+dataset:
+  dataset_base_cfg:
+    name: "Human36AnnotationDataset"
+    args:
+      base_dir: "./human36m"
+
+  dataset_subset_cfg:
+    trn:
+      args:
+        subjects:
+          - 1
+          - 5
+          - 6
+          - 7
+          - 8
+    val:
+      args:
+        subjects:
+          - 9
+          - 11
+
+transform:
+  [
+    [
+      "trn,val",
+      [
+        { "name": "Create2DProjection" },
+        { "name": "WorldToCameraCoord" },
+        { "name": "CenterAroundJoint" },
+        {
+          "name": "MultipleKeyTransform",
+          "args":
+            {
+              "keys": ["joint", "joint_2d"],
+              "name": "ToTensor",
+              "args": { "dtype": "float" },
+            },
+        },
+        {
+          "name": "MultipleKeyTransform",
+          "args":
+            {
+              "keys": ["camera", "meta"],
+              "name": "CollectDataContainer",
+              "args": { "cpu_only": True },
+            },
+        },
+        {
+          "name": "FastNormalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+              "key": "joint",
+            },
+        },
+        {
+          "name": "FastNormalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean_2d}",
+              "std": "{const.normalization_std_2d}",
+              "key": "joint_2d",
+            },
+        },
+      ],
+    ],
+  ]
+
+# other useful configs.
+const:
+  task: "joint lifting"
+  num_joints: 17

@@ -1,0 +1,89 @@
+# Implement network architecture implemented in the paper:
+# A simple yet effective baseline for 3d human pose estimation, ICCV 2017
+
+name: "3D-Pose-Estimation"
+
+debug:
+  network_summary:
+    input_shape: [17, 2]
+
+dataloader:
+  base_dataloader:
+    batch_size: 64
+
+training:
+  ID: "PoseLiftingTrainer"
+
+  epochs: 200
+  lr: 0.001
+
+  optimizer: "adamw"
+  optimizer_cfg:
+    lr: "{training.lr}"
+    weight_decay: 0.0
+
+  lr_scheduler:
+    name: "cosine"
+    args:
+      T_max: "{training.epochs}"
+    cfg:
+      interval: "epoch"
+  metrics:
+    # TODO
+    # protocol 1
+    loss:
+      when: "trn"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "loss"
+    # compute action-wise MPJPE loss
+    mpjpe:
+      when: "val,test"
+      name: SubsetMetric
+      args:
+        name: MPJPE
+        num_subsets: 17
+        get_avg: True
+
+      update:
+        reconstructed_joints: "reconstruction_global"
+        gt_joints: "joints_gt_global"
+        subset: "action_idx"
+    # protocol 2
+    #pmpjpe:
+    # protocol 3
+    #nmpjpe:
+
+callbacks:
+  ModelCheckpoint:
+    name: LightningCallback
+    args:
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/mpjpe/AVERAGE"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
+    args:
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
+
+model:
+  backbone:
+    name: "PoseLiftingSingleFrameMLP"
+    args:
+      num_features: 1024
+      dropout: 0.5
+      num_layers: 2
+      num_blocks: 2
+      num_joints: "{const.num_joints}"
+  modules:
+    loss_fn:
+      name: "MSELoss"
+wandb:
+  project: "human36m-3d-pose-estimation-single-frame"

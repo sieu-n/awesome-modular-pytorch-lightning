@@ -1,4 +1,4 @@
-# Knowledge distillation:
+# Knowledge distillation
 
 Implements the following methods for knowledge distillation
 

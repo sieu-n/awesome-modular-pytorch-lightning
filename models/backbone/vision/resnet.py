@@ -344,7 +344,6 @@ class ResNet(_ResNet):
 
 
 '''
-TODO: fix bug in resnet-d
 class ResNetD(_ResNet):
     def __init__(self, low_res=False, **kwargs):
         """

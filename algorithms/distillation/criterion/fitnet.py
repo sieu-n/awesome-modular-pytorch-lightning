@@ -1,5 +1,5 @@
-from torch import nn
 import torch.nn.functional as F
+from torch import nn
 
 
 class FitNetCriterion(nn.Module):
@@ -8,6 +8,7 @@ class FitNetCriterion(nn.Module):
         - FitNets: Hints for Thin Deep Nets
 
     """
+
     def __init__(self, channels, alpha, connector_cfg={}):
         pass
 

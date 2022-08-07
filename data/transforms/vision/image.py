@@ -2,15 +2,16 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 import torchvision.transforms.functional as TF
-from data.transforms.base import _BaseTransform
-from data.transforms.vision.util import str2interpolation
 from PIL import Image
 
+from ..base import _KeyTransform
+from .util import str2interpolation
 
-class _ImageTransform(_BaseTransform):
-    def __call__(self, d):
-        d["images"] = self.transform(d["images"])
-        return d
+
+class _ImageTransform(_KeyTransform):
+    def __init__(self, key="images", *args, **kwargs):
+        super(_ImageTransform, self).__init__(*args, **kwargs)
+        self.key = key
 
 
 class Normalize(_ImageTransform):
@@ -20,9 +21,9 @@ class Normalize(_ImageTransform):
 
         Parameters
         ----------
-        mean: list, len=3
+        mean: list
             mean values of (r, g, b) channels to use for normalizing.
-        std: list, len=3
+        std: list
             stddev values of (r, g, b) channels to use for normalizing.
         """
         super().__init__(**kwargs)
@@ -33,6 +34,43 @@ class Normalize(_ImageTransform):
         for t, m, s in zip(image, self.mean, self.std):
             t.sub_(m).div_(s)
         return image
+
+
+class FastNormalize(_ImageTransform):
+    def __init__(self, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), ndim=None, **kwargs):
+        """
+        Normalize input image with predefined mean/std. This implementation is
+        faster when number of channels is larger.
+
+        Parameters
+        ----------
+        mean: list
+            mean values of (r, g, b) channels to use for normalizing.
+        std: list
+            stddev values of (r, g, b) channels to use for normalizing.
+        ndim: int, optional
+            ndim of the input image, for RGB images set to 3 for videos set to
+            4. If not specified, automatically chosen using input.
+        """
+        super().__init__(**kwargs)
+        self.mean = torch.tensor(mean)
+        self.std = torch.tensor(std)
+
+        self.ndim = ndim
+        if self.ndim is not None:
+            self.correct_dims(self.ndim)
+
+    def correct_dims(self, ndim):
+        assert self.mean.ndim == self.std.ndim
+        for _ in range(ndim - self.mean.ndim):
+            self.mean = torch.unsqueeze(self.mean, -1)
+            self.std = torch.unsqueeze(self.std, -1)
+
+    def transform(self, image):
+        if image.ndim != self.mean.ndim:
+            self.correct_dims(image.ndim)
+
+        return (image - self.mean) / self.std
 
 
 class ColorJitter(_ImageTransform):
@@ -156,7 +194,12 @@ class CutOut(_ImageTransform):
         return Image.fromarray(image)
 
 
-class ToTensor(_ImageTransform):
+class ImageToTensor(_ImageTransform):
+    """
+    torchvision.transform is intended for 2d / 3d images. General conversion
+    should be done using `data.transforms.common.ToTensor` instead.
+    """
+
     def transform(self, image):
         return TF.to_tensor(image)
 

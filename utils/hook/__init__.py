@@ -1,1 +1,1 @@
-from .hook import Hook # noqa
+from .hook import Hook  # noqa

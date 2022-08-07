@@ -1,5 +1,6 @@
 from . import (  # noqa
     TTA_modules,
+    backbone,
     callbacks,
     collate_fn,
     dataset,
@@ -8,7 +9,6 @@ from . import (  # noqa
     init_hooks,
     lightning,
     metric,
-    models,
     modules,
     transforms,
 )

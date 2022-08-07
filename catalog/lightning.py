@@ -3,9 +3,10 @@ from lightning.vision import (  # noqa
     ClassificationTrainer,
     DistillationTrainer,
     MMDetectionTrainer,
+    PoseLiftingTrainer,
 )
-
 from utils.pretrained import load_model_weights
+
 from ._get import _get
 
 

@@ -20,7 +20,7 @@ transform:
     [
       "trn,val,pred",
       [
-        { "name": "ToTensor", "args": {} },
+        { "name": "ImageToTensor", "args": {} },
         {
           "name": "Normalize",
           "args":

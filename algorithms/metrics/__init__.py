@@ -1,1 +1,2 @@
-from .utils import TorchMetric  # noqa E403
+from .pose_lifting import MPJPE  # noqa
+from .utils import SubsetMetric, TorchMetric  # noqa

@@ -1,25 +1,59 @@
+import catalog.metric
 import torchmetrics
+from torch import nn
+
+from typing import Iterable
 
 
-class TorchMetric(torchmetrics.Metric):
-    def __init__(self, NAME: str, ARGS: dict):
-        """
-        Wrapper for using metrics that are implemented in torchmetrics.
-        Parameters
-        ----------
-        NAME: str
-            Exact name of the metric in torchmetrics.
-        ARGS: dict
-            Dictionary of arguments to pass when constructing the metric.
-        """
+def TorchMetric(name, args={}):
+    return getattr(torchmetrics, name)(**args)
+
+
+class SubsetMetric(torchmetrics.Metric):
+    """
+    Separately measure metric for each subset of the dataset.
+
+    Parameters
+    ----------
+    name: str
+        Name of base metric.
+    args: dict
+        Arguments for the base metric.
+    num_subsets: int
+        Number of subsets that separate the dataset.
+    get_avg: bool, default: False
+        Returns the average of all the subsets if specified.
+    """
+
+    def __init__(
+        self, name: str, num_subsets: int, args: dict = {}, get_avg: bool = False
+    ):
         super().__init__()
-        self.metric = getattr(torchmetrics, NAME)(**ARGS)
 
-    def update(self, *args, **kwargs):
-        return self.metric.update(*args, **kwargs)
+        self.metrics = nn.ModuleList(
+            [catalog.metric.build(name=name, args=args) for _ in range(num_subsets)]
+        )
+        self.name2idx = {}
+        self.get_avg = get_avg
 
-    def compute(self, *args, **kwargs):
-        return self.metric.compute(*args, **kwargs)
+    def update(self, subset: Iterable, *args, **kwargs):
+        for s in subset:
+            if s not in self.name2idx:
+                self.name2idx[s] = len(self.name2idx)
+            idx = self.name2idx[s]
 
-    def reset(self, *args, **kwargs):
-        return self.metric.reset(*args, **kwargs)
+            self.metrics[idx].update(*args, **kwargs)
+
+    def compute(self):
+        r = {
+            name: self.metrics[self.name2idx[name]].compute()
+            for name, idx in self.name2idx.items()
+        }
+        if self.get_avg:
+            avg_res = sum(r.values()) / len(r)
+            r.update({"AVERAGE": avg_res})
+        return r
+
+    def reset(self):
+        for m in self.metrics:
+            m.reset()

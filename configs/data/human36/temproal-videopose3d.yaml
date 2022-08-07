@@ -1,0 +1,93 @@
+# create multi-frame annotation dataset proposed in the paper:
+# 3D human pose estimation in video with temporal convolutions and semi-supervised training
+
+dataloader:
+  base_dataloader: # depends on hardware:)
+    collate_fn:
+      # use `mmcv.parallel.DataContainer` to send Camera object.
+      name: mmcv_datacontainer_collate
+
+dataset:
+  dataset_base_cfg:
+    name: "Human36AnnotationTemporalDataset"
+    args:
+      receptive_field: 243
+      base_dir: "./human36m"
+
+  dataset_subset_cfg:
+    trn:
+      args:
+        subjects:
+          - 1
+          - 5
+          - 6
+          - 7
+          - 8
+    val:
+      args:
+        subjects:
+          - 9
+          - 11
+
+transform:
+  [
+    [
+      "trn,val",
+      [
+        { "name": "Create2DProjectionTemporal" },
+        { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
+        { "name": "WorldToCameraCoord" },
+        { "name": "CenterAroundJoint" },
+        {
+          "name": "ToTensor",
+          "args":
+            {
+              "key": "joint",
+              "dtype": "float",
+            },
+        },
+        {
+          "name": "ToTensor",
+          "args":
+            {
+              "key": "joint_2d",
+              "dtype": "float",
+              # (243, 17, 3) -> (17, 3, 243)
+              "channel_axis": [1, 2],
+            },
+        },
+        {
+          "name": "MultipleKeyTransform",
+          "args":
+            {
+              "keys": ["camera", "meta"],
+              "name": "CollectDataContainer",
+              "args": { "cpu_only": True },
+            },
+        },
+        {
+          "name": "FastNormalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+              "key": "joint",
+            },
+        },
+        {
+          "name": "FastNormalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean_2d}",
+              "std": "{const.normalization_std_2d}",
+              "key": "joint_2d",
+            },
+        },
+      ],
+    ],
+  ]
+
+# other useful configs.
+const:
+  task: "joint lifting"
+  num_joints: 17

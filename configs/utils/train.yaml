@@ -4,22 +4,17 @@ VERBOSE: "DEFAULT"
 DEBUG_MODE: False
 seed: True
 
-debug:
-  view_train_augmentation:
-    save_to: "vis/training_samples.png"
-    subplot_dim: [4, 4]
-    plot_size: 5
-
 trainer:
   strategy: "dp"
   accumulate_grad_batches: 1
   check_val_every_n_epoch: 5
   precision: 32
 
+# change values based on setting
 dataloader:
   base_dataloader:
-    num_workers: 8
-    pin_memory: True
+    num_workers: 2
+    pin_memory: False
     shuffle: True
     prefetch_factor: 2
   trn:

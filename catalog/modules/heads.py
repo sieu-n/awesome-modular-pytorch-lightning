@@ -1,6 +1,6 @@
-from models.vision.heads.base import MLPHead  # noqa E401
-from models.vision.heads.classification import ClassificationHead  # noqa E401
-from models.vision.heads.fasterrcnn import (  # noqa F401
+from models.heads.base import MLPHead  # noqa
+from models.heads.classification import ClassificationHead  # noqa
+from models.heads.fasterrcnn import (  # noqa
     FasterRCNNBaserpn,
     FastRCNNPredictor,
     ROIPooler,
