@@ -77,6 +77,19 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/utils/train.yaml
 ```
 
+- Supervised VideoPose3D 3D-pose estimation on `Human3.6M` dataset
+```
+!python tools/download_dataset.py --dataset-name human36m_annotation --unzip --save-dir human36m --delete --unzip
+
+!python train.py --name Temporal-baseline-bs1024-lr0.001 --config \
+    configs/vision/pose-lifting/temporal.yaml \
+    configs/data/human36/temproal-videopose3d.yaml \
+    configs/data/human36/normalization.yaml \
+    configs/device/gpu.yaml \
+    configs/utils/wandb.yaml \
+    configs/utils/train.yaml
+```
+
 ## `Experiment` and `catalog`
 
 LightCollections can also be used as a library for extending your pytorch lightning code. `train.py` simply conveys the config file to the `Experiment` class defined in `main.py` to build components such as dataset, dataloaders, models, and callbacks, which in tern uses components defined in `catatlog`.
