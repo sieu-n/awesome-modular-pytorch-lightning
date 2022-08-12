@@ -32,7 +32,7 @@ transform:
       "trn,val",
       [
         { "name": "WorldToCameraCoord" },
-        { "name": "Create2DProjection" },
+        { "name": "Create2DProjection", "args": {"is_world_coord": false} },
         { "name": "CenterAroundJoint" },
         {
           "name": "MultipleKeyTransform",
