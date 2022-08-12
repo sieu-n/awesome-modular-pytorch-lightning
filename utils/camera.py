@@ -57,13 +57,14 @@ class Human36Camera:
 
         return X_cam.T
 
-    def project_to_2D(self, P):
+    def project_to_2D(self, P, is_world_coord=True):
         """
         Project points from 3d to 2d using camera parameters
         NOT including radial and tangential distortion
         https://github.com/una-dinosauria/3d-pose-baseline/blob/666080d86a96666d499300719053cc8af7ef51c8/src/data_utils.py#L253
         Args
-          P: Nx3 points in world coordinates
+          P: Nx3 points in world / camera coordinates
+          is_world_coord: whether coordinates are in world / camera coordinate space.
           # k: 3x1 Camera radial distortion coefficients
           # p: 2x1 Camera tangential distortion coefficients
         Returns
@@ -79,7 +80,10 @@ class Human36Camera:
         assert len(P.shape) == 2
         assert P.shape[1] == 3
 
-        X = self.world_to_camera_coord(P).T
+        if is_world_coord:
+            P = self.world_to_camera_coord(P)
+
+        X = P.T
         XX = X[:2, :] / X[2, :]
         r2 = XX[0, :] ** 2 + XX[1, :] ** 2
 

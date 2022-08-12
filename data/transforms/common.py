@@ -42,7 +42,7 @@ class ToTensor(_KeyTransform):
     def transform(self, t):
         t = torch.tensor(t, dtype=self.dtype)
         if self.channel_axis is not None:
-            dim_order = self.channel_axis + list(set(range(5)) - set(self.channel_axis))
+            dim_order = self.channel_axis + list(set(range(t.ndim)) - set(self.channel_axis))
             t = torch.permute(t, dim_order)
         return t
 

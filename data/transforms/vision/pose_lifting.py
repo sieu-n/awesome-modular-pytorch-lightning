@@ -1,6 +1,4 @@
 # Camera is considered to be an instance of utils.camera.Human36Camera
-import numpy as np
-
 from ..base import _BaseTransform
 
 
@@ -34,12 +32,6 @@ class Create2DProjectionTemporal(_BaseTransform):
     def __call__(self, d):
         assert "joint_2d" not in d
         cam = d["camera"]
-        proj_2d = np.array(
-            [
-                cam.project_to_2D(d["temporal_joints"][idx])[0]
-                for idx in range(len(d["temporal_joints"]))
-            ]
-        )
-
-        d["joint_2d"] = proj_2d
+        orig_shape = d["temporal_joints"].shape
+        d["joint_2d"] = cam.project_to_2D(d["temporal_joints"].reshape(-1, 3))[0].reshape(orig_shape[:-1] + [2])
         return d
