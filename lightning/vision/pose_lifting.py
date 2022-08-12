@@ -11,6 +11,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
     def init(self, model_cfg, training_cfg):
         # mixup and cutmix for classification
+        self.get_decoded = model_cfg.get("get_decoded", True)
         self.normalization_mean = torch.tensor(self.const_cfg["normalization_mean"])
         self.normalization_std = torch.tensor(self.const_cfg["normalization_std"])
 
@@ -54,19 +55,22 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         self.log("step/train_loss", loss)
 
         # for logging
-        camera = batch["camera"].data
         location = batch["location"]
         res = {
             "joints_gt_camera": y,
-            "joints_gt_global": self.decode(y.cpu(), location.cpu(), camera),
             "joints_2d": x,
             "reconstruction_camera": reconstruction,
-            "reconstruction_global": self.decode(
-                reconstruction.cpu().detach(), location.cpu(), camera
-            ),
             "loss": loss,
             "action_idx": batch["idx"]["action_idx"].cpu().numpy(),
         }
+        if self.get_decoded:
+            cameras = batch["camera"].data
+
+            res["joints_gt_global"] = self.decode(y.cpu(), location.cpu(), cameras)
+            res["reconstruction_global"] = self.decode(
+                reconstruction.cpu().detach(), location.cpu(), cameras
+            )
+
         return loss, res
 
     def evaluate(self, batch, stage=None):
@@ -117,6 +121,8 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
     def decode(self, joints, locations, cameras):
         """
+        Parameters
+        ----------
         joints: tensor
             bs x 17 x 3 shaped 3d joints denoting relative locations in camera
             coordinates.
@@ -131,11 +137,10 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         """
         # unnormalize
         batch_size = joints.size(0)
-        DEVICE = joints.device
         ndim = self.normalization_mean.ndim
 
-        normalization_mean = self.normalization_mean.repeat([batch_size] + [1] * ndim).to(DEVICE)
-        normalization_std = self.normalization_std.repeat([batch_size] + [1] * ndim).to(DEVICE)
+        normalization_mean = self.normalization_mean.repeat([batch_size] + [1] * ndim)
+        normalization_std = self.normalization_std.repeat([batch_size] + [1] * ndim)
 
         joints = joints * normalization_std + normalization_mean
 

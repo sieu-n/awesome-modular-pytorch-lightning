@@ -17,6 +17,8 @@ training:
   epochs: 80
   lr: 0.001
 
+  get_decoded: false
+
   optimizer: "adam"
   optimizer_cfg:
     lr: "{training.lr}"
