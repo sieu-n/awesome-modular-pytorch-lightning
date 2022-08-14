@@ -78,6 +78,15 @@ transform:
       "val",
       [
         {
+          "name": "ToTensor",
+          "args":
+            {
+              "key": "precomputed_joints_2d",
+              "dtype": "float"
+            },
+        },
+
+        {
           "name": "FastNormalize",
           "args":
             {

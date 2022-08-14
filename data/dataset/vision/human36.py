@@ -52,7 +52,7 @@ class PrecomputedJointDataset:
             if subject_id not in self.subjects:
                 continue
 
-            for action_key in keypoints[subject_name]:
+            for action_key in list(keypoints[subject_name].keys()):
                 key = action_key.split(" ")
                 if len(key) == 2:
                     action_name, subaction_idx = key
@@ -115,7 +115,7 @@ class Human36AnnotationDataset(Dataset):
 
         self.get_precomputed_joints = precomputed_joint_dir is not None
         if self.get_precomputed_joints:
-            self.precomputed_joints = PrecomputedJointDataset(precomputed_joint_dir)
+            self.precomputed_joints = PrecomputedJointDataset(precomputed_joint_dir, subjects=subjects)
 
         for idx, subject_id in enumerate(subjects):
             print(

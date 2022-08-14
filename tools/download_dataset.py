@@ -18,7 +18,7 @@ import torch
 def parse_args():
     parser = argparse.ArgumentParser(description="Download datasets for training")
     parser.add_argument(
-        "--dataset-name", type=str, help="dataset name", default="coco2017"
+        "--dataset-name", type=str, help="dataset name"
     )
     parser.add_argument(
         "--save-dir", type=str, help="the dir to save dataset", default="data/coco"
@@ -40,7 +40,6 @@ def download(
     url, dir, download_from="url", output="", unzip=True, delete=False, threads=1
 ):
     def download_one(url, dir):
-        dir = os.path.join(dir, output)
         if download_from == "url":
             f = dir / Path(url).name
             if Path(url).is_file():
@@ -49,6 +48,7 @@ def download(
                 print("Downloading {} to {}".format(url, f))
                 torch.hub.download_url_to_file(url, os.path.join(f), progress=True)
         elif download_from == "gdrive":
+            dir = os.path.join(dir, output)
             f = gdown.download(id=url, output=dir, quiet=False)
             f = Path(f)
         else:
@@ -105,7 +105,7 @@ def main():
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar",
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar",
         ],
-        human36m_annotation=["https://dl.fbaipublicfiles.com/video-pose-3d/data_2d_h36m_cpn_ft_h36m_dbb.npz"],
+        human36m_precomputed=["https://dl.fbaipublicfiles.com/video-pose-3d/data_2d_h36m_cpn_ft_h36m_dbb.npz"],
     )
     data2gdrive_id = dict(
         human36m_annotation=["1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"],
@@ -119,32 +119,37 @@ def main():
             "1hmvXEUYfqy8dhfZuPLRatXlLAk3lKrzR",
         ],
     )
-    _url = data2url.get(args.dataset_name, None)
-    gdrive_id = data2gdrive_id.get(args.dataset_name, None)
 
     output = ""
 
     if args.dataset_name == "human36m_images":
         output = "images/"
 
-    if _url is not None:
+    if args.dataset_name in data2url:
         print("Dowloading from URLs")
         download_from = "url"
-        url = _url
-    if gdrive_id is not None:
+        download(
+            data2url[args.dataset_name],
+            dir=path,
+            download_from=download_from,
+            output=output,
+            unzip=args.unzip,
+            delete=args.delete,
+            threads=args.threads,
+        )
+
+    if args.dataset_name in data2gdrive_id:
         print("Dowloading from Google Drive")
         download_from = "gdrive"
-        url = gdrive_id
-
-    download(
-        url,
-        dir=path,
-        download_from=download_from,
-        output=output,
-        unzip=args.unzip,
-        delete=args.delete,
-        threads=args.threads,
-    )
+        download(
+            data2gdrive_id[args.dataset_name],
+            dir=path,
+            download_from=download_from,
+            output=output,
+            unzip=args.unzip,
+            delete=args.delete,
+            threads=args.threads,
+        )
 
 
 if __name__ == "__main__":

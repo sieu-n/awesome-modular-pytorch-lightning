@@ -255,17 +255,17 @@ class _BaseLightningTrainer(_LightningModule):
         self.update_metrics("trn", res)
         return loss
 
-    def validation_step(self, batch, *args, **kwargs):
-        res = self.evaluate(batch, stage="val", *args, **kwargs)
+    def validation_step(self, batch, batch_idx, dataloader_idx):
+        res = self.evaluate(batch, "val")
         self.update_metrics("val", res)
         return res
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch, batch_idx, dataloader_idx):
         if self.is_tta_enabled:
             # apply test-time augmentation if specified.
             pred, res = self.TTA_module(batch)
         else:
-            res = self.evaluate(batch, stage="test")
+            res = self.evaluate(batch, "test")
         self.update_metrics("test", res)
         return res
 
