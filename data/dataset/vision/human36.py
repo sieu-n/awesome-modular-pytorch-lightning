@@ -2,6 +2,7 @@ import json
 import os
 from copy import deepcopy
 
+from PIL import Image
 import numpy as np
 from torch.utils.data import Dataset
 from tqdm import tqdm
@@ -26,6 +27,54 @@ ACTION_NAMES = (
 )
 
 
+class PrecomputedJointDataset:
+    def __init__(self, data_dir: str, subjects: list = [1, 5, 6, 7, 8], format: str = "videopose3d"):
+        self.data_dir = data_dir
+        self.subjects = subjects
+        print("Loading precomputed joints from %s" % self.data_dir)
+
+        if format == "videopose3d":
+            self.data, _ = self.load_videopose3d(data_dir)
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def load_videopose3d(self, data_dir: str):
+        keypoints = np.load(data_dir, allow_pickle=True)
+
+        keypoints_metadata = keypoints["metadata"].item()
+        keypoints = keypoints["positions_2d"].item()
+
+        data = {}
+
+        for subject_name in tqdm(keypoints.keys()):
+            subject_id = int(subject_name[1:])
+            if subject_id not in self.subjects:
+                continue
+
+            for action_key in keypoints[subject_name]:
+                key = action_key.split(" ")
+                if len(key) == 2:
+                    action_name, subaction_idx = key
+                    joint_key = (
+                        subject_id,
+                        ACTION_NAMES.index(action_name),
+                        int(subaction_idx),
+                    )
+                elif len(key) == 1:
+                    joint_key = (
+                        subject_id,
+                        ACTION_NAMES.index(action_key),
+                        2,
+                    )
+                else:
+                    raise ValueError(f"Invalid action name: {action_name}")
+
+                data[joint_key] = keypoints[subject_name].pop(action_key)
+
+        return data, keypoints_metadata
+
+
 class Human36AnnotationDataset(Dataset):
     def __init__(
         self,
@@ -33,6 +82,7 @@ class Human36AnnotationDataset(Dataset):
         subjects: list = [1, 5, 6, 7, 8],
         reorder_joints: bool = True,
         precomputed_joint_dir: str = None,
+        image_dir: str = None,
     ):
         """
         Base class for human36 annotations dataset. The `__init__` method collects
@@ -61,6 +111,7 @@ class Human36AnnotationDataset(Dataset):
         self.joint_data = {}
         self.data = {}
         self.sampler = []
+        self.image_dir = image_dir
 
         self.get_precomputed_joints = precomputed_joint_dir is not None
         if self.get_precomputed_joints:
@@ -163,6 +214,9 @@ class Human36AnnotationDataset(Dataset):
             "joint": load_json_data(subject_id, "joint_3d"),
         }
 
+    def get_image(self, idx=None):
+        return Image.open(os.path.join(self.image_dir, self.data[self.sampler[idx]]["meta"]["file_path"]))
+
     def __len__(self):
         return len(self.sampler)
 
@@ -180,6 +234,8 @@ class Human36AnnotationDataset(Dataset):
         res = deepcopy(self.data[key])
         res["joint"] = deepcopy(self.joint_data[joint_key][frame_idx])
         res["camera"] = self.cameras[subject_id][camera_idx]
+        if self.image_dir is not None:
+            res["images"] = self.get_image(idx)
         if self.get_precomputed_joints:
             res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][
                 camera_idx
@@ -246,47 +302,3 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
                 camera_idx
             ][frame_idx]
         return res
-
-
-class PrecomputedJointDataset:
-    def __init__(self, data_dir: str, format: str = "videopose3d"):
-        self.data_dir = data_dir
-        print("Loading precomputed joints from %s" % self.data_dir)
-
-        if format == "videopose3d":
-            self.data, _ = self.load_videopose3d(data_dir)
-
-    def __getitem__(self, key):
-        return self.data[key]
-
-    def load_videopose3d(self, data_dir: str):
-        keypoints = np.load(data_dir, allow_pickle=True)
-
-        keypoints_metadata = keypoints["metadata"].item()
-        keypoints = keypoints["positions_2d"].item()
-
-        data = {}
-
-        for subject_name in keypoints.keys():
-            subject_id = int(subject_name[1:])
-            for action_key in keypoints[subject_name]:
-                key = action_key.split(" ")
-                if len(key) == 2:
-                    action_name, subaction_idx = key
-                    joint_key = (
-                        subject_id,
-                        ACTION_NAMES.index(action_name),
-                        int(subaction_idx),
-                    )
-                elif len(key) == 1:
-                    joint_key = (
-                        subject_id,
-                        ACTION_NAMES.index(action_key),
-                        2,
-                    )
-                else:
-                    raise ValueError(f"Invalid action name: {action_name}")
-
-                data[joint_key] = keypoints[subject_name][action_key]
-
-        return data, keypoints_metadata

@@ -105,6 +105,7 @@ def main():
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar",
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar",
         ],
+        human36m_annotation=["https://dl.fbaipublicfiles.com/video-pose-3d/data_2d_h36m_cpn_ft_h36m_dbb.npz"],
     )
     data2gdrive_id = dict(
         human36m_annotation=["1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"],
@@ -130,12 +131,10 @@ def main():
         print("Dowloading from URLs")
         download_from = "url"
         url = _url
-    elif gdrive_id is not None:
+    if gdrive_id is not None:
         print("Dowloading from Google Drive")
         download_from = "gdrive"
         url = gdrive_id
-    else:
-        raise ValueError("Invalid name: %s" % args.dataset_name)
 
     download(
         url,

@@ -101,7 +101,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         # for logging
         camera = batch["camera"].data
         location = batch["location"]
-        return {
+        res = {
             "joints_gt_camera": y,
             "joints_gt_global": self.decode(y.cpu(), location.cpu(), camera),
             "joints_2d": x,
@@ -112,6 +112,14 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "loss": loss,
             "action_idx": batch["idx"]["action_idx"].cpu().numpy(),
         }
+
+        if "precomputed_joints_2d" in batch:
+            reconstruction = self(batch["precomputed_joints_2d"])["joints"]
+            res["pose_estimator_reconstruction_global"] = self.decode(
+                reconstruction.cpu(), location.cpu(), camera
+            )
+
+        return res
 
     def _predict_step(self, batch, batch_idx=0):
         assert "images" in batch

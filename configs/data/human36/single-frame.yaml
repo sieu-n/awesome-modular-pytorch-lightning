@@ -22,6 +22,7 @@ dataset:
           - 8
     val:
       args:
+        precomputed_joint_dir: "./human36m/data_2d_h36m_cpn_ft_h36m_dbb.npz"
         subjects:
           - 9
           - 11
@@ -73,6 +74,21 @@ transform:
         },
       ],
     ],
+    [
+      "val",
+      [
+        {
+          "name": "FastNormalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean_2d}",
+              "std": "{const.normalization_std_2d}",
+              "key": "precomputed_joints_2d",
+            },
+        },
+
+      ]
+    ]
   ]
 
 # other useful configs.

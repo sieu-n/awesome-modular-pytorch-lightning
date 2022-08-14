@@ -40,7 +40,7 @@ training:
       update:
         value: "loss"
     # compute action-wise MPJPE loss
-    mpjpe:
+    mpjpe/GT:
       when: "val,test"
       name: SubsetMetric
       args:
@@ -56,6 +56,20 @@ training:
     #pmpjpe:
     # protocol 3
     #nmpjpe:
+
+    # compute metrics for 2d joints from pose estimator
+    mpjpe/2DEstimator:
+      when: "val,test"
+      name: SubsetMetric
+      args:
+        name: MPJPE
+        num_subsets: 15
+        get_avg: True
+
+      update:
+        reconstructed_joints: "pose_estimator_reconstruction_global"
+        gt_joints: "joints_gt_global"
+        subset: "action_idx"
 
 callbacks:
   ModelCheckpoint:

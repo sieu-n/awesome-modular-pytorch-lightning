@@ -1,6 +1,7 @@
 from typing import List
 
 import torch
+from copy import deepcopy
 from utils.data_container import DataContainer
 
 from .base import _BaseTransform, _KeyTransform
@@ -75,6 +76,15 @@ class RenameKeys(_BaseTransform):
     def __call__(self, d):
         for k, v in self.mapper:
             d[v] = d.pop(k)
+
+
+class CopyKey(_BaseTransform):
+    def __init__(self, a: dict, b: dict, *args, **kwargs):
+        super(CopyKey, self).__init__(*args, **kwargs)
+        self.a, self.b = a, b
+
+    def __call__(self, d):
+        d[self.b] = deepcopy(d[self.a])
 
 
 class CollectDataContainer(_KeyTransform):

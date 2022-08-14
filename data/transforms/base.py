@@ -26,18 +26,13 @@ class _BaseTransform:
         raise NotImplementedError
 
 
-class _KeyTransform:
+class _KeyTransform(_BaseTransform):
     """
     Apply transform to certain key. Implement transformation by overriding `transform`.
     """
 
-    def __init__(self, key=None, const_cfg=None):
-        if const_cfg is None:
-            print(
-                f"`const_cfg` was not specified while initializing `{self}`. This might lead to unexpected behaviour."
-            )
-        else:
-            self.const_cfg = const_cfg
+    def __init__(self, key=None, *args, **kwargs):
+        super(_KeyTransform, self).__init__(*args, **kwargs)
         self.key = key
 
     def transform(self):
