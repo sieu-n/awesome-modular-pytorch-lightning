@@ -13,10 +13,10 @@ trainer:
 # change values based on setting
 dataloader:
   base_dataloader:
-    num_workers: 2
-    pin_memory: False
+    #num_workers: 2
+    #pin_memory: False
     shuffle: True
-    prefetch_factor: 2
+    #prefetch_factor: 2
   trn:
     shuffle: True
   val:
