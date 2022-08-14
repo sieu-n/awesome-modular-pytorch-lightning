@@ -24,9 +24,7 @@ class Human36Camera:
         self.R = np.array(R)
         self.c = np.array(c)
         self.f = np.array(f)
-        # t is given relative to initial point, unlike in original dataset.
-        camPos = R @ (-np.array(t).reshape(-1, 1))[:, 0]
-        self.t = np.expand_dims(camPos, 1)  # np.array(t)
+        self.t = np.expand_dims(t, 1)
 
     def world_to_camera_coord(self, P):
         """
@@ -39,7 +37,7 @@ class Human36Camera:
         assert len(P.shape) == 2
         assert P.shape[1] == 3
 
-        X_cam = self.R.dot(P.T - self.t)  # rotate and translate
+        X_cam = self.R.dot(P.T) + self.t  # rotate and translate
 
         return X_cam.T
 
@@ -53,7 +51,7 @@ class Human36Camera:
         assert len(P.shape) == 2
         assert P.shape[1] == 3
 
-        X_cam = self.R.T.dot(P.T) + self.t  # rotate and translate
+        X_cam = self.R.T.dot(P.T - self.t)  # rotate and translate
 
         return X_cam.T
 

@@ -3,8 +3,9 @@ try:
 except ImportError:
     pass
 
-from pytorch_lightning.callbacks import Callback
 import gc
+
+from pytorch_lightning.callbacks import Callback
 
 
 class GCCallback(Callback):

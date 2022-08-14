@@ -7,9 +7,33 @@ from torch.utils.data import Dataset
 from tqdm import tqdm
 from utils.camera import Human36Camera
 
+ACTION_NAMES = (
+    "Directions",
+    "Discussion",
+    "Eating",
+    "Greeting",
+    "Phoning",
+    "Posing",
+    "Purchases",
+    "Sitting",
+    "SittingDown",
+    "Smoking",
+    "Photo",
+    "Waiting",
+    "Walking",
+    "WalkDog",
+    "WalkTogether",
+)
+
 
 class Human36AnnotationDataset(Dataset):
-    def __init__(self, base_dir: str, subjects: list = [1, 5, 6, 7, 8]):
+    def __init__(
+        self,
+        base_dir: str,
+        subjects: list = [1, 5, 6, 7, 8],
+        reorder_joints: bool = True,
+        precomputed_joint_dir: str = None,
+    ):
         """
         Base class for human36 annotations dataset. The `__init__` method collects
         and caches the annotation data of every actor. `self.data` is a dictionary
@@ -38,6 +62,10 @@ class Human36AnnotationDataset(Dataset):
         self.data = {}
         self.sampler = []
 
+        self.get_precomputed_joints = precomputed_joint_dir is not None
+        if self.get_precomputed_joints:
+            self.precomputed_joints = PrecomputedJointDataset(precomputed_joint_dir)
+
         for idx, subject_id in enumerate(subjects):
             print(
                 f"Loading data from subject `{subject_id}` ({idx + 1} / {len(subjects)})..."
@@ -46,7 +74,7 @@ class Human36AnnotationDataset(Dataset):
 
             # build cameras
             self.cameras[subject_id] = {
-                idx: Human36Camera(**subject_data["camera"][idx])
+                int(idx) - 1: Human36Camera(**subject_data["camera"][idx])
                 for idx in subject_data["camera"].keys()
             }
 
@@ -64,25 +92,32 @@ class Human36AnnotationDataset(Dataset):
                 frame_idx = str(sample_meta["frame_idx"])
 
                 # save joint data
-                key = (action_idx, subaction_idx, int(camera_idx), int(frame_idx))
+                key = (
+                    int(subject_id),
+                    int(action_idx) - 2,
+                    int(subaction_idx),
+                    int(camera_idx) - 1,
+                    int(frame_idx),
+                )
                 self.joint_data[key] = np.array(
                     subject_data["joint"][action_idx][subaction_idx][frame_idx]
                 )
                 # save other data
                 self.data[key] = {
-                    "idx": {
+                    "idx": {  # values should be `int` type to be collated properly.
                         "suject_idx": int(subject_id),
-                        "action_idx": int(action_idx),
+                        "action_idx": int(action_idx) - 2,
                         "subaction_idx": int(subaction_idx),
-                        "camera_idx": int(camera_idx),
+                        "camera_idx": int(camera_idx) - 1,
                         "frame_idx": int(frame_idx),
                     },
                     "meta": sample_meta,
                     "bbox": subject_data["data"]["annotations"][sample_idx],
-                    "camera": self.cameras[subject_id][camera_idx],
                 }
                 self.sampler.append(key)
-        self.reorder_joints(self.joint_data)
+        self.is_reorder_joints = reorder_joints
+        if reorder_joints:
+            self.reorder_joints(self.joint_data)
 
     def reorder_joints(self, joint_data):
         """
@@ -90,16 +125,18 @@ class Human36AnnotationDataset(Dataset):
         Works in an inplace fashion.
         """
         # organize based on `scene_key` = (action_idx, subaction_idx)
-        print("Organizing frames based on `scene_key`(action_idx, subaction_idx)")
+        print(
+            "Organizing frames based on `scene_key`(subject_id, action_idx, subaction_idx)"
+        )
         _joint_data = {}
-        for action_idx, subaction_idx, camera_idx, frame_idx in tqdm(
+        for subject_id, action_idx, subaction_idx, camera_idx, frame_idx in tqdm(
             list(joint_data.keys())
         ):
-            scene_key = (action_idx, subaction_idx)
+            scene_key = (subject_id, action_idx, subaction_idx)
             if scene_key not in _joint_data:
                 _joint_data[scene_key] = {}
             _joint_data[scene_key][frame_idx] = joint_data.pop(
-                (action_idx, subaction_idx, camera_idx, frame_idx)
+                (subject_id, action_idx, subaction_idx, camera_idx, frame_idx)
             )
         assert (
             len(joint_data) == 0
@@ -132,13 +169,20 @@ class Human36AnnotationDataset(Dataset):
     def __getitem__(self, idx):
         # {meta(from data), }
         key = self.sampler[idx]
-        action_idx, subaction_idx, camera_idx, frame_idx = key
-        joint_key = (action_idx, subaction_idx)
+        subject_id, action_idx, subaction_idx, camera_idx, frame_idx = key
 
-        return {
-            **deepcopy(self.data[key]),
-            **{"joint": deepcopy(self.joint_data[joint_key][frame_idx])},
-        }
+        if self.is_reorder_joints:
+            joint_key = (subject_id, action_idx, subaction_idx)
+        else:
+            joint_key = key
+
+        # organize results
+        res = deepcopy(self.data[key])
+        res["joint"] = deepcopy(self.joint_data[joint_key][frame_idx])
+        res["camera"] = self.cameras[subject_id][camera_idx]
+        if self.get_precomputed_joints:
+            res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][camera_idx][frame_idx]
+        return res
 
 
 class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
@@ -166,11 +210,10 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         self.receptive_field = receptive_field
 
     def __getitem__(self, idx):
-        action_idx, subaction_idx, camera_idx, frame_idx = self.sampler[idx]
-        key, joint_key = (action_idx, subaction_idx, camera_idx, frame_idx), (
-            action_idx,
-            subaction_idx,
-        )
+        subject_id, action_idx, subaction_idx, camera_idx, frame_idx = self.sampler[idx]
+
+        key = (subject_id, action_idx, subaction_idx, camera_idx, frame_idx)
+        joint_key = (subject_id, action_idx, subaction_idx)
         num_frames = len(self.joint_data[joint_key])
 
         sample_width = self.receptive_field // 2
@@ -190,11 +233,56 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
             padded = np.tile(joints[-1], (pad_len, 1, 1))
             joints = np.concatenate((joints, padded), axis=0)
 
+        # organize results
+        res = deepcopy(self.data[key])
         assert self.receptive_field == len(joints)
-        return {
-            **{
-                "temporal_joints": joints,
-                "joint": joints[sample_width],
-            },
-            **deepcopy(self.data[key]),
-        }
+        res["temporal_joints"] = joints
+        res["joint"] = joints[sample_width]  # sample_width = self.receptive_field // 2
+        res["camera"] = self.cameras[subject_id][camera_idx]
+        if self.get_precomputed_joints:
+            res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][camera_idx][frame_idx]
+        return res
+
+
+class PrecomputedJointDataset:
+    def __init__(self, data_dir: str, format: str = "videopose3d"):
+        self.data_dir = data_dir
+        print("Loading precomputed joints from %s" % self.data_dir)
+
+        if format == "videopose3d":
+            self.data, _ = self.load_videopose3d(data_dir)
+
+    def __getitem__(self, key):
+        return self.data[key]
+
+    def load_videopose3d(self, data_dir: str):
+        keypoints = np.load(data_dir, allow_pickle=True)
+
+        keypoints_metadata = keypoints["metadata"].item()
+        keypoints = keypoints["positions_2d"].item()
+
+        data = {}
+
+        for subject_name in keypoints.keys():
+            subject_id = int(subject_name[1:])
+            for action_key in keypoints[subject_name]:
+                key = action_key.split(" ")
+                if len(key) == 2:
+                    action_name, subaction_idx = key
+                    joint_key = (
+                        subject_id,
+                        ACTION_NAMES.index(action_name),
+                        int(subaction_idx),
+                    )
+                elif len(key) == 1:
+                    joint_key = (
+                        subject_id,
+                        ACTION_NAMES.index(action_key),
+                        2,
+                    )
+                else:
+                    raise ValueError(f"Invalid action name: {action_name}")
+
+                data[joint_key] = keypoints[subject_name][action_key]
+
+        return data, keypoints_metadata

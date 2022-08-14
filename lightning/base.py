@@ -1,7 +1,7 @@
-import catalog
-import torch
 import warnings
 
+import catalog
+import torch
 import wandb
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils.experiment import print_to_end
@@ -60,10 +60,10 @@ class _BaseLightningTrainer(_LightningModule):
                 )
                 # load weights from url / filepath
                 if "weights" in module_cfg:
-                    print(f"Loading pretrained `{module_name}`: {module_cfg['weights']}")
-                    module = load_model_weights(
-                        model=module, **module_cfg["weights"]
+                    print(
+                        f"Loading pretrained `{module_name}`: {module_cfg['weights']}"
                     )
+                    module = load_model_weights(model=module, **module_cfg["weights"])
 
                 setattr(self, module_name, module)
 

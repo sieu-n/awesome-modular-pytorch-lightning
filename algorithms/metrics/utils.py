@@ -1,8 +1,8 @@
+from typing import Iterable
+
 import catalog.metric
 import torchmetrics
 from torch import nn
-
-from typing import Iterable
 
 
 def TorchMetric(name, args={}):

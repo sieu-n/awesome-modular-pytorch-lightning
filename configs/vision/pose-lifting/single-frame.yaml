@@ -45,7 +45,7 @@ training:
       name: SubsetMetric
       args:
         name: MPJPE
-        num_subsets: 17
+        num_subsets: 15
         get_avg: True
 
       update:

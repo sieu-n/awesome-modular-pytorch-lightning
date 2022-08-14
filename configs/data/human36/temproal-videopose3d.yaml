@@ -38,24 +38,13 @@ transform:
         { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
-        {
-          "name": "ToTensor",
-          "args":
-            {
-              "key": "joint",
-              "dtype": "float",
-            },
-        },
-        {
-          "name": "ToTensor",
-          "args":
-            {
+        { "name": "ToTensor", "args": { "key": "joint", "dtype": "float" } },
+        { "name": "ToTensor", "args": {
               "key": "joint_2d",
               "dtype": "float",
               # (243, 17, 3) -> (17, 3, 243)
               "channel_axis": [1, 2],
-            },
-        },
+            } },
         {
           "name": "MultipleKeyTransform",
           "args":

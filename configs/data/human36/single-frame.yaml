@@ -26,13 +26,14 @@ dataset:
           - 9
           - 11
 
+# https://github.com/mks0601/3DMPPE_ROOTNET_RELEASE/blob/aa89a5c589daa9e0de8eae512c4389e4b489b10d/data/Human36M/Human36M.py#L108
 transform:
   [
     [
       "trn,val",
       [
         { "name": "WorldToCameraCoord" },
-        { "name": "Create2DProjection", "args": {"is_world_coord": false} },
+        { "name": "Create2DProjection", "args": { "is_world_coord": false } },
         { "name": "CenterAroundJoint" },
         {
           "name": "MultipleKeyTransform",

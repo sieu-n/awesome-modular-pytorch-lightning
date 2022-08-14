@@ -286,8 +286,12 @@ class VideoPoseSemisupTrainer(_BaseLightningTrainer):
         DEVICE = joints.device
         ndim = self.normalization_mean.ndim
 
-        normalization_mean = self.normalization_mean.repeat([batch_size] + [1] * ndim).to(DEVICE)
-        normalization_std = self.normalization_std.repeat([batch_size] + [1] * ndim).to(DEVICE)
+        normalization_mean = self.normalization_mean.repeat(
+            [batch_size] + [1] * ndim
+        ).to(DEVICE)
+        normalization_std = self.normalization_std.repeat([batch_size] + [1] * ndim).to(
+            DEVICE
+        )
 
         joints = joints * normalization_std + normalization_mean
 

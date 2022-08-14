@@ -1,9 +1,9 @@
+from typing import List
+
 import torch
 from utils.data_container import DataContainer
 
 from .base import _BaseTransform, _KeyTransform
-
-from typing import List
 
 
 class ToTensor(_KeyTransform):
@@ -21,7 +21,9 @@ class ToTensor(_KeyTransform):
         appear first.
     """
 
-    def __init__(self, dtype: object = None, channel_axis: List[int] = None, *args, **kwargs):
+    def __init__(
+        self, dtype: object = None, channel_axis: List[int] = None, *args, **kwargs
+    ):
         super(ToTensor, self).__init__(*args, **kwargs)
         dtype_map = {
             None: None,
@@ -42,7 +44,9 @@ class ToTensor(_KeyTransform):
     def transform(self, t):
         t = torch.tensor(t, dtype=self.dtype)
         if self.channel_axis is not None:
-            dim_order = self.channel_axis + list(set(range(t.ndim)) - set(self.channel_axis))
+            dim_order = self.channel_axis + list(
+                set(range(t.ndim)) - set(self.channel_axis)
+            )
             t = torch.permute(t, dim_order)
         return t
 

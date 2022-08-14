@@ -1,8 +1,8 @@
-import numpy as np
-from torch import nn
-import torch
-
 from typing import List
+
+import numpy as np
+import torch
+from torch import nn
 
 
 class LBRD(nn.Module):
@@ -220,8 +220,9 @@ class PoseLiftingTemporalConv(nn.Module):
         else:
             assert x.ndim == 4
             # assume that input is of shape (batch_size, 17, 2, receptive_field)
-            assert x.shape[1:] == torch.Size([self.num_joints, 2, self.receptive_field]), \
-                f"Sparse mode expected elements of shape {self.receptive_field}, got shape {x.shape}."
+            assert x.shape[1:] == torch.Size(
+                [self.num_joints, 2, self.receptive_field]
+            ), f"Sparse mode expected elements of shape {self.receptive_field}, got shape {x.shape}."
         x = self.expand(x)
         for block in self.res_blocks:
             x = block(x)
