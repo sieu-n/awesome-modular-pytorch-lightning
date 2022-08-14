@@ -24,8 +24,10 @@ class MPJPE(torchmetrics.Metric):
         """
         self.total += len(reconstructed_joints)
 
+        dist = (reconstructed_joints - gt_joints).pow(2).sum(dim=2).sqrt()
+        # add sum of MPJPE distance.
         self.dist += (
-            (reconstructed_joints - gt_joints).pow(2).sum(dim=2).sqrt().mean()
+            dist.sum(dim=0).mean()
         )
 
     def compute(self):
