@@ -11,7 +11,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
     def init(self, model_cfg, training_cfg):
         # mixup and cutmix for classification
-        self.get_decoded = model_cfg.get("get_decoded", True)
+        self.get_decoded = training_cfg.get("get_decoded", True)
         self.normalization_mean = torch.tensor(self.const_cfg["normalization_mean"])
         self.normalization_std = torch.tensor(self.const_cfg["normalization_std"])
 

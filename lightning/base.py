@@ -1,5 +1,7 @@
 import catalog
 import torch
+import warnings
+
 import wandb
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils.experiment import print_to_end
@@ -30,6 +32,7 @@ class _BaseLightningTrainer(_LightningModule):
             )
         # 1. build backbone
         if "backbone" in model_cfg:
+            warnings.warn("backbone will be deprecated.", DeprecationWarning)
             backbone_cfg = model_cfg["backbone"]
             print(f"(1/6) Building backbone model: {backbone_cfg['name']}")
             self.backbone = catalog.backbone.build(
@@ -50,12 +53,20 @@ class _BaseLightningTrainer(_LightningModule):
             print("(2/6) Building modules attached to the backbone model...")
             modules = model_cfg["modules"]
             for module_name, module_cfg in modules.items():
-                head_module = catalog.modules.build(
+                module = catalog.modules.build(
                     name=module_cfg["name"],
                     file=module_cfg.get("file", None),
                     **module_cfg.get("args", {}),
                 )
-                setattr(self, module_name, head_module)
+                # load weights from url / filepath
+                if "weights" in module_cfg:
+                    print(f"Loading pretrained `{module_name}`: {module_cfg['weights']}")
+                    module = load_model_weights(
+                        model=module, **module_cfg["weights"]
+                    )
+
+                setattr(self, module_name, module)
+
         else:
             print("(2/6) `model.modules` is not specified. Skipping building modules")
 
@@ -171,26 +182,29 @@ class _BaseLightningTrainer(_LightningModule):
             metric_data["metric"].reset()
 
             log_key = f"epoch_{subset}/{metric_name}"
-            # special metrics with specific names are treated differently.
-            if metric_name == "confusion_matrix":
-                if wandb.run is not None:
-                    # log confusion matrix as image to wandb.
-                    disp = ConfusionMatrixDisplay(
-                        confusion_matrix=res.numpy(),
-                        display_labels=self.const_cfg.get("label_map", None),
-                    )
-                    disp.plot()
-                    wandb.log({log_key: disp.figure_})
-                else:
-                    self.log(log_key, res)
+            self.log(log_key, res, metric_name=metric_name)
+
+    def log(self, log_key, res, metric_name=None, *args, **kwargs):
+        # special metrics with specific names are treated differently.
+        if metric_name == "confusion_matrix":
+            if wandb.run is not None:
+                # log confusion matrix as image to wandb.
+                disp = ConfusionMatrixDisplay(
+                    confusion_matrix=res.numpy(),
+                    display_labels=self.const_cfg.get("label_map", None),
+                )
+                disp.plot()
+                wandb.log({log_key: disp.figure_})
             else:
-                # typical metrics
-                if isinstance(res, dict):
-                    for k in list(res.keys()):
-                        res[f"{log_key}/{k}"] = res.pop(k)
-                    self.log_dict(res)
-                else:
-                    self.log(log_key, res)
+                super().log(log_key, res)
+        else:
+            # typical metrics
+            if isinstance(res, dict):
+                for k in list(res.keys()):
+                    res[f"{log_key}/{k}"] = res.pop(k)
+                self.log_dict(res)
+            else:
+                super().log(log_key, res)
 
     def init(self):
         raise NotImplementedError()

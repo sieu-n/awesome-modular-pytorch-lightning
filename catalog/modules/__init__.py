@@ -1,11 +1,12 @@
 from torch import nn
 
 from .._get import _get_from_sources
-from . import heads, loss
+from . import backbone, heads, loss
 
 
 def get(name, file=None):
     sources = {
+        "backbone": backbone,
         "heads": heads,
         "loss": loss,
         "torch.nn": nn,

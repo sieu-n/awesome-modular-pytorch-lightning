@@ -77,20 +77,20 @@ callbacks:
         logging_interval: "epoch"
 
 model:
-  backbone:
-    name: "PoseLiftingTemporalConv"
-    args:
-      num_features: 1024
-      dropout: 0.25
-      num_layers: 2
-      kernel_sizes:
-        - 3
-        - 3
-        - 3
-        - 3
-        - 3
-      num_joints: "{const.num_joints}"
   modules:
+    backbone:
+      name: "PoseLiftingTemporalConv"
+      args:
+        num_features: 1024
+        dropout: 0.25
+        num_layers: 2
+        kernel_sizes:
+          - 3
+          - 3
+          - 3
+          - 3
+          - 3
+        num_joints: "{const.num_joints}"
     loss_fn:
       name: "MSELoss"
 wandb:
