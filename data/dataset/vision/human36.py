@@ -181,7 +181,9 @@ class Human36AnnotationDataset(Dataset):
         res["joint"] = deepcopy(self.joint_data[joint_key][frame_idx])
         res["camera"] = self.cameras[subject_id][camera_idx]
         if self.get_precomputed_joints:
-            res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][camera_idx][frame_idx]
+            res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][
+                camera_idx
+            ][frame_idx]
         return res
 
 
@@ -240,7 +242,9 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         res["joint"] = joints[sample_width]  # sample_width = self.receptive_field // 2
         res["camera"] = self.cameras[subject_id][camera_idx]
         if self.get_precomputed_joints:
-            res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][camera_idx][frame_idx]
+            res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][
+                camera_idx
+            ][frame_idx]
         return res
 
 
