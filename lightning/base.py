@@ -182,29 +182,29 @@ class _BaseLightningTrainer(_LightningModule):
             metric_data["metric"].reset()
 
             log_key = f"epoch_{subset}/{metric_name}"
-            self.log(log_key, res, metric_name=metric_name)
+            self.log(name=log_key, value=res, metric_name=metric_name)
 
-    def log(self, log_key, res, metric_name=None, *args, **kwargs):
+    def log(self, name, value, metric_name=None, *args, **kwargs):
         # special metrics with specific names are treated differently.
         if metric_name == "confusion_matrix":
             if wandb.run is not None:
                 # log confusion matrix as image to wandb.
                 disp = ConfusionMatrixDisplay(
-                    confusion_matrix=res.numpy(),
+                    confusion_matrix=value.numpy(),
                     display_labels=self.const_cfg.get("label_map", None),
                 )
                 disp.plot()
-                wandb.log({log_key: disp.figure_})
+                wandb.log({name: disp.figure_})
             else:
-                super().log(log_key, res)
+                super().log(name, value, *args, **kwargs)
         else:
             # typical metrics
-            if isinstance(res, dict):
-                for k in list(res.keys()):
-                    res[f"{log_key}/{k}"] = res.pop(k)
-                self.log_dict(res)
+            if isinstance(value, dict):
+                for k in list(value.keys()):
+                    value[f"{name}/{k}"] = value.pop(k)
+                self.log_dict(value, *args, **kwargs)
             else:
-                super().log(log_key, res)
+                super().log(name, value, *args, **kwargs)
 
     def init(self):
         raise NotImplementedError()
