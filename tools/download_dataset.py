@@ -37,9 +37,12 @@ def parse_args():
 
 
 def download(
-    url, dir, download_from="url", output="", unzip=True, delete=False, threads=1
+    url, dir, download_from="url", unzip=True, delete=False, threads=1
 ):
     def download_one(url, dir):
+        if isinstance(url, tuple):
+            url, output = url
+
         if download_from == "url":
             f = dir / Path(url).name
             if Path(url).is_file():
@@ -86,8 +89,13 @@ def main():
             "http://images.cocodataset.org/zips/train2017.zip",
             "http://images.cocodataset.org/zips/val2017.zip",
             "http://images.cocodataset.org/zips/test2017.zip",
-            "http://images.cocodataset.org/annotations/"
-            + "annotations_trainval2017.zip",
+            "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
+        ],
+        mpii=[
+            # images
+            "https://datasets.d2.mpi-inf.mpg.de/andriluka14cvpr/mpii_human_pose_v1.tar.gz",
+            # mmpose annotations
+            ("https://download.openmmlab.com/mmpose/datasets/mpii_annotations.tar", "annotations/"),
         ],
         lvis=[
             "https://s3-us-west-2.amazonaws.com/dl.fbaipublicfiles.com/LVIS/lvis_v1_train.json.zip",  # noqa
@@ -110,20 +118,15 @@ def main():
     data2gdrive_id = dict(
         human36m_annotation=["1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"],
         human36m_images=[
-            "1AKpQOuRmsWgVJwHAPvUiXlnaXJdeBSYf",
-            "1abMytHP_BdBaOMzkelRYf77jrTDZyfRZ",
-            "1YvdnaMGqTcdgs4U4dYAFi2QxcmvSxCHc",
-            "1alTStw-TWIhrtEEA3aJXqKzDkvl7Qes9",
-            "1q69fYsAhlABXk_rFOUzDtNIEFWuYmJOP",
-            "1gud5GEmFtlOwLabnIiE-s3EgFQjDppHH",
-            "1hmvXEUYfqy8dhfZuPLRatXlLAk3lKrzR",
+            ("1AKpQOuRmsWgVJwHAPvUiXlnaXJdeBSYf", "images/"),
+            ("1abMytHP_BdBaOMzkelRYf77jrTDZyfRZ", "images/"),
+            ("1YvdnaMGqTcdgs4U4dYAFi2QxcmvSxCHc", "images/"),
+            ("1alTStw-TWIhrtEEA3aJXqKzDkvl7Qes9", "images/"),
+            ("1q69fYsAhlABXk_rFOUzDtNIEFWuYmJOP", "images/"),
+            ("1gud5GEmFtlOwLabnIiE-s3EgFQjDppHH", "images/"),
+            ("1hmvXEUYfqy8dhfZuPLRatXlLAk3lKrzR", "images/"),
         ],
     )
-
-    output = ""
-
-    if args.dataset_name == "human36m_images":
-        output = "images/"
 
     if args.dataset_name in data2url:
         print("Dowloading from URLs")
@@ -132,7 +135,6 @@ def main():
             data2url[args.dataset_name],
             dir=path,
             download_from=download_from,
-            output=output,
             unzip=args.unzip,
             delete=args.delete,
             threads=args.threads,
@@ -145,7 +147,6 @@ def main():
             data2gdrive_id[args.dataset_name],
             dir=path,
             download_from=download_from,
-            output=output,
             unzip=args.unzip,
             delete=args.delete,
             threads=args.threads,

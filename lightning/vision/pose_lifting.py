@@ -61,8 +61,9 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             "joints_2d": x,
             "reconstruction_camera": reconstruction,
             "loss": loss,
-            "action_idx": batch["idx"]["action_idx"].cpu().numpy(),
         }
+        if "idx" in batch:
+            res["action_idx"] = batch["idx"]["action_idx"].cpu().numpy()
         if self.get_decoded:
             cameras = batch["camera"].data
 
@@ -110,9 +111,9 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
                 reconstruction.cpu(), location.cpu(), camera
             ),
             "loss": loss,
-            "action_idx": batch["idx"]["action_idx"].cpu().numpy(),
         }
-
+        if "idx" in batch:
+            res["action_idx"] = batch["idx"]["action_idx"].cpu().numpy()
         if "precomputed_joints_2d" in batch:
             reconstruction = self(batch["precomputed_joints_2d"])["joints"]
             res["pose_estimator_reconstruction_global"] = self.decode(

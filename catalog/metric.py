@@ -1,4 +1,4 @@
-from algorithms.metrics import MPJPE, SubsetMetric, TorchMetric  # noqa
+from algorithms.metrics import MPJPE, SubsetMetric, TorchMetric, MMDet2TorchMetricmAP  # noqa
 
 from ._get import _get
 

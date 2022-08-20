@@ -9,43 +9,50 @@ trainer:
 
 training:
   metrics:
+    mAP:
+      when: "val,test"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "loss"
     total_loss:
-      when: "trn,val,test"
+      when: "trn"
       name: TorchMetric
       args:
         name: "MeanMetric"
       update:
         value: "loss"
     classification-accuracy:
-      when: "trn,val,test"
+      when: "trn"
       name: TorchMetric
       args:
         name: "MeanMetric"
       update:
         value: "acc"
     loss/rpn_cls:
-      when: "trn,val,test"
+      when: "trn"
       name: TorchMetric
       args:
         name: "MeanMetric"
       update:
         value: "loss_rpn_cls"
     loss/rpn_bbox:
-      when: "trn,val,test"
+      when: "trn"
       name: TorchMetric
       args:
         name: "MeanMetric"
       update:
         value: "loss_rpn_bbox"
     loss/bbox_reg:
-      when: "trn,val,test"
+      when: "trn"
       name: TorchMetric
       args:
         name: "MeanMetric"
       update:
         value: "loss_bbox"
     loss/classification:
-      when: "trn,val,test"
+      when: "trn"
       name: TorchMetric
       args:
         name: "MeanMetric"
