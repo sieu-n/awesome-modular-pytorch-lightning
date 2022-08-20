@@ -79,11 +79,7 @@ transform:
       [
         {
           "name": "ToTensor",
-          "args":
-            {
-              "key": "precomputed_joints_2d",
-              "dtype": "float"
-            },
+          "args": { "key": "precomputed_joints_2d", "dtype": "float" },
         },
 
         {
@@ -95,9 +91,8 @@ transform:
               "key": "precomputed_joints_2d",
             },
         },
-
-      ]
-    ]
+      ],
+    ],
   ]
 
 # other useful configs.

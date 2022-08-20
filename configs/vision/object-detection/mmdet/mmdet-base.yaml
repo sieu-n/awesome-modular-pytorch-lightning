@@ -11,11 +11,12 @@ training:
   metrics:
     mAP:
       when: "val,test"
-      name: TorchMetric
-      args:
-        name: "MeanMetric"
+      name: MMDet2TorchMetricmAP
       update:
-        value: "loss"
+        pred_boxes: pred_bbox
+        pred_scores: pred_score
+        target_boxes: target_bbox
+        target_labels: target_label
     total_loss:
       when: "trn"
       name: TorchMetric

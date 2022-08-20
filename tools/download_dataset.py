@@ -17,9 +17,7 @@ import torch
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Download datasets for training")
-    parser.add_argument(
-        "--dataset-name", type=str, help="dataset name"
-    )
+    parser.add_argument("--dataset-name", type=str, help="dataset name")
     parser.add_argument(
         "--save-dir", type=str, help="the dir to save dataset", default="data/coco"
     )
@@ -36,12 +34,11 @@ def parse_args():
     return args
 
 
-def download(
-    url, dir, download_from="url", unzip=True, delete=False, threads=1
-):
+def download(url, dir, download_from="url", unzip=True, delete=False, threads=1):
     def download_one(url, dir):
         if isinstance(url, tuple):
             url, output = url
+            dir = os.path.join(dir, output)
 
         if download_from == "url":
             f = dir / Path(url).name
@@ -51,7 +48,6 @@ def download(
                 print("Downloading {} to {}".format(url, f))
                 torch.hub.download_url_to_file(url, os.path.join(f), progress=True)
         elif download_from == "gdrive":
-            dir = os.path.join(dir, output)
             f = gdown.download(id=url, output=dir, quiet=False)
             f = Path(f)
         else:
@@ -95,7 +91,10 @@ def main():
             # images
             "https://datasets.d2.mpi-inf.mpg.de/andriluka14cvpr/mpii_human_pose_v1.tar.gz",
             # mmpose annotations
-            ("https://download.openmmlab.com/mmpose/datasets/mpii_annotations.tar", "annotations/"),
+            (
+                "https://download.openmmlab.com/mmpose/datasets/mpii_annotations.tar",
+                "annotations/",
+            ),
         ],
         lvis=[
             "https://s3-us-west-2.amazonaws.com/dl.fbaipublicfiles.com/LVIS/lvis_v1_train.json.zip",  # noqa
@@ -113,7 +112,9 @@ def main():
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCdevkit_18-May-2011.tar",
             "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar",
         ],
-        human36m_precomputed=["https://dl.fbaipublicfiles.com/video-pose-3d/data_2d_h36m_cpn_ft_h36m_dbb.npz"],
+        human36m_precomputed=[
+            "https://dl.fbaipublicfiles.com/video-pose-3d/data_2d_h36m_cpn_ft_h36m_dbb.npz"
+        ],
     )
     data2gdrive_id = dict(
         human36m_annotation=["1ztokDig-Ayi8EYipGE1lchg5XlAoLmwY"],

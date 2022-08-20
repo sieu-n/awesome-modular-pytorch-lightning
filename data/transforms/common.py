@@ -1,7 +1,7 @@
+from copy import deepcopy
 from typing import List
 
 import torch
-from copy import deepcopy
 from utils.data_container import DataContainer
 
 from .base import _BaseTransform, _KeyTransform

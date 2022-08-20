@@ -1,7 +1,7 @@
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "MMDetectionDataset"
+    name: "MMPoseDataset"
   dataset_subset_cfg:
     trn:
       ann_file: data/mpii/annotations/mpii_train.json
@@ -10,466 +10,451 @@ dataset:
       dataset_info: "{const.dataset_info}"
 
       pipeline:
-      - type: LoadImageFromFile
-      - padding: 1.25
-        type: TopDownGetBboxCenterScale
-      - flip_prob: 0.5
-        type: TopDownRandomFlip
-      - rot_factor: 40
-        scale_factor: 0.5
-        type: TopDownGetRandomScaleRotation
-      - type: TopDownAffine
-      - type: ToTensor
-      - mean:
-        - 0.485
-        - 0.456
-        - 0.406
-        std:
-        - 0.229
-        - 0.224
-        - 0.225
-        type: NormalizeTensor
-      - sigma: 2
-        type: TopDownGenerateTarget
-      - keys:
-        - img
-        - target
-        - target_weight
-        meta_keys:
-        - image_file
-        - joints_3d
-        - joints_3d_visible
-        - center
-        - scale
-        - rotation
-        - flip_pairs
-        type: Collect
+        - type: LoadImageFromFile
+        - padding: 1.25
+          type: TopDownGetBboxCenterScale
+        - flip_prob: 0.5
+          type: TopDownRandomFlip
+        - rot_factor: 40
+          scale_factor: 0.5
+          type: TopDownGetRandomScaleRotation
+        - type: TopDownAffine
+        - type: ToTensor
+        - mean: "{const.normalization_mean}"
+          std: "{const.normalization_std}"
+          type: NormalizeTensor
+        - sigma: 2
+          type: TopDownGenerateTarget
+        - keys:
+            - img
+            - target
+            - target_weight
+          meta_keys:
+            - image_file
+            - joints_3d
+            - joints_3d_visible
+            - center
+            - scale
+            - rotation
+            - flip_pairs
+          type: Collect
       type: TopDownMpiiDataset
     val:
       ann_file: data/mpii/annotations/mpii_val.json
       img_prefix: data/mpii/images/
       pipeline:
-      - type: LoadImageFromFile
-      - padding: 1.25
-        type: TopDownGetBboxCenterScale
-      - type: TopDownAffine
-      - type: ToTensor
-      - mean:
-        - 0.485
-        - 0.456
-        - 0.406
-        std:
-        - 0.229
-        - 0.224
-        - 0.225
-        type: NormalizeTensor
-      - keys:
-        - img
-        meta_keys:
-        - image_file
-        - center
-        - scale
-        - rotation
-        - flip_pairs
-        type: Collect
+        - type: LoadImageFromFile
+        - padding: 1.25
+          type: TopDownGetBboxCenterScale
+        - type: TopDownAffine
+        - type: ToTensor
+        - mean: "{const.normalization_mean}"
+          std: "{const.normalization_std}"
+          type: NormalizeTensor
+        - keys:
+            - img
+          meta_keys:
+            - image_file
+            - center
+            - scale
+            - rotation
+            - flip_pairs
+          type: Collect
       type: TopDownMpiiDataset
     test:
       ann_file: data/mpii/annotations/mpii_val.json
       img_prefix: data/mpii/images/
       pipeline:
-      - type: LoadImageFromFile
-      - padding: 1.25
-        type: TopDownGetBboxCenterScale
-      - type: TopDownAffine
-      - type: ToTensor
-      - mean:
-        - 0.485
-        - 0.456
-        - 0.406
-        std:
-        - 0.229
-        - 0.224
-        - 0.225
-        type: NormalizeTensor
-      - keys:
-        - img
-        meta_keys:
-        - image_file
-        - center
-        - scale
-        - rotation
-        - flip_pairs
-        type: Collect
+        - type: LoadImageFromFile
+        - padding: 1.25
+          type: TopDownGetBboxCenterScale
+        - type: TopDownAffine
+        - type: ToTensor
+        - mean: "{const.normalization_mean}"
+          std: "{const.normalization_std}"
+          type: NormalizeTensor
+        - keys:
+            - img
+          meta_keys:
+            - image_file
+            - center
+            - scale
+            - rotation
+            - flip_pairs
+          type: Collect
       type: TopDownMpiiDataset
 
 const:
+  normalization_mean: [0.485, 0.456, 0.406]
+  normalization_std: [0.229, 0.224, 0.225]
   data_root: data/mpii
   data_cfg:
     bbox_file: null
     dataset_channel:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    - 9
-    - 10
-    - 11
-    - 12
-    - 13
-    - 14
-    - 15
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
     heatmap_size:
-    - 64
-    - 64
+      - 64
+      - 64
     image_size:
-    - 256
-    - 256
+      - 256
+      - 256
     inference_channel:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    - 9
-    - 10
-    - 11
-    - 12
-    - 13
-    - 14
-    - 15
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
     num_joints: 16
     num_output_channels: 16
     use_gt_bbox: true
   dataset_info:
     dataset_name: mpii
     joint_weights:
-    - 1.5
-    - 1.2
-    - 1.0
-    - 1.0
-    - 1.2
-    - 1.5
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.5
-    - 1.2
-    - 1.0
-    - 1.0
-    - 1.2
-    - 1.5
+      - 1.5
+      - 1.2
+      - 1.0
+      - 1.0
+      - 1.2
+      - 1.5
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.5
+      - 1.2
+      - 1.0
+      - 1.0
+      - 1.2
+      - 1.5
     keypoint_info:
       0:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 0
         name: right_ankle
         swap: left_ankle
         type: lower
       1:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 1
         name: right_knee
         swap: left_knee
         type: lower
       2:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 2
         name: right_hip
         swap: left_hip
         type: lower
       3:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 3
         name: left_hip
         swap: right_hip
         type: lower
       4:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 4
         name: left_knee
         swap: right_knee
         type: lower
       5:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 5
         name: left_ankle
         swap: right_ankle
         type: lower
       6:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 6
         name: pelvis
-        swap: ''
+        swap: ""
         type: lower
       7:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 7
         name: thorax
-        swap: ''
+        swap: ""
         type: upper
       8:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 8
         name: upper_neck
-        swap: ''
+        swap: ""
         type: upper
       9:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 9
         name: head_top
-        swap: ''
+        swap: ""
         type: upper
       10:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 10
         name: right_wrist
         swap: left_wrist
         type: upper
       11:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 11
         name: right_elbow
         swap: left_elbow
         type: upper
       12:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 12
         name: right_shoulder
         swap: left_shoulder
         type: upper
       13:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 13
         name: left_shoulder
         swap: right_shoulder
         type: upper
       14:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 14
         name: left_elbow
         swap: right_elbow
         type: upper
       15:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 15
         name: left_wrist
         swap: right_wrist
         type: upper
     paper_info:
-      author: Mykhaylo Andriluka and Leonid Pishchulin and Peter Gehler and Schiele,
+      author:
+        Mykhaylo Andriluka and Leonid Pishchulin and Peter Gehler and Schiele,
         Bernt
       container: IEEE Conference on Computer Vision and Pattern Recognition (CVPR)
       homepage: http://human-pose.mpi-inf.mpg.de/
-      title: '2D Human Pose Estimation: New Benchmark and State of the Art Analysis'
-      year: '2014'
+      title: "2D Human Pose Estimation: New Benchmark and State of the Art Analysis"
+      year: "2014"
     sigmas:
-    - 0.089
-    - 0.083
-    - 0.107
-    - 0.107
-    - 0.083
-    - 0.089
-    - 0.026
-    - 0.026
-    - 0.026
-    - 0.026
-    - 0.062
-    - 0.072
-    - 0.179
-    - 0.179
-    - 0.072
-    - 0.062
+      - 0.089
+      - 0.083
+      - 0.107
+      - 0.107
+      - 0.083
+      - 0.089
+      - 0.026
+      - 0.026
+      - 0.026
+      - 0.026
+      - 0.062
+      - 0.072
+      - 0.179
+      - 0.179
+      - 0.072
+      - 0.062
     skeleton_info:
       0:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 0
         link:
-        - right_ankle
-        - right_knee
+          - right_ankle
+          - right_knee
       1:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 1
         link:
-        - right_knee
-        - right_hip
+          - right_knee
+          - right_hip
       2:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 2
         link:
-        - right_hip
-        - pelvis
+          - right_hip
+          - pelvis
       3:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 3
         link:
-        - pelvis
-        - left_hip
+          - pelvis
+          - left_hip
       4:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 4
         link:
-        - left_hip
-        - left_knee
+          - left_hip
+          - left_knee
       5:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 5
         link:
-        - left_knee
-        - left_ankle
+          - left_knee
+          - left_ankle
       6:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 6
         link:
-        - pelvis
-        - thorax
+          - pelvis
+          - thorax
       7:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 7
         link:
-        - thorax
-        - upper_neck
+          - thorax
+          - upper_neck
       8:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 8
         link:
-        - upper_neck
-        - head_top
+          - upper_neck
+          - head_top
       9:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 9
         link:
-        - upper_neck
-        - right_shoulder
+          - upper_neck
+          - right_shoulder
       10:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 10
         link:
-        - right_shoulder
-        - right_elbow
+          - right_shoulder
+          - right_elbow
       11:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 11
         link:
-        - right_elbow
-        - right_wrist
+          - right_elbow
+          - right_wrist
       12:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 12
         link:
-        - upper_neck
-        - left_shoulder
+          - upper_neck
+          - left_shoulder
       13:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 13
         link:
-        - left_shoulder
-        - left_elbow
+          - left_shoulder
+          - left_elbow
       14:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 14
         link:
-        - left_elbow
-        - left_wrist
+          - left_elbow
+          - left_wrist

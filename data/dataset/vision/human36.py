@@ -2,8 +2,8 @@ import json
 import os
 from copy import deepcopy
 
-from PIL import Image
 import numpy as np
+from PIL import Image
 from torch.utils.data import Dataset
 from tqdm import tqdm
 from utils.camera import Human36Camera
@@ -28,7 +28,12 @@ ACTION_NAMES = (
 
 
 class PrecomputedJointDataset:
-    def __init__(self, data_dir: str, subjects: list = [1, 5, 6, 7, 8], format: str = "videopose3d"):
+    def __init__(
+        self,
+        data_dir: str,
+        subjects: list = [1, 5, 6, 7, 8],
+        format: str = "videopose3d",
+    ):
         self.data_dir = data_dir
         self.subjects = subjects
         print("Loading precomputed joints from %s" % self.data_dir)
@@ -115,7 +120,9 @@ class Human36AnnotationDataset(Dataset):
 
         self.get_precomputed_joints = precomputed_joint_dir is not None
         if self.get_precomputed_joints:
-            self.precomputed_joints = PrecomputedJointDataset(precomputed_joint_dir, subjects=subjects)
+            self.precomputed_joints = PrecomputedJointDataset(
+                precomputed_joint_dir, subjects=subjects
+            )
 
         for idx, subject_id in enumerate(subjects):
             print(
@@ -215,7 +222,11 @@ class Human36AnnotationDataset(Dataset):
         }
 
     def get_image(self, idx=None):
-        return Image.open(os.path.join(self.image_dir, self.data[self.sampler[idx]]["meta"]["file_path"]))
+        return Image.open(
+            os.path.join(
+                self.image_dir, self.data[self.sampler[idx]]["meta"]["file_path"]
+            )
+        )
 
     def __len__(self):
         return len(self.sampler)
