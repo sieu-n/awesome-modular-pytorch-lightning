@@ -16,9 +16,8 @@ training:
   optimizer_cfg:
     lr: "{training.lr}"
 
-  #lr_warmup:
-  #  multiplier: 1
-  #  total_epoch: 5
+  lr_warmup:
+    total_epoch: 3
   lr_scheduler:
     name: "cosine"
     args:
@@ -84,7 +83,7 @@ model:
         type: JointsMSELoss
         use_target_weight: true
       num_deconv_layers: 0
-      out_channels: 16
+      out_channels: "{const.num_joints}"
       type: TopdownHeatmapSimpleHead
     pretrained: https://download.openmmlab.com/mmpose/pretrain_models/hrnet_w32-36af842e.pth
     test_cfg:
