@@ -4,6 +4,7 @@ import os
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
+import  tarfile
 from tarfile import TarFile
 from zipfile import ZipFile
 
@@ -38,10 +39,10 @@ def download(url, dir, download_from="url", unzip=True, delete=False, threads=1)
     def download_one(url, dir):
         if isinstance(url, tuple):
             url, output = url
-            dir = os.path.join(dir, output)
-
+            dir = dir / output
+        os.makedirs(dir, exist_ok=True)
+        f = dir / Path(url).name
         if download_from == "url":
-            f = dir / Path(url).name
             if Path(url).is_file():
                 Path(url).rename(f)
             elif not f.exists():
@@ -52,13 +53,14 @@ def download(url, dir, download_from="url", unzip=True, delete=False, threads=1)
             f = Path(f)
         else:
             raise ValueError("Invalid download type: {}".format(download_from))
-
-        if unzip and f.suffix in (".zip", ".tar"):
+        if unzip and f.suffix in (".zip", ".tar", ".gz"):
             print("Unzipping {}".format(f.name))
             if f.suffix == ".zip":
                 ZipFile(f).extractall(path=dir)
             elif f.suffix == ".tar":
                 TarFile(f).extractall(path=dir)
+            elif f.suffix == ".gz":
+                tarfile.open(f).extractall(dir)
             if delete:
                 f.unlink()
                 print("Delete {}".format(f))

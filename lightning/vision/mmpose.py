@@ -52,21 +52,27 @@ class MMPoseTrainer(_BaseLightningTrainer):
 
         return res, losses
 
-    def evaluate(self, sample, stage=None):
+    def evaluate(self, batch, stage=None):
         """
         sample: dict
             Single data sample.
         """
         # validation dataloader creates slightly different format from train dataloader.
-        send_datacontainers_to_device(data=sample, device=self.device)
-        sample = unpack_datacontainers(sample)
+        send_datacontainers_to_device(data=batch, device=self.device)
+        batch = unpack_datacontainers(batch)
+
         # assert a bunch of stuff
-        assert len(sample["img"]) == 1 and sample["img"][0].size(1) == 3
-        pred = self.MMPose_model.forward_test(
-            imgs=sample["img"],
-            img_metas=sample["img_metas"],
-        )
-        return pred
+        pred = self.MMPose_model.forward_test(**batch)
+        # reference: https://github.com/open-mmlab/mmpose/blob/2a0a2d2fb4b5bf5d8620c6bd04a70c6a940b98ba/mmpose/models/
+        # heads/topdown_heatmap_base_head.py#L40
+        # ['preds'(32, 16, 3), 'boxes'(32, 6), 'image_paths', 'bbox_ids', 'output_heatmap'None]
+
+        res = {
+            "pred_joints": pred["pred"][..., :2],
+            "pred_score": pred["pred"][..., 2],
+            "bbox": pred["boxes"],
+        }
+        return res
 
     def compute_loss(self, *args, **kwargs):
         """
@@ -111,13 +117,10 @@ class MMPoseTrainer(_BaseLightningTrainer):
         return loss, log_vars
 
     def log_step_results(self, losses):
-        map_loss_names = {# TODO
+        map_loss_names = {
             "loss": "total_loss",
-            "acc": "classification-accuracy",
-            "loss_rpn_cls": "loss/rpn_cls",
-            "loss_rpn_bbox": "loss/rpn_bbox",
-            "loss_bbox": "loss/bbox_reg",
-            "loss_cls": "loss/classification",
+            "acc_pose": "acc_pose",
+            "heatmap_loss": "loss/heatmap",
         }
         for key in losses:
             # map metric names same name with epoch-wise metrics defined in:

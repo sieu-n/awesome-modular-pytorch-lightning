@@ -4,91 +4,101 @@ dataset:
     name: "MMPoseDataset"
   dataset_subset_cfg:
     trn:
-      ann_file: data/mpii/annotations/mpii_train.json
-      img_prefix: data/mpii/images/
-      data_cfg: "{const.data_cfg}"
-      dataset_info: "{const.dataset_info}"
+      args:
+        cfg:
+          ann_file: data/mpii/annotations/mpii_train.json
+          img_prefix: data/mpii/images/
+          data_cfg: "{const.data_cfg}"
+          dataset_info: "{const.dataset_info}"
 
-      pipeline:
-        - type: LoadImageFromFile
-        - padding: 1.25
-          type: TopDownGetBboxCenterScale
-        - flip_prob: 0.5
-          type: TopDownRandomFlip
-        - rot_factor: 40
-          scale_factor: 0.5
-          type: TopDownGetRandomScaleRotation
-        - type: TopDownAffine
-        - type: ToTensor
-        - mean: "{const.normalization_mean}"
-          std: "{const.normalization_std}"
-          type: NormalizeTensor
-        - sigma: 2
-          type: TopDownGenerateTarget
-        - keys:
-            - img
-            - target
-            - target_weight
-          meta_keys:
-            - image_file
-            - joints_3d
-            - joints_3d_visible
-            - center
-            - scale
-            - rotation
-            - flip_pairs
-          type: Collect
-      type: TopDownMpiiDataset
+          pipeline:
+            - type: LoadImageFromFile
+            - padding: 1.25
+              type: TopDownGetBboxCenterScale
+            - flip_prob: 0.5
+              type: TopDownRandomFlip
+            - rot_factor: 40
+              scale_factor: 0.5
+              type: TopDownGetRandomScaleRotation
+            - type: TopDownAffine
+            - type: ToTensor
+            - mean: "{const.normalization_mean}"
+              std: "{const.normalization_std}"
+              type: NormalizeTensor
+            - sigma: 2
+              type: TopDownGenerateTarget
+            - keys:
+                - img
+                - target
+                - target_weight
+              meta_keys:
+                - image_file
+                - joints_3d
+                - joints_3d_visible
+                - center
+                - scale
+                - rotation
+                - flip_pairs
+              type: Collect
+          type: TopDownMpiiDataset
     val:
-      ann_file: data/mpii/annotations/mpii_val.json
-      img_prefix: data/mpii/images/
-      data_cfg: "{const.data_cfg}"
-      dataset_info: "{const.dataset_info}"
+      args:
+        cfg:
+          ann_file: data/mpii/annotations/mpii_val.json
+          img_prefix: data/mpii/images/
+          data_cfg: "{const.data_cfg}"
+          dataset_info: "{const.dataset_info}"
 
-      pipeline:
-        - type: LoadImageFromFile
-        - padding: 1.25
-          type: TopDownGetBboxCenterScale
-        - type: TopDownAffine
-        - type: ToTensor
-        - mean: "{const.normalization_mean}"
-          std: "{const.normalization_std}"
-          type: NormalizeTensor
-        - keys:
-            - img
-          meta_keys:
-            - image_file
-            - center
-            - scale
-            - rotation
-            - flip_pairs
-          type: Collect
-      type: TopDownMpiiDataset
+          pipeline:
+            - type: LoadImageFromFile
+            - padding: 1.25
+              type: TopDownGetBboxCenterScale
+            - type: TopDownAffine
+            - type: ToTensor
+            - mean: "{const.normalization_mean}"
+              std: "{const.normalization_std}"
+              type: NormalizeTensor
+            - sigma: 2
+              type: TopDownGenerateTarget
+            - keys:
+                - img
+                - target
+                - target_weight
+              meta_keys:
+                - image_file
+                - center
+                - scale
+                - rotation
+                - flip_pairs
+              type: Collect
+          type: TopDownMpiiDataset
     test:
-      ann_file: data/mpii/annotations/mpii_val.json
-      img_prefix: data/mpii/images/
-      data_cfg: "{const.data_cfg}"
-      dataset_info: "{const.dataset_info}"
+      args:
+        cfg:
+          ann_file: data/mpii/annotations/mpii_val.json
+          img_prefix: data/mpii/images/
+          data_cfg: "{const.data_cfg}"
+          dataset_info: "{const.dataset_info}"
 
-      pipeline:
-        - type: LoadImageFromFile
-        - padding: 1.25
-          type: TopDownGetBboxCenterScale
-        - type: TopDownAffine
-        - type: ToTensor
-        - mean: "{const.normalization_mean}"
-          std: "{const.normalization_std}"
-          type: NormalizeTensor
-        - keys:
-            - img
-          meta_keys:
-            - image_file
-            - center
-            - scale
-            - rotation
-            - flip_pairs
-          type: Collect
-      type: TopDownMpiiDataset
+          pipeline:
+            - type: LoadImageFromFile
+            - padding: 1.25
+              type: TopDownGetBboxCenterScale
+            - type: TopDownAffine
+            - type: ToTensor
+            - mean: "{const.normalization_mean}"
+              std: "{const.normalization_std}"
+              type: NormalizeTensor
+            - keys:
+                - img
+              meta_keys:
+                - image_file
+                - center
+                - scale
+                - rotation
+                - flip_pairs
+              type: Collect
+          type: TopDownMpiiDataset
 
 const:
   normalization_mean: [0.485, 0.456, 0.406]

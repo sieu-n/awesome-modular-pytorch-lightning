@@ -7,6 +7,30 @@ trainer:
   # evaluate every 3 epochs
   check_val_every_n_epoch: 3
 
+training:
+  metrics:
+    total_loss:
+      when: "trn"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "loss"
+    acc_pose:
+      when: "trn"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "acc_pose"
+    loss/heatmap:
+      when: "trn"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "heatmap_loss"
+
 callbacks:
   
 

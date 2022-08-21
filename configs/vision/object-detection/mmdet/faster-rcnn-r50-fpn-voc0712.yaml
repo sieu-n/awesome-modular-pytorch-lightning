@@ -4,7 +4,7 @@ training:
   ID: "MMDetectionTrainer"
 
   epochs: 12 # `1x` schedule
-  lr: 0.01
+  lr: 0.001
 
   optimizer: "sgd"
   optimizer_cfg:
