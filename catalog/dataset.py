@@ -3,6 +3,7 @@ from data.dataset.vision import (  # noqa
     Human36AnnotationDataset,
     Human36AnnotationTemporalDataset,
     MMDetectionDataset,
+    MMPoseDataset,
     TorchvisionDataset,
 )
 

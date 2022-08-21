@@ -16,7 +16,7 @@ class MMPoseTrainer(_BaseLightningTrainer):
         https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/epoch_based_runner.html
         """
         assert "mm_model" in model_cfg
-        self.MMDET_model = mmpose.models.build_posenet(
+        self.MMPose_model = mmpose.models.build_posenet(
             ConfigDict(model_cfg["mm_model"])
         )
         # TODO backbone wrappers so we can use more generic feature extractors.
@@ -62,19 +62,13 @@ class MMPoseTrainer(_BaseLightningTrainer):
         sample = unpack_datacontainers(sample)
         # assert a bunch of stuff
         assert len(sample["img"]) == 1 and sample["img"][0].size(1) == 3
-        pred = self.MMDET_model.forward_test(
+        pred = self.MMPose_model.forward_test(
             imgs=sample["img"],
             img_metas=sample["img_metas"],
         )
-        res = {
-            "pred_bbox": [p[:, :4] for p in pred[0]],
-            "pred_score": [p[:, 4] for p in pred[0]],
-            "target_bbox": sample["gt_bboxes"][0][0],
-            "target_label": sample["gt_labels"][0][0],
-        }
-        return res
+        return pred
 
-    def compute_loss(self, img, img_metas, gt_bboxes, gt_labels, *args, **kwargs):
+    def compute_loss(self, *args, **kwargs):
         """
         Equivalent to `val_step` and `train_step` of `self.MMDET_model`.
         https://github.com/open-mmlab/mmdetection/blob/56e42e72cdf516bebb676e586f408b98f854d84c/mmdet/models/detectors/base.py#L221
@@ -104,11 +98,7 @@ class MMPoseTrainer(_BaseLightningTrainer):
             }
             ```
         """
-        losses = self.MMDET_model.forward_train(
-            img=img,
-            img_metas=img_metas,
-            gt_bboxes=gt_bboxes,
-            gt_labels=gt_labels,
+        losses = self.MMPose_model.forward_train(
             *args,
             **kwargs,
         )
@@ -117,11 +107,11 @@ class MMPoseTrainer(_BaseLightningTrainer):
     def parse_losses(self, losses):
         # `_parse_losses`: https://github.com/open-mmlab/mmdetection/blob/
         # 56e42e72cdf516bebb676e586f408b98f854d84c/mmdet/models/detectors/base.py#L176
-        loss, log_vars = self.MMDET_model._parse_losses(losses)
+        loss, log_vars = self.MMPose_model._parse_losses(losses)
         return loss, log_vars
 
     def log_step_results(self, losses):
-        map_loss_names = {
+        map_loss_names = {# TODO
             "loss": "total_loss",
             "acc": "classification-accuracy",
             "loss_rpn_cls": "loss/rpn_cls",
