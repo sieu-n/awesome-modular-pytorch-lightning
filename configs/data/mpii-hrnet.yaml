@@ -42,6 +42,9 @@ dataset:
     val:
       ann_file: data/mpii/annotations/mpii_val.json
       img_prefix: data/mpii/images/
+      data_cfg: "{const.data_cfg}"
+      dataset_info: "{const.dataset_info}"
+
       pipeline:
         - type: LoadImageFromFile
         - padding: 1.25
@@ -64,6 +67,9 @@ dataset:
     test:
       ann_file: data/mpii/annotations/mpii_val.json
       img_prefix: data/mpii/images/
+      data_cfg: "{const.data_cfg}"
+      dataset_info: "{const.dataset_info}"
+
       pipeline:
         - type: LoadImageFromFile
         - padding: 1.25

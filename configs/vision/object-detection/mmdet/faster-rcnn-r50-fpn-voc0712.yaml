@@ -22,23 +22,6 @@ training:
     cfg:
       interval: "epoch"
 
-callbacks:
-  ModelCheckpoint:
-    name: LightningCallback
-    args:
-      name: ModelCheckpoint
-      args:
-        monitor: "epoch_val/total_loss"
-        mode: "max"
-        save_last: True
-        save_top_k: 1
-  LearningRateMonitor:
-    name: LightningCallback
-    args:
-      name: "LearningRateMonitor"
-      args:
-        logging_interval: "epoch"
-
 model:
   mm_model:
     pretrained: null

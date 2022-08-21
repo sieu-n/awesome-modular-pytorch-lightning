@@ -73,6 +73,23 @@ debug:
     bbox_unnormalization: False
     preprocess_f: convert-mmdetbbox
 
+callbacks:
+  ModelCheckpoint:
+    name: LightningCallback
+    args:
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/mAP/map"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
+    args:
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
+
 dataloader:
   base_dataloader: # depends on hardware:)
     sampler: null

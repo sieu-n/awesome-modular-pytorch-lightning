@@ -66,7 +66,7 @@ class MMDet2TorchMetricmAP(MeanAveragePrecision):
     def update(self, pred_boxes, pred_scores, target_boxes, target_labels):
         labels = []
         for idx in range(len(pred_scores)):
-            labels += [idx + 1] * len(pred_scores[idx])
+            labels += [idx] * len(pred_scores[idx])
         super(MMDet2TorchMetricmAP, self).update(
             preds=[
                 dict(
@@ -78,7 +78,7 @@ class MMDet2TorchMetricmAP(MeanAveragePrecision):
             target=[
                 dict(
                     boxes=target_boxes,
-                    labels=target_labels,
+                    labels=target_labels - 1,
                 )
             ],
         )
