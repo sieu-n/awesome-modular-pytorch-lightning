@@ -68,8 +68,8 @@ class MMPoseTrainer(_BaseLightningTrainer):
         # ['preds'(32, 16, 3), 'boxes'(32, 6), 'image_paths', 'bbox_ids', 'output_heatmap'None]
 
         res = {
-            "pred_joints": pred["pred"][..., :2],
-            "pred_score": pred["pred"][..., 2],
+            "pred_joints": pred["preds"][..., :2],
+            "pred_score": pred["preds"][..., 2],
             "bbox": pred["boxes"],
         }
         return res

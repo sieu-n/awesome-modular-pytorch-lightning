@@ -67,3 +67,6 @@ dataloader:
     shuffle: False
   test:
     shuffle: False
+
+wandb:
+  project: "MMPose-wrappers"

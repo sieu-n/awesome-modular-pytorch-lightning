@@ -25,11 +25,7 @@ training:
       T_max: "{training.epochs}"
     cfg:
       interval: "epoch"
-"""TODO
-  metrics:
-    pCKH:
-  ...
-"""
+
 model:
   mm_model:
     backbone:
