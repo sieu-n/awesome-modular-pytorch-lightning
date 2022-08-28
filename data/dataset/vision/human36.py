@@ -124,7 +124,9 @@ class Human36AnnotationDataset(Dataset):
         self.get_precomputed_joints = precomputed_joint_dir is not None
         if self.get_precomputed_joints:
             self.precomputed_joints = PrecomputedJointDataset(
-                precomputed_joint_dir, subjects=subjects, format=precomputed_joint_format
+                precomputed_joint_dir,
+                subjects=subjects,
+                format=precomputed_joint_format,
             )
 
         for idx, subject_id in enumerate(subjects):
@@ -153,7 +155,9 @@ class Human36AnnotationDataset(Dataset):
                 frame_idx = str(sample_meta["frame_idx"])
 
                 # skip
-                if (self.cameras_allowed is not None) and (camera_idx not in self.cameras_allowed):
+                if (self.cameras_allowed is not None) and (
+                    camera_idx not in self.cameras_allowed
+                ):
                     continue
 
                 # save joint data

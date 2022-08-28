@@ -115,7 +115,31 @@ const:
 
   data_cfg:
     dataset_channel:
-    - - 0
+      - - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+    heatmap_size:
+      - 64
+      - 64
+    image_size:
+      - 256
+      - 256
+    inference_channel:
+      - 0
       - 1
       - 2
       - 3
@@ -132,362 +156,340 @@ const:
       - 14
       - 15
       - 16
-    heatmap_size:
-    - 64
-    - 64
-    image_size:
-    - 256
-    - 256
-    inference_channel:
-    - 0
-    - 1
-    - 2
-    - 3
-    - 4
-    - 5
-    - 6
-    - 7
-    - 8
-    - 9
-    - 10
-    - 11
-    - 12
-    - 13
-    - 14
-    - 15
-    - 16
     num_joints: "{const.num_joints}"
     num_output_channels: "{const.num_joints}"
   dataset_info:
     dataset_name: h36m
     joint_weights:
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
-    - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
     keypoint_info:
       0:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 0
         name: root
-        swap: ''
+        swap: ""
         type: lower
       1:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 1
         name: right_hip
         swap: left_hip
         type: lower
       2:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 2
         name: right_knee
         swap: left_knee
         type: lower
       3:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 3
         name: right_foot
         swap: left_foot
         type: lower
       4:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 4
         name: left_hip
         swap: right_hip
         type: lower
       5:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 5
         name: left_knee
         swap: right_knee
         type: lower
       6:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 6
         name: left_foot
         swap: right_foot
         type: lower
       7:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 7
         name: spine
-        swap: ''
+        swap: ""
         type: upper
       8:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 8
         name: thorax
-        swap: ''
+        swap: ""
         type: upper
       9:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 9
         name: neck_base
-        swap: ''
+        swap: ""
         type: upper
       10:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 10
         name: head
-        swap: ''
+        swap: ""
         type: upper
       11:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 11
         name: left_shoulder
         swap: right_shoulder
         type: upper
       12:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 12
         name: left_elbow
         swap: right_elbow
         type: upper
       13:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 13
         name: left_wrist
         swap: right_wrist
         type: upper
       14:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 14
         name: right_shoulder
         swap: left_shoulder
         type: upper
       15:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 15
         name: right_elbow
         swap: left_elbow
         type: upper
       16:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 16
         name: right_wrist
         swap: left_wrist
         type: upper
     paper_info:
-      author: Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
+      author:
+        Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
         Cristian
       container: IEEE Transactions on Pattern Analysis and Machine Intelligence
       homepage: http://vision.imar.ro/human3.6m/description.php
-      title: 'Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
-        Sensing in Natural Environments'
-      year: '2014'
+      title:
+        "Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
+        Sensing in Natural Environments"
+      year: "2014"
     sigmas: []
     skeleton_info:
       0:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 0
         link:
-        - root
-        - left_hip
+          - root
+          - left_hip
       1:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 1
         link:
-        - left_hip
-        - left_knee
+          - left_hip
+          - left_knee
       2:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 2
         link:
-        - left_knee
-        - left_foot
+          - left_knee
+          - left_foot
       3:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 3
         link:
-        - root
-        - right_hip
+          - root
+          - right_hip
       4:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 4
         link:
-        - right_hip
-        - right_knee
+          - right_hip
+          - right_knee
       5:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 5
         link:
-        - right_knee
-        - right_foot
+          - right_knee
+          - right_foot
       6:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 6
         link:
-        - root
-        - spine
+          - root
+          - spine
       7:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 7
         link:
-        - spine
-        - thorax
+          - spine
+          - thorax
       8:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 8
         link:
-        - thorax
-        - neck_base
+          - thorax
+          - neck_base
       9:
         color:
-        - 51
-        - 153
-        - 255
+          - 51
+          - 153
+          - 255
         id: 9
         link:
-        - neck_base
-        - head
+          - neck_base
+          - head
       10:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 10
         link:
-        - thorax
-        - left_shoulder
+          - thorax
+          - left_shoulder
       11:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 11
         link:
-        - left_shoulder
-        - left_elbow
+          - left_shoulder
+          - left_elbow
       12:
         color:
-        - 0
-        - 255
-        - 0
+          - 0
+          - 255
+          - 0
         id: 12
         link:
-        - left_elbow
-        - left_wrist
+          - left_elbow
+          - left_wrist
       13:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 13
         link:
-        - thorax
-        - right_shoulder
+          - thorax
+          - right_shoulder
       14:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 14
         link:
-        - right_shoulder
-        - right_elbow
+          - right_shoulder
+          - right_elbow
       15:
         color:
-        - 255
-        - 128
-        - 0
+          - 255
+          - 128
+          - 0
         id: 15
         link:
-        - right_elbow
-        - right_wrist
+          - right_elbow
+          - right_wrist
     stats_info:
       bbox_center:
-      - 528.0
-      - 427.0
+        - 528.0
+        - 427.0
       bbox_scale: 400.0

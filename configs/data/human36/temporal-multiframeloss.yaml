@@ -11,7 +11,7 @@ dataset:
   dataset_base_cfg:
     name: "Human36AnnotationTemporalDataset"
     args:
-      receptive_field: 243
+      receptive_field: "{const.receptive_field}"
       base_dir: "./human36m"
 
   dataset_subset_cfg:
@@ -35,7 +35,8 @@ transform:
       "trn,val",
       [
         { "name": "Create2DProjectionTemporal" },
-        { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
+        { "name": "RenameKeys", "args": {"mapper": {"temporal_joints": "joint"}}},
+        # TODO
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         { "name": "ToTensor", "args": { "key": "joint", "dtype": "float" } },

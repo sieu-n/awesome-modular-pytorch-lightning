@@ -1,10 +1,10 @@
 # reference: https://github.com/open-mmlab/mmdetection/blob/master/tools/misc/download_dataset.py
 import argparse
 import os
+import tarfile
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import tarfile
 from tarfile import TarFile
 from zipfile import ZipFile
 

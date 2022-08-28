@@ -1,6 +1,25 @@
 channel_cfg:
   dataset_channel:
-  - - 0
+    - - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+  dataset_joints: 17
+  inference_channel:
+    - 0
     - 1
     - 2
     - 3
@@ -17,25 +36,6 @@ channel_cfg:
     - 14
     - 15
     - 16
-  dataset_joints: 17
-  inference_channel:
-  - 0
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 15
-  - 16
   num_output_channels: 17
 checkpoint_config:
   interval: 10
@@ -45,7 +45,31 @@ data:
     ann_file: data/h36m/annotation_body2d/h36m_coco_test.json
     data_cfg:
       dataset_channel:
-      - - 0
+        - - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+      heatmap_size:
+        - 64
+        - 64
+      image_size:
+        - 256
+        - 256
+      inference_channel:
+        - 0
         - 1
         - 2
         - 3
@@ -62,391 +86,369 @@ data:
         - 14
         - 15
         - 16
-      heatmap_size:
-      - 64
-      - 64
-      image_size:
-      - 256
-      - 256
-      inference_channel:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
       num_joints: 17
       num_output_channels: 17
     dataset_info:
       dataset_name: h36m
       joint_weights:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
       keypoint_info:
         0:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 0
           name: root
-          swap: ''
+          swap: ""
           type: lower
         1:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 1
           name: right_hip
           swap: left_hip
           type: lower
         2:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 2
           name: right_knee
           swap: left_knee
           type: lower
         3:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 3
           name: right_foot
           swap: left_foot
           type: lower
         4:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 4
           name: left_hip
           swap: right_hip
           type: lower
         5:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 5
           name: left_knee
           swap: right_knee
           type: lower
         6:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 6
           name: left_foot
           swap: right_foot
           type: lower
         7:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 7
           name: spine
-          swap: ''
+          swap: ""
           type: upper
         8:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 8
           name: thorax
-          swap: ''
+          swap: ""
           type: upper
         9:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 9
           name: neck_base
-          swap: ''
+          swap: ""
           type: upper
         10:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 10
           name: head
-          swap: ''
+          swap: ""
           type: upper
         11:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 11
           name: left_shoulder
           swap: right_shoulder
           type: upper
         12:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 12
           name: left_elbow
           swap: right_elbow
           type: upper
         13:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 13
           name: left_wrist
           swap: right_wrist
           type: upper
         14:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 14
           name: right_shoulder
           swap: left_shoulder
           type: upper
         15:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 15
           name: right_elbow
           swap: left_elbow
           type: upper
         16:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 16
           name: right_wrist
           swap: left_wrist
           type: upper
       paper_info:
-        author: Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
+        author:
+          Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
           Cristian
         container: IEEE Transactions on Pattern Analysis and Machine Intelligence
         homepage: http://vision.imar.ro/human3.6m/description.php
-        title: 'Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
-          Sensing in Natural Environments'
-        year: '2014'
+        title:
+          "Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
+          Sensing in Natural Environments"
+        year: "2014"
       sigmas: []
       skeleton_info:
         0:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 0
           link:
-          - root
-          - left_hip
+            - root
+            - left_hip
         1:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 1
           link:
-          - left_hip
-          - left_knee
+            - left_hip
+            - left_knee
         2:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 2
           link:
-          - left_knee
-          - left_foot
+            - left_knee
+            - left_foot
         3:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 3
           link:
-          - root
-          - right_hip
+            - root
+            - right_hip
         4:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 4
           link:
-          - right_hip
-          - right_knee
+            - right_hip
+            - right_knee
         5:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 5
           link:
-          - right_knee
-          - right_foot
+            - right_knee
+            - right_foot
         6:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 6
           link:
-          - root
-          - spine
+            - root
+            - spine
         7:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 7
           link:
-          - spine
-          - thorax
+            - spine
+            - thorax
         8:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 8
           link:
-          - thorax
-          - neck_base
+            - thorax
+            - neck_base
         9:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 9
           link:
-          - neck_base
-          - head
+            - neck_base
+            - head
         10:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 10
           link:
-          - thorax
-          - left_shoulder
+            - thorax
+            - left_shoulder
         11:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 11
           link:
-          - left_shoulder
-          - left_elbow
+            - left_shoulder
+            - left_elbow
         12:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 12
           link:
-          - left_elbow
-          - left_wrist
+            - left_elbow
+            - left_wrist
         13:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 13
           link:
-          - thorax
-          - right_shoulder
+            - thorax
+            - right_shoulder
         14:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 14
           link:
-          - right_shoulder
-          - right_elbow
+            - right_shoulder
+            - right_elbow
         15:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 15
           link:
-          - right_elbow
-          - right_wrist
+            - right_elbow
+            - right_wrist
       stats_info:
         bbox_center:
-        - 528.0
-        - 427.0
+          - 528.0
+          - 427.0
         bbox_scale: 400.0
     img_prefix: data/h36m/images/
     pipeline:
-    - type: LoadImageFromFile
-    - padding: 1.25
-      type: TopDownGetBboxCenterScale
-    - type: TopDownAffine
-    - type: ToTensor
-    - mean:
-      - 0.485
-      - 0.456
-      - 0.406
-      std:
-      - 0.229
-      - 0.224
-      - 0.225
-      type: NormalizeTensor
-    - keys:
-      - img
-      meta_keys:
-      - image_file
-      - center
-      - scale
-      - rotation
-      - bbox_score
-      - flip_pairs
-      type: Collect
+      - type: LoadImageFromFile
+      - padding: 1.25
+        type: TopDownGetBboxCenterScale
+      - type: TopDownAffine
+      - type: ToTensor
+      - mean:
+          - 0.485
+          - 0.456
+          - 0.406
+        std:
+          - 0.229
+          - 0.224
+          - 0.225
+        type: NormalizeTensor
+      - keys:
+          - img
+        meta_keys:
+          - image_file
+          - center
+          - scale
+          - rotation
+          - bbox_score
+          - flip_pairs
+        type: Collect
     type: TopDownH36MDataset
   test_dataloader:
     samples_per_gpu: 32
@@ -454,7 +456,31 @@ data:
     ann_file: data/h36m/annotation_body2d/h36m_coco_train.json
     data_cfg:
       dataset_channel:
-      - - 0
+        - - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+      heatmap_size:
+        - 64
+        - 64
+      image_size:
+        - 256
+        - 256
+      inference_channel:
+        - 0
         - 1
         - 2
         - 3
@@ -471,414 +497,416 @@ data:
         - 14
         - 15
         - 16
-      heatmap_size:
-      - 64
-      - 64
-      image_size:
-      - 256
-      - 256
-      inference_channel:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
       num_joints: 17
       num_output_channels: 17
     dataset_info:
       dataset_name: h36m
       joint_weights:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
       keypoint_info:
         0:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 0
           name: root
-          swap: ''
+          swap: ""
           type: lower
         1:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 1
           name: right_hip
           swap: left_hip
           type: lower
         2:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 2
           name: right_knee
           swap: left_knee
           type: lower
         3:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 3
           name: right_foot
           swap: left_foot
           type: lower
         4:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 4
           name: left_hip
           swap: right_hip
           type: lower
         5:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 5
           name: left_knee
           swap: right_knee
           type: lower
         6:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 6
           name: left_foot
           swap: right_foot
           type: lower
         7:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 7
           name: spine
-          swap: ''
+          swap: ""
           type: upper
         8:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 8
           name: thorax
-          swap: ''
+          swap: ""
           type: upper
         9:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 9
           name: neck_base
-          swap: ''
+          swap: ""
           type: upper
         10:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 10
           name: head
-          swap: ''
+          swap: ""
           type: upper
         11:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 11
           name: left_shoulder
           swap: right_shoulder
           type: upper
         12:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 12
           name: left_elbow
           swap: right_elbow
           type: upper
         13:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 13
           name: left_wrist
           swap: right_wrist
           type: upper
         14:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 14
           name: right_shoulder
           swap: left_shoulder
           type: upper
         15:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 15
           name: right_elbow
           swap: left_elbow
           type: upper
         16:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 16
           name: right_wrist
           swap: left_wrist
           type: upper
       paper_info:
-        author: Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
+        author:
+          Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
           Cristian
         container: IEEE Transactions on Pattern Analysis and Machine Intelligence
         homepage: http://vision.imar.ro/human3.6m/description.php
-        title: 'Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
-          Sensing in Natural Environments'
-        year: '2014'
+        title:
+          "Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
+          Sensing in Natural Environments"
+        year: "2014"
       sigmas: []
       skeleton_info:
         0:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 0
           link:
-          - root
-          - left_hip
+            - root
+            - left_hip
         1:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 1
           link:
-          - left_hip
-          - left_knee
+            - left_hip
+            - left_knee
         2:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 2
           link:
-          - left_knee
-          - left_foot
+            - left_knee
+            - left_foot
         3:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 3
           link:
-          - root
-          - right_hip
+            - root
+            - right_hip
         4:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 4
           link:
-          - right_hip
-          - right_knee
+            - right_hip
+            - right_knee
         5:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 5
           link:
-          - right_knee
-          - right_foot
+            - right_knee
+            - right_foot
         6:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 6
           link:
-          - root
-          - spine
+            - root
+            - spine
         7:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 7
           link:
-          - spine
-          - thorax
+            - spine
+            - thorax
         8:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 8
           link:
-          - thorax
-          - neck_base
+            - thorax
+            - neck_base
         9:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 9
           link:
-          - neck_base
-          - head
+            - neck_base
+            - head
         10:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 10
           link:
-          - thorax
-          - left_shoulder
+            - thorax
+            - left_shoulder
         11:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 11
           link:
-          - left_shoulder
-          - left_elbow
+            - left_shoulder
+            - left_elbow
         12:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 12
           link:
-          - left_elbow
-          - left_wrist
+            - left_elbow
+            - left_wrist
         13:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 13
           link:
-          - thorax
-          - right_shoulder
+            - thorax
+            - right_shoulder
         14:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 14
           link:
-          - right_shoulder
-          - right_elbow
+            - right_shoulder
+            - right_elbow
         15:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 15
           link:
-          - right_elbow
-          - right_wrist
+            - right_elbow
+            - right_wrist
       stats_info:
         bbox_center:
-        - 528.0
-        - 427.0
+          - 528.0
+          - 427.0
         bbox_scale: 400.0
     img_prefix: data/h36m/images/
     pipeline:
-    - type: LoadImageFromFile
-    - padding: 1.25
-      type: TopDownGetBboxCenterScale
-    - prob: 0.3
-      shift_factor: 0.16
-      type: TopDownRandomShiftBboxCenter
-    - flip_prob: 0.5
-      type: TopDownRandomFlip
-    - num_joints_half_body: 8
-      prob_half_body: 0.3
-      type: TopDownHalfBodyTransform
-    - rot_factor: 40
-      scale_factor: 0.5
-      type: TopDownGetRandomScaleRotation
-    - type: TopDownAffine
-    - type: ToTensor
-    - mean:
-      - 0.485
-      - 0.456
-      - 0.406
-      std:
-      - 0.229
-      - 0.224
-      - 0.225
-      type: NormalizeTensor
-    - sigma: 2
-      type: TopDownGenerateTarget
-    - keys:
-      - img
-      - target
-      - target_weight
-      meta_keys:
-      - image_file
-      - joints_3d
-      - joints_3d_visible
-      - center
-      - scale
-      - rotation
-      - bbox_score
-      - flip_pairs
-      type: Collect
+      - type: LoadImageFromFile
+      - padding: 1.25
+        type: TopDownGetBboxCenterScale
+      - prob: 0.3
+        shift_factor: 0.16
+        type: TopDownRandomShiftBboxCenter
+      - flip_prob: 0.5
+        type: TopDownRandomFlip
+      - num_joints_half_body: 8
+        prob_half_body: 0.3
+        type: TopDownHalfBodyTransform
+      - rot_factor: 40
+        scale_factor: 0.5
+        type: TopDownGetRandomScaleRotation
+      - type: TopDownAffine
+      - type: ToTensor
+      - mean:
+          - 0.485
+          - 0.456
+          - 0.406
+        std:
+          - 0.229
+          - 0.224
+          - 0.225
+        type: NormalizeTensor
+      - sigma: 2
+        type: TopDownGenerateTarget
+      - keys:
+          - img
+          - target
+          - target_weight
+        meta_keys:
+          - image_file
+          - joints_3d
+          - joints_3d_visible
+          - center
+          - scale
+          - rotation
+          - bbox_score
+          - flip_pairs
+        type: Collect
     type: TopDownH36MDataset
   val:
     ann_file: data/h36m/annotation_body2d/h36m_coco_test.json
     data_cfg:
       dataset_channel:
-      - - 0
+        - - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+      heatmap_size:
+        - 64
+        - 64
+      image_size:
+        - 256
+        - 256
+      inference_channel:
+        - 0
         - 1
         - 2
         - 3
@@ -895,398 +923,400 @@ data:
         - 14
         - 15
         - 16
-      heatmap_size:
-      - 64
-      - 64
-      image_size:
-      - 256
-      - 256
-      inference_channel:
-      - 0
-      - 1
-      - 2
-      - 3
-      - 4
-      - 5
-      - 6
-      - 7
-      - 8
-      - 9
-      - 10
-      - 11
-      - 12
-      - 13
-      - 14
-      - 15
-      - 16
       num_joints: 17
       num_output_channels: 17
     dataset_info:
       dataset_name: h36m
       joint_weights:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
       keypoint_info:
         0:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 0
           name: root
-          swap: ''
+          swap: ""
           type: lower
         1:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 1
           name: right_hip
           swap: left_hip
           type: lower
         2:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 2
           name: right_knee
           swap: left_knee
           type: lower
         3:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 3
           name: right_foot
           swap: left_foot
           type: lower
         4:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 4
           name: left_hip
           swap: right_hip
           type: lower
         5:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 5
           name: left_knee
           swap: right_knee
           type: lower
         6:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 6
           name: left_foot
           swap: right_foot
           type: lower
         7:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 7
           name: spine
-          swap: ''
+          swap: ""
           type: upper
         8:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 8
           name: thorax
-          swap: ''
+          swap: ""
           type: upper
         9:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 9
           name: neck_base
-          swap: ''
+          swap: ""
           type: upper
         10:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 10
           name: head
-          swap: ''
+          swap: ""
           type: upper
         11:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 11
           name: left_shoulder
           swap: right_shoulder
           type: upper
         12:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 12
           name: left_elbow
           swap: right_elbow
           type: upper
         13:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 13
           name: left_wrist
           swap: right_wrist
           type: upper
         14:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 14
           name: right_shoulder
           swap: left_shoulder
           type: upper
         15:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 15
           name: right_elbow
           swap: left_elbow
           type: upper
         16:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 16
           name: right_wrist
           swap: left_wrist
           type: upper
       paper_info:
-        author: Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
+        author:
+          Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
           Cristian
         container: IEEE Transactions on Pattern Analysis and Machine Intelligence
         homepage: http://vision.imar.ro/human3.6m/description.php
-        title: 'Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
-          Sensing in Natural Environments'
-        year: '2014'
+        title:
+          "Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human
+          Sensing in Natural Environments"
+        year: "2014"
       sigmas: []
       skeleton_info:
         0:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 0
           link:
-          - root
-          - left_hip
+            - root
+            - left_hip
         1:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 1
           link:
-          - left_hip
-          - left_knee
+            - left_hip
+            - left_knee
         2:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 2
           link:
-          - left_knee
-          - left_foot
+            - left_knee
+            - left_foot
         3:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 3
           link:
-          - root
-          - right_hip
+            - root
+            - right_hip
         4:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 4
           link:
-          - right_hip
-          - right_knee
+            - right_hip
+            - right_knee
         5:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 5
           link:
-          - right_knee
-          - right_foot
+            - right_knee
+            - right_foot
         6:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 6
           link:
-          - root
-          - spine
+            - root
+            - spine
         7:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 7
           link:
-          - spine
-          - thorax
+            - spine
+            - thorax
         8:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 8
           link:
-          - thorax
-          - neck_base
+            - thorax
+            - neck_base
         9:
           color:
-          - 51
-          - 153
-          - 255
+            - 51
+            - 153
+            - 255
           id: 9
           link:
-          - neck_base
-          - head
+            - neck_base
+            - head
         10:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 10
           link:
-          - thorax
-          - left_shoulder
+            - thorax
+            - left_shoulder
         11:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 11
           link:
-          - left_shoulder
-          - left_elbow
+            - left_shoulder
+            - left_elbow
         12:
           color:
-          - 0
-          - 255
-          - 0
+            - 0
+            - 255
+            - 0
           id: 12
           link:
-          - left_elbow
-          - left_wrist
+            - left_elbow
+            - left_wrist
         13:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 13
           link:
-          - thorax
-          - right_shoulder
+            - thorax
+            - right_shoulder
         14:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 14
           link:
-          - right_shoulder
-          - right_elbow
+            - right_shoulder
+            - right_elbow
         15:
           color:
-          - 255
-          - 128
-          - 0
+            - 255
+            - 128
+            - 0
           id: 15
           link:
-          - right_elbow
-          - right_wrist
+            - right_elbow
+            - right_wrist
       stats_info:
         bbox_center:
-        - 528.0
-        - 427.0
+          - 528.0
+          - 427.0
         bbox_scale: 400.0
     img_prefix: data/h36m/images/
     pipeline:
-    - type: LoadImageFromFile
-    - padding: 1.25
-      type: TopDownGetBboxCenterScale
-    - type: TopDownAffine
-    - type: ToTensor
-    - mean:
-      - 0.485
-      - 0.456
-      - 0.406
-      std:
-      - 0.229
-      - 0.224
-      - 0.225
-      type: NormalizeTensor
-    - keys:
-      - img
-      meta_keys:
-      - image_file
-      - center
-      - scale
-      - rotation
-      - bbox_score
-      - flip_pairs
-      type: Collect
+      - type: LoadImageFromFile
+      - padding: 1.25
+        type: TopDownGetBboxCenterScale
+      - type: TopDownAffine
+      - type: ToTensor
+      - mean:
+          - 0.485
+          - 0.456
+          - 0.406
+        std:
+          - 0.229
+          - 0.224
+          - 0.225
+        type: NormalizeTensor
+      - keys:
+          - img
+        meta_keys:
+          - image_file
+          - center
+          - scale
+          - rotation
+          - bbox_score
+          - flip_pairs
+        type: Collect
     type: TopDownH36MDataset
   val_dataloader:
     samples_per_gpu: 32
   workers_per_gpu: 2
 data_cfg:
   dataset_channel:
-  - - 0
+    - - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+      - 12
+      - 13
+      - 14
+      - 15
+      - 16
+  heatmap_size:
+    - 64
+    - 64
+  image_size:
+    - 256
+    - 256
+  inference_channel:
+    - 0
     - 1
     - 2
     - 3
@@ -1303,385 +1333,363 @@ data_cfg:
     - 14
     - 15
     - 16
-  heatmap_size:
-  - 64
-  - 64
-  image_size:
-  - 256
-  - 256
-  inference_channel:
-  - 0
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  - 10
-  - 11
-  - 12
-  - 13
-  - 14
-  - 15
-  - 16
   num_joints: 17
   num_output_channels: 17
 data_root: data/h36m
 dataset_info:
   dataset_name: h36m
   joint_weights:
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
-  - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
+    - 1.0
   keypoint_info:
     0:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 0
       name: root
-      swap: ''
+      swap: ""
       type: lower
     1:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 1
       name: right_hip
       swap: left_hip
       type: lower
     2:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 2
       name: right_knee
       swap: left_knee
       type: lower
     3:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 3
       name: right_foot
       swap: left_foot
       type: lower
     4:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 4
       name: left_hip
       swap: right_hip
       type: lower
     5:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 5
       name: left_knee
       swap: right_knee
       type: lower
     6:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 6
       name: left_foot
       swap: right_foot
       type: lower
     7:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 7
       name: spine
-      swap: ''
+      swap: ""
       type: upper
     8:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 8
       name: thorax
-      swap: ''
+      swap: ""
       type: upper
     9:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 9
       name: neck_base
-      swap: ''
+      swap: ""
       type: upper
     10:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 10
       name: head
-      swap: ''
+      swap: ""
       type: upper
     11:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 11
       name: left_shoulder
       swap: right_shoulder
       type: upper
     12:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 12
       name: left_elbow
       swap: right_elbow
       type: upper
     13:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 13
       name: left_wrist
       swap: right_wrist
       type: upper
     14:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 14
       name: right_shoulder
       swap: left_shoulder
       type: upper
     15:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 15
       name: right_elbow
       swap: left_elbow
       type: upper
     16:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 16
       name: right_wrist
       swap: left_wrist
       type: upper
   paper_info:
-    author: Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
+    author:
+      Ionescu, Catalin and Papava, Dragos and Olaru, Vlad and Sminchisescu,
       Cristian
     container: IEEE Transactions on Pattern Analysis and Machine Intelligence
     homepage: http://vision.imar.ro/human3.6m/description.php
-    title: 'Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human Sensing
-      in Natural Environments'
-    year: '2014'
+    title:
+      "Human3.6M: Large Scale Datasets and Predictive Methods for 3D Human Sensing
+      in Natural Environments"
+    year: "2014"
   sigmas: []
   skeleton_info:
     0:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 0
       link:
-      - root
-      - left_hip
+        - root
+        - left_hip
     1:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 1
       link:
-      - left_hip
-      - left_knee
+        - left_hip
+        - left_knee
     2:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 2
       link:
-      - left_knee
-      - left_foot
+        - left_knee
+        - left_foot
     3:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 3
       link:
-      - root
-      - right_hip
+        - root
+        - right_hip
     4:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 4
       link:
-      - right_hip
-      - right_knee
+        - right_hip
+        - right_knee
     5:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 5
       link:
-      - right_knee
-      - right_foot
+        - right_knee
+        - right_foot
     6:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 6
       link:
-      - root
-      - spine
+        - root
+        - spine
     7:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 7
       link:
-      - spine
-      - thorax
+        - spine
+        - thorax
     8:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 8
       link:
-      - thorax
-      - neck_base
+        - thorax
+        - neck_base
     9:
       color:
-      - 51
-      - 153
-      - 255
+        - 51
+        - 153
+        - 255
       id: 9
       link:
-      - neck_base
-      - head
+        - neck_base
+        - head
     10:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 10
       link:
-      - thorax
-      - left_shoulder
+        - thorax
+        - left_shoulder
     11:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 11
       link:
-      - left_shoulder
-      - left_elbow
+        - left_shoulder
+        - left_elbow
     12:
       color:
-      - 0
-      - 255
-      - 0
+        - 0
+        - 255
+        - 0
       id: 12
       link:
-      - left_elbow
-      - left_wrist
+        - left_elbow
+        - left_wrist
     13:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 13
       link:
-      - thorax
-      - right_shoulder
+        - thorax
+        - right_shoulder
     14:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 14
       link:
-      - right_shoulder
-      - right_elbow
+        - right_shoulder
+        - right_elbow
     15:
       color:
-      - 255
-      - 128
-      - 0
+        - 255
+        - 128
+        - 0
       id: 15
       link:
-      - right_elbow
-      - right_wrist
+        - right_elbow
+        - right_wrist
   stats_info:
     bbox_center:
-    - 528.0
-    - 427.0
+      - 528.0
+      - 427.0
     bbox_scale: 400.0
 dist_params:
   backend: nccl
 evaluation:
   interval: 10
   metric:
-  - PCK
-  - EPE
+    - PCK
+    - EPE
   save_best: PCK
 load_from: null
 log_config:
   hooks:
-  - type: TextLoggerHook
+    - type: TextLoggerHook
   interval: 50
 log_level: INFO
 lr_config:
   policy: step
   step:
-  - 170
-  - 200
+    - 170
+    - 200
   warmup: linear
   warmup_iters: 500
   warmup_ratio: 0.001
@@ -1691,46 +1699,46 @@ model:
       stage1:
         block: BOTTLENECK
         num_blocks:
-        - 4
+          - 4
         num_branches: 1
         num_channels:
-        - 64
+          - 64
         num_modules: 1
       stage2:
         block: BASIC
         num_blocks:
-        - 4
-        - 4
+          - 4
+          - 4
         num_branches: 2
         num_channels:
-        - 32
-        - 64
+          - 32
+          - 64
         num_modules: 1
       stage3:
         block: BASIC
         num_blocks:
-        - 4
-        - 4
-        - 4
+          - 4
+          - 4
+          - 4
         num_branches: 3
         num_channels:
-        - 32
-        - 64
-        - 128
+          - 32
+          - 64
+          - 128
         num_modules: 4
       stage4:
         block: BASIC
         num_blocks:
-        - 4
-        - 4
-        - 4
-        - 4
+          - 4
+          - 4
+          - 4
+          - 4
         num_branches: 4
         num_channels:
-        - 32
-        - 64
-        - 128
-        - 256
+          - 32
+          - 64
+          - 128
+          - 256
         num_modules: 3
     in_channels: 3
     type: HRNet
@@ -1761,98 +1769,98 @@ optimizer_config:
   grad_clip: null
 resume_from: null
 test_pipeline:
-- type: LoadImageFromFile
-- padding: 1.25
-  type: TopDownGetBboxCenterScale
-- type: TopDownAffine
-- type: ToTensor
-- mean:
-  - 0.485
-  - 0.456
-  - 0.406
-  std:
-  - 0.229
-  - 0.224
-  - 0.225
-  type: NormalizeTensor
-- keys:
-  - img
-  meta_keys:
-  - image_file
-  - center
-  - scale
-  - rotation
-  - bbox_score
-  - flip_pairs
-  type: Collect
+  - type: LoadImageFromFile
+  - padding: 1.25
+    type: TopDownGetBboxCenterScale
+  - type: TopDownAffine
+  - type: ToTensor
+  - mean:
+      - 0.485
+      - 0.456
+      - 0.406
+    std:
+      - 0.229
+      - 0.224
+      - 0.225
+    type: NormalizeTensor
+  - keys:
+      - img
+    meta_keys:
+      - image_file
+      - center
+      - scale
+      - rotation
+      - bbox_score
+      - flip_pairs
+    type: Collect
 total_epochs: 210
 train_pipeline:
-- type: LoadImageFromFile
-- padding: 1.25
-  type: TopDownGetBboxCenterScale
-- prob: 0.3
-  shift_factor: 0.16
-  type: TopDownRandomShiftBboxCenter
-- flip_prob: 0.5
-  type: TopDownRandomFlip
-- num_joints_half_body: 8
-  prob_half_body: 0.3
-  type: TopDownHalfBodyTransform
-- rot_factor: 40
-  scale_factor: 0.5
-  type: TopDownGetRandomScaleRotation
-- type: TopDownAffine
-- type: ToTensor
-- mean:
-  - 0.485
-  - 0.456
-  - 0.406
-  std:
-  - 0.229
-  - 0.224
-  - 0.225
-  type: NormalizeTensor
-- sigma: 2
-  type: TopDownGenerateTarget
-- keys:
-  - img
-  - target
-  - target_weight
-  meta_keys:
-  - image_file
-  - joints_3d
-  - joints_3d_visible
-  - center
-  - scale
-  - rotation
-  - bbox_score
-  - flip_pairs
-  type: Collect
+  - type: LoadImageFromFile
+  - padding: 1.25
+    type: TopDownGetBboxCenterScale
+  - prob: 0.3
+    shift_factor: 0.16
+    type: TopDownRandomShiftBboxCenter
+  - flip_prob: 0.5
+    type: TopDownRandomFlip
+  - num_joints_half_body: 8
+    prob_half_body: 0.3
+    type: TopDownHalfBodyTransform
+  - rot_factor: 40
+    scale_factor: 0.5
+    type: TopDownGetRandomScaleRotation
+  - type: TopDownAffine
+  - type: ToTensor
+  - mean:
+      - 0.485
+      - 0.456
+      - 0.406
+    std:
+      - 0.229
+      - 0.224
+      - 0.225
+    type: NormalizeTensor
+  - sigma: 2
+    type: TopDownGenerateTarget
+  - keys:
+      - img
+      - target
+      - target_weight
+    meta_keys:
+      - image_file
+      - joints_3d
+      - joints_3d_visible
+      - center
+      - scale
+      - rotation
+      - bbox_score
+      - flip_pairs
+    type: Collect
 val_pipeline:
-- type: LoadImageFromFile
-- padding: 1.25
-  type: TopDownGetBboxCenterScale
-- type: TopDownAffine
-- type: ToTensor
-- mean:
-  - 0.485
-  - 0.456
-  - 0.406
-  std:
-  - 0.229
-  - 0.224
-  - 0.225
-  type: NormalizeTensor
-- keys:
-  - img
-  meta_keys:
-  - image_file
-  - center
-  - scale
-  - rotation
-  - bbox_score
-  - flip_pairs
-  type: Collect
+  - type: LoadImageFromFile
+  - padding: 1.25
+    type: TopDownGetBboxCenterScale
+  - type: TopDownAffine
+  - type: ToTensor
+  - mean:
+      - 0.485
+      - 0.456
+      - 0.406
+    std:
+      - 0.229
+      - 0.224
+      - 0.225
+    type: NormalizeTensor
+  - keys:
+      - img
+    meta_keys:
+      - image_file
+      - center
+      - scale
+      - rotation
+      - bbox_score
+      - flip_pairs
+    type: Collect
 workflow:
-- - train
-  - 1
+  - - train
+    - 1

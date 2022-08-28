@@ -32,8 +32,6 @@ training:
         value: "heatmap_loss"
 
 callbacks:
-  
-
   #ModelCheckpoint:
   #  name: LightningCallback
   #  args:
@@ -43,7 +41,6 @@ callbacks:
   #      mode: "max"
   #      save_last: True
   #      save_top_k: 1
-
 
   LearningRateMonitor:
     name: LightningCallback
