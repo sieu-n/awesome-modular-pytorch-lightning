@@ -4,7 +4,7 @@ import os
 from itertools import repeat
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-import  tarfile
+import tarfile
 from tarfile import TarFile
 from zipfile import ZipFile
 
@@ -49,7 +49,7 @@ def download(url, dir, download_from="url", unzip=True, delete=False, threads=1)
                 print("Downloading {} to {}".format(url, f))
                 torch.hub.download_url_to_file(url, os.path.join(f), progress=True)
         elif download_from == "gdrive":
-            f = gdown.download(id=url, output=dir, quiet=False)
+            f = gdown.download(id=url, output=str(dir) + "/", quiet=False)
             f = Path(f)
         else:
             raise ValueError("Invalid download type: {}".format(download_from))

@@ -81,7 +81,7 @@ model:
     backbone:
       name: "PoseTransformer"
       args:
-        num_frame: 
+        num_frame: "{const.receptive_field}"
         num_joints: "{const.num_joints}"
         in_chans: 2
         embed_dim_ratio: 32
