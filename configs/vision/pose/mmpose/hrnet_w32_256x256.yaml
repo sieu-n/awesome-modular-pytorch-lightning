@@ -86,6 +86,7 @@ model:
       out_channels: "{const.num_joints}"
       type: TopdownHeatmapSimpleHead
     pretrained: https://download.openmmlab.com/mmpose/pretrain_models/hrnet_w32-36af842e.pth
+                https://download.openmmlab.com/mmpose/top_down/hrnet/hrnet_w32_h36m_256x256-d3206675_20210621.pth
     test_cfg:
       flip_test: true
       modulate_kernel: 11

@@ -47,7 +47,7 @@ dataset:
                 - bbox_score
                 - flip_pairs
               type: Collect
-          type: TopDownMpiiDataset
+          type: TopDownH36MDataset
     val:
       args:
         cfg:
@@ -78,7 +78,7 @@ dataset:
                 - rotation
                 - flip_pairs
               type: Collect
-          type: TopDownMpiiDataset
+          type: TopDownH36MDataset
     test:
       args:
         cfg:
@@ -105,7 +105,7 @@ dataset:
                 - rotation
                 - flip_pairs
               type: Collect
-          type: TopDownMpiiDataset
+          type: TopDownH36MDataset
 
 const:
   normalization_mean: [0.485, 0.456, 0.406]
