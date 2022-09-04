@@ -10,8 +10,8 @@ transform:
       "trn,val,pred",
       [
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "Pad", "ARGS": { "padding": [24, 0] } },
+          "name": "TorchvisionTransforms",
+          "args": { "name": "Pad", "args": { "padding": [24, 0] } },
         },
       ],
     ],
@@ -24,10 +24,10 @@ transform:
         },
 
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransforms",
+          "args": { "name": "RandomHorizontalFlip" },
         },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
+        { "name": "TorchvisionTransforms", "args": { "name": "RandomVerticalFlip" } },
         {
           "name": "RandomRotation",
           "args": { "degrees": [0, 360], "interpolation": "bilinear" },

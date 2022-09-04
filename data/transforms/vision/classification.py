@@ -4,8 +4,8 @@ import warnings
 
 import torchvision
 import torchvision.transforms.functional as TF
-from data.transforms.base import _BaseTransform
-from data.transforms.vision.util import str2interpolation
+from data.transforms import _BaseTransform
+from data.transforms.vision import str2interpolation
 from torchvision.transforms.functional import InterpolationMode
 
 _RANDOM_INTERPOLATION = (str2interpolation("bilinear"), str2interpolation("bicubic"))

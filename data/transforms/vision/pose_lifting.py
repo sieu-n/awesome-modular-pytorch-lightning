@@ -1,5 +1,5 @@
 # Camera is considered to be an instance of utils.camera.Human36Camera
-from ..base import _BaseTransform
+from .. import _BaseTransform
 
 
 class WorldToCameraCoord(_BaseTransform):

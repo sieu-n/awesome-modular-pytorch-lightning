@@ -1,6 +1,6 @@
 import copy
 
-from ..base import _BaseTransform
+from .. import _BaseTransform
 
 
 def center_around_joint(P, center_joint_idx=0):

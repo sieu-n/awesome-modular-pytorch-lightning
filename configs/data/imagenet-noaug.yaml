@@ -3,7 +3,7 @@ debug:
     input_shape: [3, 224, 224]
 dataset:
   MODE: "torchvision"
-  NAME: "ImageNet"
+  name: "ImageNet"
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     root: "./imagenet"
@@ -25,8 +25,8 @@ transform:
           "args": { "img_size": 224, "interpolation": "bilinear" },
         },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "CenterCrop", "ARGS": { "size": 224 } },
+          "name": "TorchvisionTransforms",
+          "args": { "name": "CenterCrop", "args": { "size": 224 } },
         },
         { "name": "ImageToTensor", "args": {} },
         {

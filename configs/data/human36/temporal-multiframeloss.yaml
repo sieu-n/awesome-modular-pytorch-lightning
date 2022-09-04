@@ -37,6 +37,7 @@ transform:
         { "name": "Create2DProjectionTemporal" },
         { "name": "RenameKeys", "args": {"mapper": {"temporal_joints": "joint"}}},
         # TODO
+        # reshape (243, 17, 3) -> (17, 3, 243)
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         { "name": "ToTensor", "args": { "key": "joint", "dtype": "float" } },

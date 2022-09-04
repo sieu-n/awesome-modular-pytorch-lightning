@@ -6,13 +6,13 @@ transform: [
       "trn",
       [
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransforms",
           "args":
-            { "NAME": "RandomCrop", "ARGS": { "size": 32, "padding": 4 } },
+            { "name": "RandomCrop", "args": { "size": 32, "padding": 4 } },
         },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransforms",
+          "args": { "name": "RandomHorizontalFlip" },
         },
         {
           # CutOut!!

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import catalog
 import yaml
-from data.transforms.base import ApplyTransforms, ComposeTransforms
+from data.transforms.utils import ApplyTransforms, ComposeTransforms
 
 from .verbose import set_verbose
 

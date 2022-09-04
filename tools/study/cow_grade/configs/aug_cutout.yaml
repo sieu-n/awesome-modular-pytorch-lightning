@@ -9,13 +9,13 @@ transform:
         },
 
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransforms",
+          "args": { "name": "RandomHorizontalFlip" },
         },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
+        { "name": "TorchvisionTransforms", "args": { "name": "RandomVerticalFlip" } },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomRotation", "ARGS": { "degrees": [0, 360] } },
+          "name": "TorchvisionTransforms",
+          "args": { "name": "RandomRotation", "args": { "degrees": [0, 360] } },
         },
       ],
     ],

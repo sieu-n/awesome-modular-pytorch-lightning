@@ -1,17 +1,16 @@
 import torchvision.transforms as TT
-from data.transforms.base import _BaseTransform
+from .image import _ImageTransform
 from torchvision.transforms.functional import InterpolationMode
 
 
-class TorchTransforms(_BaseTransform):
-    def __init__(self, NAME, ARGS={}, **kwargs):
-        super().__init__(**kwargs)
-        self.transform_f = getattr(TT, NAME)(**ARGS)
-        print(f"Found name `{NAME} from `torchvision.transforms`.")
+class TorchvisionTransforms(_ImageTransform):
+    def __init__(self, name, args={}, *_args, **kwargs):
+        super().__init__(*_args, **kwargs)
+        self.transform_f = getattr(TT, name)(**args)
+        print(f"Found name `{name} from `torchvision.transforms`.")
 
-    def __call__(self, d):
-        d["images"] = self.transform_f(d["images"])
-        return d
+    def transform(self, d):
+        return self.transform_f(d)
 
 
 def str2interpolation(s):

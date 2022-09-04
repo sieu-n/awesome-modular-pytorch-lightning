@@ -2,7 +2,7 @@
 
 dataset:
   MODE: "torchvision"
-  NAME: "OxfordIIITPet"
+  name: "OxfordIIITPet"
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     target_types: "category"

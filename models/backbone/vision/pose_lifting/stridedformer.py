@@ -202,6 +202,6 @@ class StridedTransformer(nn.Module):
 
         x = x.permute(0, 2, 1).contiguous()
         x = self.fcn(x)
-        x = rearrange(x, 'b (j c) f -> b f j c', j=J).contiguous()
+        x = rearrange(x, 'b (j c) f -> b 1 j c', j=J).contiguous()
 
         return x  # , x_VTE

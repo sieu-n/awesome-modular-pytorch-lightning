@@ -4,14 +4,14 @@ import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from ..base import _KeyTransform
-from .util import str2interpolation
+from .. import _KeyTransform
+from ._util import str2interpolation
 
 
 class _ImageTransform(_KeyTransform):
-    def __init__(self, key="images", *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        self.key = "images"  # set default key
         super(_ImageTransform, self).__init__(*args, **kwargs)
-        self.key = key
 
 
 class Normalize(_ImageTransform):
@@ -197,7 +197,7 @@ class CutOut(_ImageTransform):
 class ImageToTensor(_ImageTransform):
     """
     torchvision.transform is intended for 2d / 3d images. General conversion
-    should be done using `data.transforms.common.ToTensor` instead.
+    should be done using `data.transforms.ToTensor` instead.
     """
 
     def transform(self, image):

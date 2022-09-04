@@ -1,4 +1,4 @@
-from data.transforms.base import _BaseTransform
+from data.transforms import _BaseTransform
 from utils.bbox import (
     normalize_bbox,
     unnormalize_bbox,

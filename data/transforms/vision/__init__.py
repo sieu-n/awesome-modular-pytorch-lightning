@@ -32,4 +32,7 @@ from .pose_lifting import (  # noqa
     Create2DProjectionTemporal,
     WorldToCameraCoord,
 )
-from .util import TorchTransforms  # noqa
+from ._util import (  # noqa
+    TorchvisionTransforms,
+    str2interpolation,
+)

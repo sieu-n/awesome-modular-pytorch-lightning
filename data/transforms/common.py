@@ -3,8 +3,9 @@ from typing import List
 
 import torch
 from utils.data_container import DataContainer
+import catalog
 
-from .base import _BaseTransform, _KeyTransform
+from . import _BaseTransform, _KeyTransform
 
 
 class ToTensor(_KeyTransform):
@@ -100,3 +101,25 @@ class CollectDataContainer(_KeyTransform):
 
     def transform(self, D):
         return DataContainer(D, cpu_only=self.cpu_only, stack=self.stack)
+
+
+class MultipleKeyTransform(_BaseTransform):
+    def __init__(self, keys, name, args={}, *_args, **kwargs):
+        super(MultipleKeyTransform, self).__init__(*_args, **kwargs)
+        self.ts = [catalog.transforms.build(name=name, args=args, key=k) for k in keys]
+        self.keys = keys
+
+    def __call__(self, d):
+        for t in self.ts:
+            d = t(d)
+        return d
+
+
+class TorchTransforms(_KeyTransform):
+    def __init__(self, name, args={}, *_args, **kwargs):
+        super().__init__(*_args, **kwargs)
+        self.transform_f = getattr(torch, name)
+        print(f"Found name `{name} from `torch`.")
+
+    def transform(self, d):
+        return self.transform_f(d)
