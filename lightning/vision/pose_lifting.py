@@ -26,7 +26,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         Something like:
         {
             "joint": tensor(batch_size, 17, 3),
-            "joint_2d": tensor(batch_size, 17, 2),
+            "joint_2d": Union[tensor(batch_size, 17, 2), tensor(batch_size, 17, 2, num_frames)],
             "meta": dict,
             "location": tensor(batch_size),
             "camera": Human36Camera,
@@ -162,6 +162,61 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
             for idx, joint in enumerate(joints)
         ]
         return torch.tensor(joints)
+
+
+class MultiFramePoseLiftingTrainer(PoseLiftingTrainer):
+    def _training_step(self, batch, batch_idx=0):
+        """
+        Something like:
+        {
+            "joint": tensor(batch_size, 17, 3, num_frame),
+            "joint_2d": tensor(batch_size, 17, 2, num_frame),
+            "meta": dict,
+            "location": tensor(batch_size),
+            "camera": Human36Camera,
+            "idx": {
+                "action_idx": list,
+                "subaction_idx": list,
+                "camera_idx": list,
+                "frame_idx": list,
+            }
+        }
+        """
+        assert "joint_2d" in batch
+        assert "joint" in batch
+        assert "location" in batch
+        assert "meta" in batch
+        assert "idx" in batch
+        assert "camera" in batch
+
+        x, y = batch["joint_2d"], batch["joint"]
+
+        pred = self(x)
+        reconstruction = pred["joints"]
+
+        loss = self.loss_fn(reconstruction, y)
+
+        self.log("step/train_loss", loss)
+
+        # for logging
+        location = batch["location"]
+        res = {
+            "joints_gt_camera": y,
+            "joints_2d": x,
+            "reconstruction_camera": reconstruction,
+            "loss": loss,
+        }
+        if "idx" in batch:
+            res["action_idx"] = batch["idx"]["action_idx"].cpu().numpy()
+        if self.get_decoded:
+            cameras = batch["camera"].data
+
+            res["joints_gt_global"] = self.decode(y.cpu(), location.cpu(), cameras)
+            res["reconstruction_global"] = self.decode(
+                reconstruction.cpu().detach(), location.cpu(), cameras
+            )
+
+        return loss, res
 
 
 class VideoPoseSemisupTrainer(_BaseLightningTrainer):

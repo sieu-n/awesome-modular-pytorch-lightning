@@ -84,7 +84,7 @@ model:
         num_frame: "{const.receptive_field}"
         num_joints: "{const.num_joints}"
         layers: 3
-        channels: 512
+        channel: 512
         d_hid: 1024
     loss_fn:
       name: "MSELoss"
