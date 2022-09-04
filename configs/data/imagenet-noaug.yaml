@@ -25,7 +25,7 @@ transform:
           "args": { "img_size": 224, "interpolation": "bilinear" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "CenterCrop", "args": { "size": 224 } },
         },
         { "name": "ImageToTensor", "args": {} },

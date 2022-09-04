@@ -282,7 +282,7 @@ transform: [
             },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
         # more data augmentation (rand augment, auto augment, ...)
@@ -297,7 +297,7 @@ transform: [
           "args": { "size": [256, 256], "interpolation": "bilinear" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "CenterCrop", "args": { "size": [224, 224] } },
         },
         # more data augmentation (rand augment, auto augment, ...)
@@ -330,7 +330,7 @@ transform: [
 transform:
 ...
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             { 
               "name": "RandAugment",
@@ -349,7 +349,7 @@ Refer to: `configs/algorithms/data_augmentation/randaugment.yaml`
 transform:
 ...
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
               "name": "TrivialAugmentWide",

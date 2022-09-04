@@ -29,12 +29,12 @@ transform: [
             },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
         # DATA AUGMENTATION(rand augment, auto augment, ...)
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
               "name": "ColorJitter",
@@ -51,7 +51,7 @@ transform: [
           "args": { "img_size": 224, "interpolation": "bilinear" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "CenterCrop", "args": { "size": 224 } },
         },
       ],

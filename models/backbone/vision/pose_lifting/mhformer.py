@@ -355,7 +355,7 @@ class _TransformerHypothesis(nn.Module):
 # reference: https://github.com/Vegetebird/MHFormer/blob/fcf238631016f906477ec9c1d17582097ecf9803/
 # model/mhformer.py
 ########################################################################
-class MHFormer(nn.Module):
+class MHPoseFormer(nn.Module):
     def __init__(self, num_frame=81, num_joints=17, layers=3, channel=512, d_hid=1024):
         super().__init__()
 

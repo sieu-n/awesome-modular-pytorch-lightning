@@ -3,6 +3,7 @@ from typing import List
 
 import catalog
 import torch
+import numpy as np
 from utils.data_container import DataContainer
 
 from . import _BaseTransform, _KeyTransform
@@ -104,7 +105,7 @@ class CollectDataContainer(_KeyTransform):
 
 
 class MultipleKeyTransform(_BaseTransform):
-    def __init__(self, keys, name, args={}, *_args, **kwargs):
+    def __init__(self, keys: list, name: str, args: dict = {}, *_args, **kwargs):
         super(MultipleKeyTransform, self).__init__(*_args, **kwargs)
         self.ts = [catalog.transforms.build(name=name, args=args, key=k) for k in keys]
         self.keys = keys
@@ -115,11 +116,21 @@ class MultipleKeyTransform(_BaseTransform):
         return d
 
 
-class TorchTransforms(_KeyTransform):
-    def __init__(self, name, args={}, *_args, **kwargs):
+class TorchTransform(_KeyTransform):
+    def __init__(self, name: str, args: dict = {}, *_args, **kwargs):
         super().__init__(*_args, **kwargs)
-        self.transform_f = getattr(torch, name)
+        self.transform_f = lambda d: getattr(torch, name)(d, **args)
         print(f"Found name `{name} from `torch`.")
+
+    def transform(self, d):
+        return self.transform_f(d)
+
+
+class NumpyTransform(_KeyTransform):
+    def __init__(self, name: str, args: dict = {}, *_args, **kwargs):
+        super().__init__(*_args, **kwargs)
+        self.transform_f = lambda d: getattr(np, name)(d, **args)
+        print(f"Found name `{name} from `numpy`.")
 
     def transform(self, d):
         return self.transform_f(d)

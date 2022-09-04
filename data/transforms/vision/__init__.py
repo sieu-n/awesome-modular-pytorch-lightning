@@ -24,7 +24,7 @@ from .image import (  # noqa
     Normalize,
     Resize,
     ToPIL,
-    TorchvisionTransforms,
+    TorchvisionTransform,
     UnNormalize,
 )
 from .pose import CenterAroundJoint  # noqa

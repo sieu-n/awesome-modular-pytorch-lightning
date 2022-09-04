@@ -4,15 +4,15 @@ transform:
       "trn",
       [
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomVerticalFlip" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomRotation", "args": { "degrees": [0, 360] } },
         },
         {
@@ -27,7 +27,7 @@ transform:
         },
 
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
               "name": "ColorJitter",

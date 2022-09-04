@@ -13,7 +13,7 @@ transform: [
             },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
         # more data augmentation (rand augment, auto augment, ...)
@@ -28,7 +28,7 @@ transform: [
           "args": { "size": [256, 256], "interpolation": "bilinear" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "CenterCrop", "args": { "size": [224, 224] } },
         },
         # more data augmentation (rand augment, auto augment, ...)

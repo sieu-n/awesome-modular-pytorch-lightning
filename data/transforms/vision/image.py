@@ -8,7 +8,7 @@ from . import _ImageTransform
 from ..utils import str2interpolation
 
 
-class TorchvisionTransforms(_ImageTransform):
+class TorchvisionTransform(_ImageTransform):
     def __init__(self, name, args={}, *_args, **kwargs):
         super().__init__(*_args, **kwargs)
         self.transform_f = getattr(TT, name)(**args)

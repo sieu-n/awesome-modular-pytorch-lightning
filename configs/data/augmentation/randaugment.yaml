@@ -7,17 +7,17 @@ transform: [
       [
         # RandAugment is implemented inside torchvision.transforms!!
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             { "name": "RandAugment", "args": { "num_ops": 2, "magnitude": 9 } },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             { "name": "RandomCrop", "args": { "size": 32, "padding": 4 } },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
       ],

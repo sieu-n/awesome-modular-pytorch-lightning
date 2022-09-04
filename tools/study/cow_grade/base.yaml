@@ -10,7 +10,7 @@ transform:
       "trn,val,pred",
       [
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "Pad", "args": { "padding": [24, 0] } },
         },
       ],
@@ -24,11 +24,11 @@ transform:
         },
 
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomVerticalFlip" },
         },
         {

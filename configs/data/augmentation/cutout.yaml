@@ -6,12 +6,12 @@ transform: [
       "trn",
       [
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args":
             { "name": "RandomCrop", "args": { "size": 32, "padding": 4 } },
         },
         {
-          "name": "TorchvisionTransforms",
+          "name": "TorchvisionTransform",
           "args": { "name": "RandomHorizontalFlip" },
         },
         {

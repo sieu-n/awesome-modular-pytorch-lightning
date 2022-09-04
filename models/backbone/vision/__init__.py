@@ -1,4 +1,5 @@
 from .pose_lifting import (  # noqa
+    MHPoseFormer,
     PoseLiftingSingleFrameMLP,
     PoseLiftingTemporalConv,
     PoseTransformer,
