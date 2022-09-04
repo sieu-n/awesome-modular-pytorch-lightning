@@ -31,13 +31,6 @@ dataset:
 
 transform: [
     [
-      "val",
-      [
-        { "name": "Create2DProjectionTemporal" },
-        { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
-      ]
-    ],
-    [
       "trn",
       [
         { "name": "Create2DProjectionTemporal" },
@@ -54,19 +47,7 @@ transform: [
             "args": {"newshape": [-1, 3]},
           }
         },
-      ]
-    ],
-    [
-      "trn,val",
-      [
-        # TODO
         { "name": "WorldToCameraCoord" },
-        { "name": "CenterAroundJoint" },
-      ]
-    ],
-    [
-      "trn",
-      [
         # reshape (17 * 243, 3) -> (243, 17, 3)
         { 
           "name": "NumpyTransform", 
@@ -76,6 +57,16 @@ transform: [
             "args": {"newshape": ["{const.receptive_field}", "{const.num_joints}", 3]},
           }
         },
+        { "name": "CenterAroundJoint" },
+      ]
+    ],
+    [
+      "val",
+      [
+        { "name": "Create2DProjectionTemporal" },
+        { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
+        { "name": "WorldToCameraCoord" },
+        { "name": "CenterAroundJoint" },
       ]
     ],
     [
