@@ -1,5 +1,5 @@
 import torchvision
-from data.transforms.vision import str2interpolation
+from data.transforms.utils import str2interpolation
 from ttach.base import DualTransform
 
 

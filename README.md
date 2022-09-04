@@ -32,7 +32,7 @@ A number of algorithms and research papers are also adopted into our framework. 
 
 ## Running experiments with `train.py`
 
-After installing required packages, you can run the following experiments on COLAB. 
+After installing required packages, you can run the following experiments on COLAB.
 
 - CIFAR10 image classification with ResNet18.
 ```shell

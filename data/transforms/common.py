@@ -1,9 +1,9 @@
 from copy import deepcopy
 from typing import List
 
+import catalog
 import torch
 from utils.data_container import DataContainer
-import catalog
 
 from . import _BaseTransform, _KeyTransform
 

@@ -1,3 +1,4 @@
+from ._base import _ImageTransform  # noqa
 from .classification import (  # noqa
     ClassificationLabelEncoder,
     RandomResizedCropAndInterpolation,
@@ -23,6 +24,7 @@ from .image import (  # noqa
     Normalize,
     Resize,
     ToPIL,
+    TorchvisionTransforms,
     UnNormalize,
 )
 from .pose import CenterAroundJoint  # noqa
@@ -31,9 +33,4 @@ from .pose_lifting import (  # noqa
     Create2DProjection,
     Create2DProjectionTemporal,
     WorldToCameraCoord,
-)
-from ._util import (  # noqa
-    _ImageTransform,
-    TorchvisionTransforms,
-    str2interpolation,
 )

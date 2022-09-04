@@ -27,7 +27,10 @@ transform:
           "name": "TorchvisionTransforms",
           "args": { "name": "RandomHorizontalFlip" },
         },
-        { "name": "TorchvisionTransforms", "args": { "name": "RandomVerticalFlip" } },
+        {
+          "name": "TorchvisionTransforms",
+          "args": { "name": "RandomVerticalFlip" },
+        },
         {
           "name": "RandomRotation",
           "args": { "degrees": [0, 360], "interpolation": "bilinear" },

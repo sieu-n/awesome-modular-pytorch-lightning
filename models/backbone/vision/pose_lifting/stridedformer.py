@@ -1,12 +1,13 @@
 # Implements model described in the paper:
 # Exploiting Temporal Contexts with Strided Transformer for 3D Human Pose Estimation
+import copy
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
-import copy
-
 from einops import rearrange
+
 from .mhformer import _TransformerEncoder
 
 
@@ -27,11 +28,11 @@ class Encoder(nn.Module):
     def forward(self, x, mask):
         for i, layer in enumerate(self.layers):
             if i == 0:
-                x += self.pos_embedding_1[:, :x.shape[1]]
+                x += self.pos_embedding_1[:, : x.shape[1]]
             elif i == 1:
-                x += self.pos_embedding_2[:, :x.shape[1]]
+                x += self.pos_embedding_2[:, : x.shape[1]]
             elif i == 2:
-                x += self.pos_embedding_3[:, :x.shape[1]]
+                x += self.pos_embedding_3[:, : x.shape[1]]
 
             x = layer(x, mask, i)
 
@@ -89,7 +90,7 @@ class MultiHeadedAttention(nn.Module):
     def __init__(self, h, d_model, dropout=0.1):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0
-        self.d_k = d_model // h 
+        self.d_k = d_model // h
         self.h = h
         self.linears = clones(nn.Linear(d_model, d_model), 4)
         self.attn = None
@@ -100,11 +101,12 @@ class MultiHeadedAttention(nn.Module):
             mask = mask.unsqueeze(1)
         nbatches = query.size(0)
 
-        query, key, value = [l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
-             for l, x in zip(self.linears, (query, key, value))]
+        query, key, value = [
+            l(x).view(nbatches, -1, self.h, self.d_k).transpose(1, 2)
+            for l, x in zip(self.linears, (query, key, value))
+        ]
 
-        x, self.attn = attention(query, key, value, mask=mask,
-                                 dropout=self.dropout)
+        x, self.attn = attention(query, key, value, mask=mask, dropout=self.dropout)
 
         x = x.transpose(1, 2).contiguous().view(nbatches, -1, self.h * self.d_k)
         return self.linears[-1](x)
@@ -114,7 +116,9 @@ class PositionwiseFeedForward(nn.Module):
     def __init__(self, d_model, d_ff, dropout=0.1, number=-1, stride_num=-1):
         super(PositionwiseFeedForward, self).__init__()
         self.w_1 = nn.Conv1d(d_model, d_ff, kernel_size=1, stride=1)
-        self.w_2 = nn.Conv1d(d_ff, d_model, kernel_size=3, stride=stride_num[number], padding=1)
+        self.w_2 = nn.Conv1d(
+            d_ff, d_model, kernel_size=3, stride=stride_num[number], padding=1
+        )
 
         self.gelu = nn.ReLU()
 
@@ -129,13 +133,29 @@ class PositionwiseFeedForward(nn.Module):
 
 
 class _TransformerReduce(nn.Module):
-    def __init__(self, n_layers=3, d_model=256, d_ff=512, h=8, length=27, stride_num=None, dropout=0.1):
+    def __init__(
+        self,
+        n_layers=3,
+        d_model=256,
+        d_ff=512,
+        h=8,
+        length=27,
+        stride_num=None,
+        dropout=0.1,
+    ):
         super().__init__()
 
         self.length = length
 
         self.stride_num = stride_num
-        self.model = self.make_model(N=n_layers, d_model=d_model, d_ff=d_ff, h=h, dropout=dropout, length = self.length)
+        self.model = self.make_model(
+            N=n_layers,
+            d_model=d_model,
+            d_ff=d_ff,
+            h=h,
+            dropout=dropout,
+            length=self.length,
+        )
 
     def forward(self, x, mask=None):
         x = self.model(x, mask)
@@ -149,7 +169,9 @@ class _TransformerReduce(nn.Module):
         model_EncoderLayer = []
         for i in range(N):
             ff = PositionwiseFeedForward(d_model, d_ff, dropout, i, self.stride_num)
-            model_EncoderLayer.append(EncoderLayer(d_model, c(attn), c(ff), dropout, self.stride_num, i))
+            model_EncoderLayer.append(
+                EncoderLayer(d_model, c(attn), c(ff), dropout, self.stride_num, i)
+            )
 
         model_EncoderLayer = nn.ModuleList(model_EncoderLayer)
 
@@ -159,24 +181,34 @@ class _TransformerReduce(nn.Module):
 
 
 class StridedTransformer(nn.Module):
-    def __init__(self, num_frame=351, num_joints=17, layers=3, strides=[3, 9, 13], channel=512, d_hid=512):
+    def __init__(
+        self,
+        num_frame=351,
+        num_joints=17,
+        layers=3,
+        strides=[3, 9, 13],
+        channel=512,
+        d_hid=512,
+    ):
         super().__init__()
 
         self.encoder = nn.Sequential(
             nn.Conv1d(2 * num_joints, channel, kernel_size=1),
             nn.BatchNorm1d(channel, momentum=0.1),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.25)
+            nn.Dropout(0.25),
         )
 
         self.Transformer = _TransformerEncoder(
-            depth=layers, embed_dim=channel, mlp_hidden_dim=d_hid, length=num_frame)
-        self.Transformer_reduce = _TransformerReduce(len(strides), channel, d_hid,
-                                                     length=num_frame, stride_num=strides)
+            depth=layers, embed_dim=channel, mlp_hidden_dim=d_hid, length=num_frame
+        )
+        self.Transformer_reduce = _TransformerReduce(
+            len(strides), channel, d_hid, length=num_frame, stride_num=strides
+        )
 
         self.fcn = nn.Sequential(
             nn.BatchNorm1d(channel, momentum=0.1),
-            nn.Conv1d(channel, 3 * num_joints, kernel_size=1)
+            nn.Conv1d(channel, 3 * num_joints, kernel_size=1),
         )
 
         # self.fcn_1 = nn.Sequential(
@@ -186,7 +218,7 @@ class StridedTransformer(nn.Module):
 
     def forward(self, x):
         B, J, C, F = x.shape
-        x = rearrange(x, 'b j c f -> b (j c) f').contiguous()
+        x = rearrange(x, "b j c f -> b (j c) f").contiguous()
 
         x = self.encoder(x)
         x = x.permute(0, 2, 1).contiguous()
@@ -202,6 +234,6 @@ class StridedTransformer(nn.Module):
 
         x = x.permute(0, 2, 1).contiguous()
         x = self.fcn(x)
-        x = rearrange(x, 'b (j c) f -> b 1 j c', j=J).contiguous()
+        x = rearrange(x, "b (j c) f -> b 1 j c", j=J).contiguous()
 
         return x  # , x_VTE

@@ -1,6 +1,7 @@
 import random
 
 from torch.utils.data import Dataset
+from torchvision.transforms.functional import InterpolationMode
 
 
 class _BaseTransform:
@@ -55,6 +56,18 @@ class _KeyTransform(_BaseTransform):
         return d
 
 
+def interpolation2str(i):
+    conversion_d = {
+        InterpolationMode.NEAREST: "nearest",
+        InterpolationMode.BILINEAR: "bilinear",
+        InterpolationMode.BICUBIC: "bicubic",
+        InterpolationMode.BOX: "box",
+        InterpolationMode.HAMMING: "hamming",
+        InterpolationMode.LANCZOS: "lancoz",
+    }
+    return conversion_d[i]
+
+
 class ApplyTransforms(Dataset):
     def __init__(self, base_dataset, initial_transform=None, transforms=None):
         """
@@ -105,3 +118,24 @@ class RandomOrder:
             t = self.transforms[apply_order[idx]]
             d = t(d)
         return d
+
+
+def str2interpolation(s):
+    assert s in [
+        "nearest",
+        "bilinear",
+        "bicubic",
+        "box",
+        "hamming",
+        "lancoz",
+    ], f"Expected key to have one of values \
+                in the list, but got {s}"
+    conversion_d = {
+        "nearest": InterpolationMode.NEAREST,
+        "bilinear": InterpolationMode.BILINEAR,
+        "bicubic": InterpolationMode.BICUBIC,
+        "box": InterpolationMode.BOX,
+        "hamming": InterpolationMode.HAMMING,
+        "lancoz": InterpolationMode.LANCZOS,
+    }
+    return conversion_d[s]

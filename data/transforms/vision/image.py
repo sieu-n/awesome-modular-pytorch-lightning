@@ -5,7 +5,7 @@ import torchvision.transforms.functional as TF
 from PIL import Image
 
 from . import _ImageTransform
-from ._util import str2interpolation
+from ..utils import str2interpolation
 
 
 class TorchvisionTransforms(_ImageTransform):
@@ -141,7 +141,7 @@ class CutOut(_ImageTransform):
         p=0.5,
         cutout_inside=False,
         mask_color=0,
-        **kwargs
+        **kwargs,
     ):
         """
         https://github.com/hysts/pytorch_cutout/blob/ca4711283c7bc797774d486c6c41e06714350ded/dataloader.py#L36

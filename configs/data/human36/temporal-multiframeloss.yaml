@@ -29,13 +29,15 @@ dataset:
           - 9
           - 11
 
-transform:
-  [
+transform: [
     [
       "trn,val",
       [
         { "name": "Create2DProjectionTemporal" },
-        { "name": "RenameKeys", "args": {"mapper": {"temporal_joints": "joint"}}},
+        {
+          "name": "RenameKeys",
+          "args": { "mapper": { "temporal_joints": "joint" } },
+        },
         # TODO
         # reshape (243, 17, 3) -> (17, 3, 243)
         { "name": "WorldToCameraCoord" },
