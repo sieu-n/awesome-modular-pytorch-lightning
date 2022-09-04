@@ -1,17 +1,21 @@
 import numpy as np
 import torch
-import torchvision.transforms as T
+import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from .. import _KeyTransform
+from . import _ImageTransform
 from ._util import str2interpolation
 
 
-class _ImageTransform(_KeyTransform):
-    def __init__(self, *args, **kwargs):
-        self.key = "images"  # set default key
-        super(_ImageTransform, self).__init__(*args, **kwargs)
+class TorchvisionTransforms(_ImageTransform):
+    def __init__(self, name, args={}, *_args, **kwargs):
+        super().__init__(*_args, **kwargs)
+        self.transform_f = getattr(TT, name)(**args)
+        print(f"Found name `{name} from `torchvision.transforms`.")
+
+    def transform(self, d):
+        return self.transform_f(d)
 
 
 class Normalize(_ImageTransform):
@@ -81,7 +85,7 @@ class ColorJitter(_ImageTransform):
         saturation=None,
         hue=None,
     ):
-        self.color_jitter = T.ColorJitter(
+        self.color_jitter = TT.ColorJitter(
             brightness=brightness,
             contrast=contrast,
             saturation=saturation,

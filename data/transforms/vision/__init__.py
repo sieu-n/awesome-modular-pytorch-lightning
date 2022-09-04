@@ -33,6 +33,7 @@ from .pose_lifting import (  # noqa
     WorldToCameraCoord,
 )
 from ._util import (  # noqa
+    _ImageTransform,
     TorchvisionTransforms,
     str2interpolation,
 )
