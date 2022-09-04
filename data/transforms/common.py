@@ -72,12 +72,13 @@ class RemoveKeys(_BaseTransform):
 
 class RenameKeys(_BaseTransform):
     def __init__(self, mapper: dict, *args, **kwargs):
-        super(RemoveKeys, self).__init__(*args, **kwargs)
+        super(RenameKeys, self).__init__(*args, **kwargs)
         self.mapper = mapper
 
     def __call__(self, d):
-        for k, v in self.mapper:
+        for k, v in self.mapper.items():
             d[v] = d.pop(k)
+        return d
 
 
 class CopyKey(_BaseTransform):
@@ -87,6 +88,7 @@ class CopyKey(_BaseTransform):
 
     def __call__(self, d):
         d[self.b] = deepcopy(d[self.a])
+        return d
 
 
 class CollectDataContainer(_KeyTransform):

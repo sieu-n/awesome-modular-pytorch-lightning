@@ -56,16 +56,17 @@ transform: [
           "args": {
             "key": "joint",
             "name": "reshape",
-            "args": {"newshape": ["{const.receptive_field}", "{const.num_joints}", 3]}
+            "args": {"newshape": ["{const.receptive_field}", "{const.num_joints}", 3]},
           }
         },
+        # ToTensor
         { "name": "ToTensor", "args": {
               "key": "joint",
               "dtype": "float",
               # (243, 17, 3) -> (17, 3, 243)
               "channel_axis": [1, 2],
-            } },
-        {
+            } 
+        },
         { "name": "ToTensor", "args": {
               "key": "joint_2d",
               "dtype": "float",

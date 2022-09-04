@@ -1,4 +1,5 @@
 import random
+import traceback
 
 from torch.utils.data import Dataset
 from torchvision.transforms.functional import InterpolationMode
@@ -98,8 +99,13 @@ class ComposeTransforms:
         self.transforms = transforms
 
     def __call__(self, d):
-        for t in self.transforms:
-            d = t(d)
+        for idx, t in enumerate(self.transforms):
+            try:
+                d = t(d)
+            except:  # noqa
+                traceback.print_exc()
+                print(f"Error occured during transformation {idx} / {len(self.transforms)}: {t}")
+                exit()
         return d
 
 
