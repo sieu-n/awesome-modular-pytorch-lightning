@@ -12,7 +12,7 @@ dataloader:
     batch_size: 1024
 
 training:
-  ID: "PoseLiftingTrainer"
+  ID: "MultiFramePoseLiftingTrainer"
 
   epochs: 80
   lr: 0.001

@@ -19,10 +19,6 @@ dataset:
       args:
         subjects:
           - 1
-          - 5
-          - 6
-          - 7
-          - 8
     val:
       args:
         subjects:
@@ -58,6 +54,14 @@ transform: [
           }
         },
         { "name": "CenterAroundJoint" },
+        { "name": "ToTensor", "args": {
+              "key": "joint",
+              "dtype": "float",
+              # (243, 17, 3) -> (17, 3, 243)
+              "channel_axis": [1, 2],
+            } 
+        },
+
       ]
     ],
     [
@@ -67,18 +71,12 @@ transform: [
         { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
+        { "name": "ToTensor", "args": { "key": "joint", "dtype": "float" } },
       ]
     ],
     [
       "trn,val",
       [
-        { "name": "ToTensor", "args": {
-              "key": "joint",
-              "dtype": "float",
-              # (243, 17, 3) -> (17, 3, 243)
-              "channel_axis": [1, 2],
-            } 
-        },
         { "name": "ToTensor", "args": {
               "key": "joint_2d",
               "dtype": "float",

@@ -15,7 +15,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
         self.normalization_mean = torch.tensor(self.const_cfg["normalization_mean"])
         self.normalization_std = torch.tensor(self.const_cfg["normalization_std"])
 
-    def forward(self, x):
+    def forward(self, x, is_train=True):
         reconstruction = self.backbone(x)
         return {
             "joints": reconstruction,
@@ -47,7 +47,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
         x, y = batch["joint_2d"], batch["joint"]
 
-        pred = self(x)
+        pred = self(x, is_train=True)
         reconstruction = pred["joints"]
 
         loss = self.loss_fn(reconstruction, y)
@@ -94,7 +94,7 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
         x, y = batch["joint_2d"], batch["joint"]
 
-        pred = self(x)
+        pred = self(x, is_train=False)
         reconstruction = pred["joints"]
 
         loss = self.loss_fn(reconstruction, y)
@@ -165,6 +165,15 @@ class PoseLiftingTrainer(_BaseLightningTrainer):
 
 
 class MultiFramePoseLiftingTrainer(PoseLiftingTrainer):
+    def forward(self, x, is_train=True):
+        reconstruction = self.backbone(x)
+        if not is_train:
+            # return center frame.
+            reconstruction = reconstruction[..., reconstruction.size(-1) // 2]
+        return {
+            "joints": reconstruction,
+        }
+
     def _training_step(self, batch, batch_idx=0):
         """
         Something like:
@@ -182,41 +191,8 @@ class MultiFramePoseLiftingTrainer(PoseLiftingTrainer):
             }
         }
         """
-        assert "joint_2d" in batch
-        assert "joint" in batch
-        assert "location" in batch
-        assert "meta" in batch
-        assert "idx" in batch
-        assert "camera" in batch
-
-        x, y = batch["joint_2d"], batch["joint"]
-
-        pred = self(x)
-        reconstruction = pred["joints"]
-
-        loss = self.loss_fn(reconstruction, y)
-
-        self.log("step/train_loss", loss)
-
-        # for logging
-        location = batch["location"]
-        res = {
-            "joints_gt_camera": y,
-            "joints_2d": x,
-            "reconstruction_camera": reconstruction,
-            "loss": loss,
-        }
-        if "idx" in batch:
-            res["action_idx"] = batch["idx"]["action_idx"].cpu().numpy()
-        if self.get_decoded:
-            cameras = batch["camera"].data
-
-            res["joints_gt_global"] = self.decode(y.cpu(), location.cpu(), cameras)
-            res["reconstruction_global"] = self.decode(
-                reconstruction.cpu().detach(), location.cpu(), cameras
-            )
-
-        return loss, res
+        assert not self.get_decoded
+        return super()._training_step(batch, batch_idx)
 
 
 class VideoPoseSemisupTrainer(_BaseLightningTrainer):

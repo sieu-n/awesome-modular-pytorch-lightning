@@ -14,7 +14,7 @@ class CenterAroundJoint(_BaseTransform):
         )
         return d
 
-    def _center_around_joint(P, center_joint_idx=0):
+    def _center_around_joint(self, P, center_joint_idx=0):
         """Center 3d points around root joint(hip)
 
         Parameters

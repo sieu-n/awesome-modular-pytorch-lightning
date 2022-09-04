@@ -136,3 +136,14 @@ class NumpyTransform(_KeyTransform):
 
     def transform(self, d):
         return self.transform_f(d)
+
+
+class AssertShape(_KeyTransform):
+    def __init__(self, shape, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.shape = shape
+
+    def transform(self, d):
+        assert d.shape == self.shape, f"Expected shape of `{self.key}` to have \
+            `{self.shape} but found {type(d)} of shape `{d.shape}`."
+        return d
