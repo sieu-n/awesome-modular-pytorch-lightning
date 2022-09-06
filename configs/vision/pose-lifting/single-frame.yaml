@@ -77,7 +77,7 @@ callbacks:
     args:
       name: ModelCheckpoint
       args:
-        monitor: "epoch_val/mpjpe/AVERAGE"
+        monitor: "epoch_val/mpjpe/AVERAGE/AVERAGE"
         mode: "max"
         save_last: True
         save_top_k: 1
