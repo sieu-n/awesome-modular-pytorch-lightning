@@ -1,69 +1,11 @@
 name: "tresnet-gradclip-bs265-isize248-cutout10-TA-ls-FP16"
 
-dataset:
-  trn_size: 9000
-  val_size: 1000
-
-transform:
-  [
-    [
-      "trn,val,pred",
-      [
-        {
-          "name": "TorchTransforms",
-          "args": { "NAME": "Pad", "ARGS": { "padding": [24, 0] } },
-        },
-      ],
-    ],
-    [
-      "trn",
-      [
-        {
-          "name": "CutOut",
-          "args": { "mask_size": 0.1, "num_masks": 10, "p": 0.5 },
-        },
-
-        {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
-        },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
-        {
-          "name": "RandomRotation",
-          "args": { "degrees": [0, 360], "interpolation": "bilinear" },
-        },
-
-        {
-          "name": "TrivialAugmentWide",
-          "args": { "num_magnitude_bins": 31, "interpolation": "bilinear" },
-        },
-      ],
-    ],
-    ["trn,val", [{ "name": "ClassificationLabelEncoder" }]],
-
-    [
-      "trn,val,pred",
-      [
-        { "name": "ImageToTensor", "args": {} },
-        {
-          "name": "Normalize",
-          "args":
-            {
-              "mean": [0.25252014, 0.12918881, 0.12411932],
-              "std": [0.24537923, 0.17195621, 0.17269008],
-            },
-        },
-      ],
-    ],
-  ]
-
-# use backbone from https://github.com/Alibaba-MIIL/ImageNet21K
 model:
   backbone:
     TYPE: "timm"
-    ID: "resnet50"
+    ID: "tresnet_m_miil_in21k"
     cfg:
-      pretrained: False
+      pretrained: True
     out_features: 2048
   modules:
     classifier:
@@ -77,10 +19,8 @@ model:
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
-
-dataloader:
-  base_dataloader:
-    num_workers: 4 # 4 -> ~43s, 8 -> ~48s
+      args:
+        label_smoothing: 0.1
 
 callbacks:
   ModelCheckpoint:
@@ -99,15 +39,11 @@ callbacks:
       args:
         logging_interval: "epoch"
 
-trainer:
-  precision: 16
-  gradient_clip_val: 1.0
-
 training:
   ID: "ClassificationTrainer"
 
   epochs: 200
-  lr: 0.1
+  lr: 0.01
   batch_size: 256
   optimizer: "sgd"
   optimizer_cfg:

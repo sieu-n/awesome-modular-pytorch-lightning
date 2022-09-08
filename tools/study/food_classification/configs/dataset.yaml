@@ -1,0 +1,120 @@
+debug:
+  view_train_augmentation:
+    save_to: "vis/training_samples.png"
+
+    normalization_mean: "{const.normalization_mean}"
+    normalization_std: "{const.normalization_std}"
+
+    subplot_dim: [4, 4]
+    plot_size: 5
+    resize_to: [256, 256] # resize so class text is displayed.
+  network_summary:
+    input_shape: [3, 256, 256]
+
+dataset:
+  # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
+  dataset_base_cfg:
+    name: "TorchvisionDataset"
+    args:
+      name: "ImageFolder"
+      args:
+        root: "/content/drive/MyDrive/data/kt/train"
+  initial_transform:
+    name: "TupleToClassificationData"
+  mapping:
+    # split train / val images. validation set consists of 5 out of 200 images per class.
+    [
+      ["trn", [{ "name": "KFoldValidation", "args": {
+                "subset": "trn",
+                "fold_idx": 0,
+                "max_folds": 5,
+      }}]], 
+      ["val", [{ "name": "KFoldValidation", "args": {
+                "subset": "val",
+                "fold_idx": 0,
+                "max_folds": 5,
+      }}]]
+    ]
+transform:
+  [
+    [
+      "trn",
+      [
+        {
+          "name": "TorchTransforms",
+          "args": { "NAME": "RandomHorizontalFlip" },
+        },
+      ],
+    ],
+    [
+      "trn,val",
+      [
+        { "name": "ImageToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+            },
+        },
+      ],
+    ],
+  ]
+# other useful configs.
+const:
+  task: "image classification"
+  normalization_mean: [0.485, 0.456, 0.406]
+  normalization_std: [0.229, 0.224, 0.225]
+  num_classes: 50
+  label_map:
+    - "꼬리곰탕"
+    - "나시고랭"
+    - "도토리묵"
+    - "생연어"
+    - "닭살채소볶음"
+    - "비빔밥"
+    - "바지락조개국"
+    - "곱창구이"
+    - "삼선자장면"
+    - "새우볶음밥"
+    - "돼지고기구이"
+    - "닭개장"
+    - "닭칼국수"
+    - "단무지"
+    - "미소된장국"
+    - "달걀말이"
+    - "닭가슴살"
+    - "미역초무침"
+    - "달걀볶음밥"
+    - "고구마맛탕"
+    - "떡국"
+    - "보리밥"
+    - "누룽지"
+    - "감자탕"
+    - "거봉포도"
+    - "불고기"
+    - "마늘쫑무침"
+    - "달걀비빔밥"
+    - "바나나우유"
+    - "김치찌개"
+    - "깻잎나물볶음"
+    - "가자미전"
+    - "꽈리고추무침"
+    - "군만두"
+    - "뼈해장국"
+    - "고구마"
+    - "도가니탕"
+    - "미소장국"
+    - "딸기"
+    - "돼지감자"
+    - "마카롱"
+    - "새우매운탕"
+    - "매운탕"
+    - "떡갈비"
+    - "굴전"
+    - "두부고추장조림"
+    - "두부"
+    - "레드와인"
+    - "간장게장"
+    - "고등어찌개"
