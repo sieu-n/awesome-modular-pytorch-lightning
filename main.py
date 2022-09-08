@@ -123,7 +123,7 @@ class Experiment:
         # since they refernece the entire dataset and can change the length of the dataset as
         # opposed to transforms that are applied to single samples.
         datasets = self.apply_dataset_mapping(
-            mapping_cfg=dataset_cfg.get("mapping", {}), subset_list=subsets
+            datasets, mapping_cfg=dataset_cfg.get("mapping", {}), subset_list=subsets
         )
 
         # plot samples after data augmentation

@@ -1,6 +1,7 @@
 import catalog
 import torch
 import wandb
+import warnings
 from sklearn.metrics import ConfusionMatrixDisplay
 from utils.experiment import print_to_end
 from utils.hook import Hook
@@ -32,6 +33,7 @@ class _BaseLightningTrainer(_LightningModule):
         if "backbone" in model_cfg:
             backbone_cfg = model_cfg["backbone"]
             print(f"(1/6) Building backbone model: {backbone_cfg['name']}")
+            warnings.warn("Backbone should be specified as a module.")
             self.backbone = catalog.backbone.build(
                 name=backbone_cfg["name"],
                 args=backbone_cfg.get("args", {}),
@@ -48,14 +50,21 @@ class _BaseLightningTrainer(_LightningModule):
         # 2. build modules
         if "modules" in model_cfg:
             print("(2/6) Building modules attached to the backbone model...")
-            modules = model_cfg["modules"]
-            for module_name, module_cfg in modules.items():
-                head_module = catalog.modules.build(
+            modules_cfg = model_cfg["modules"]
+            for module_name, module_cfg in modules_cfg.items():
+                _module = catalog.modules.build(
                     name=module_cfg["name"],
                     file=module_cfg.get("file", None),
-                    **module_cfg.get("args", {}),
+                    args=module_cfg.get("args", {}),
                 )
-                setattr(self, module_name, head_module)
+                # load pre-trained weights from url / filepath
+                if "weights" in module_cfg:
+                    print(f"Using pretrained backbone: {module_cfg['weights']}")
+                    _module = load_model_weights(
+                        model=_module, **module_cfg["weights"]
+                    )
+
+                setattr(self, module_name, _module)
         else:
             print("(2/6) `model.modules` is not specified. Skipping building modules")
 
