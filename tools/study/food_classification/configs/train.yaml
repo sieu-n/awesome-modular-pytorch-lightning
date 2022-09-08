@@ -1,4 +1,4 @@
-name: "tresnet-gradclip-bs265-isize248-cutout10-TA-ls-FP16"
+name: "resnet50-bs265-sgd-lr0.01"
 
 model:
   backbone:
@@ -105,17 +105,5 @@ debug:
 
 # other useful configs.
 wandb:
-  project: "cow_grade_prediction_challenge_2022"
-  group: "tresnetm-ablation"
-
-const:
-  task: "image classification"
-  normalization_mean: [0.25252014, 0.12918881, 0.12411932]
-  normalization_std: [0.24537923, 0.17195621, 0.17269008]
-
-  label_map:
-    - "1++"
-    - "1+"
-    - "1"
-    - "2"
-    - "3"
+  project: "kt_food_classification_challenge_2022"
+  group: "baseline"

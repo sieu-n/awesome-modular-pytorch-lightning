@@ -4,6 +4,7 @@ import pickle
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
+import warnings
 
 import catalog
 import yaml
@@ -18,34 +19,27 @@ from .verbose import set_verbose
 ########################################################################
 # Find transforms and build dataset.
 ########################################################################
-def build_dataset_mapping(mapping_cfg, const_cfg):
+def apply_dataset_mapping(base_datasets, mapping_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
-    mappings = {}
     for subsets, d_configs in deepcopy(mapping_cfg):
-        t = []
-        # for each element of transforms,
+        # for each element of dataset mappings,
         for d_config in d_configs:
+            # 1. build components of dataset mapping
             f_name, kwargs = d_config["name"], d_config.get("args", {})
             # find transform from name
             data_mapper = catalog.dataset_mapping.get(f_name)
             # build transform using arguments.
             kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
-            t.append(lambda base_dataset: data_mapper(base_dataset, **kwargs))
 
-        for subset in subsets.split(","):
-            # add single transform
-            mappings[subset] = mappings.get(subset, []) + t
+            # 2. apply dataset mapping to each subset specified.
+            for subset in subsets.split(","):
+                if subset in base_datasets:
+                    base_datasets[subset] = data_mapper(base_datasets[subset], **kwargs)
+                else:
+                    warnings.warn(f"{subset} was found in dataset mappings but no {subset} of \
+                                    dataset was not provided.")
 
-    def group(mapping_list):
-        def apply_mapping(base_dataset):
-            dataset = base_dataset
-            for build_mapping in mapping_list:
-                dataset = build_mapping(dataset)
-            return dataset
-
-        return apply_mapping
-
-    return {subset: group(mappings[subset]) for subset in mappings.keys()}
+    return base_datasets
 
 
 def build_transforms(transform_cfg, const_cfg):

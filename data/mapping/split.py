@@ -23,6 +23,7 @@ class ClassBalanceTrainValSplit(RemapIndices):
 
     def __init__(self, base_dataset, subset, count, seed=42, const_cfg=None):
         rng = random.Random(seed)
+        self.base_dataset = base_dataset
         dataset_size = len(base_dataset)
 
         print("Loading dataset for splitting validation set based on class type.")
@@ -70,6 +71,7 @@ class TrainValSplit(RemapIndices):
         indices=None,
         const_cfg=None,
     ):
+        self.base_dataset = base_dataset
         if indices is not None:
             self.indices = indices
             return
@@ -119,6 +121,7 @@ class KFoldValidation(RemapIndices):
         const_cfg=None,
     ):
         assert 0 <= fold_idx < max_folds
+        self.base_dataset = base_dataset
         dataset_size = len(base_dataset)
         val_indices = self.select_random_indices(
             dataset_size, fold_idx, max_folds, seed=seed

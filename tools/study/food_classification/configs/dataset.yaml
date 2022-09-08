@@ -19,6 +19,9 @@ dataset:
       name: "ImageFolder"
       args:
         root: "/content/drive/MyDrive/data/kt/train"
+  dataset_subset_cfg:
+    trn: {}
+    val: {}
   initial_transform:
     name: "TupleToClassificationData"
   mapping:
