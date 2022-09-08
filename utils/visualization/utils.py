@@ -1,5 +1,5 @@
 import os
-
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms.functional as TF
@@ -38,6 +38,7 @@ def plot_sample(
 def plot_samples_from_dataset(
     dataset,
     task,
+    random_indices=True,
     subplot_dim=(5, 5),
     save_to="results/samples_vis.png",
     root_dir="",
@@ -49,6 +50,7 @@ def plot_samples_from_dataset(
     plot_size=3,
     preprocess_f=None,
     label_map=None,
+    seed=42,
     **kwargs,
 ):
     """
@@ -66,8 +68,13 @@ def plot_samples_from_dataset(
 
     w, h = subplot_dim
     plt.figure(figsize=(w * plot_size, h * plot_size))
-    for i in range(1, w * h + 1):
-        data = dataset[i - 1]
+
+    if random_indices:
+        idx_iter = random.Random(seed).sample(range(len(dataset)), w * h)
+    else:
+        idx_iter = range(w * h)
+    for idx, i in idx_iter:
+        data = dataset[i]
 
         if preprocess_f is not None:
 
@@ -77,11 +84,11 @@ def plot_samples_from_dataset(
                 data["images"], resize_to, interpolation=TF.InterpolationMode.NEAREST
             )
         if unnormalize:
-            data = UnNormalize(normalization_mean, normalization_std)(data)
+            data = UnNormalize(normalization_mean, normalization_std, key=None)(data)
         if image_tensor_to_numpy:
             data["images"] = data["images"].permute(1, 2, 0).numpy().astype(np.uint8)
 
-        plt.subplot(w, h, i)
+        plt.subplot(w, h, idx)
         plot_image = plot_sample(
             task, data=data, mode="return", label_map=label_map, **kwargs
         )

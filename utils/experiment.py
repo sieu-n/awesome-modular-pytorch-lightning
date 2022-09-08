@@ -118,10 +118,12 @@ def initialize_environment(
         verbose = cfg.get("VERBOSE", "DEFAULT")
         debug_mode = "TRUE" if ("DEBUG_MODE" in cfg and cfg["DEBUG_MODE"]) else "FALSE"
 
-    # set os.environ
+    # set experiment name.
     set_verbose(verbose)
     timestamp = get_timestamp()
     experiment_name = f"{base_name}-{timestamp}"
+    exp_dir = f"results/{experiment_name}"
+
     os.environ["DEBUG_MODE"] = debug_mode
 
     if cfg:
@@ -135,7 +137,10 @@ def initialize_environment(
         print("")
         print("Final config after merging:", pretty_cfg)
 
-        filename = f"configs/logs/{experiment_name}"
+        cfg_log_dir = f"{exp_dir}/configs"
+        if not os.path.exists(cfg_log_dir):
+            os.makedirs(cfg_log_dir)
+        filename = f"{cfg_log_dir}/cfg"
 
         # pkl should be guaranteed to work.
         print(f"Saving config to: {filename}.pkl")
@@ -150,7 +155,7 @@ def initialize_environment(
         with open(filename + ".json", "w") as file:
             json.dump(cfg, file)
 
-    return experiment_name
+    return experiment_name, exp_dir
 
 
 def makedir(path):

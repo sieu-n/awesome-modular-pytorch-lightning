@@ -35,8 +35,7 @@ class Experiment:
 
     def initialize_environment(self, cfg):
         print_to_end("=")
-        self.experiment_name = _initialize_environment(cfg)
-        self.exp_dir = f"results/{self.experiment_name}"
+        self.experiment_name, self.exp_dir = _initialize_environment(cfg)
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
         # initialize seed

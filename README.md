@@ -198,6 +198,9 @@ these cascading config files are baked at the start of `train.py`. Configs in fr
   - Optimizers
   - Metrics / loss
 
+### Tip for reproducing experiments
+
+The results of experiments such as model checkpoints, logs, and the config file used to run the experiment is logged under `awesome-modular-pytorch-lightning/results/{exp_name}`. In particular, the `results/{exp_name}/configs/cfg.yaml` file which contains the config file can be useful when reproducing experiments or rechecking hyperparameters.
 
 # List of algorithms implemented
 

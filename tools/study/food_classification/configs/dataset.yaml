@@ -7,7 +7,6 @@ debug:
 
     subplot_dim: [4, 4]
     plot_size: 5
-    resize_to: [256, 256] # resize so class text is displayed.
   network_summary:
     input_shape: [3, 256, 256]
 
