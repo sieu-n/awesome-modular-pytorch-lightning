@@ -73,7 +73,6 @@ debug:
     is_xywh: False
     bbox_unnormalization: False
     preprocess_f: convert-mmdetbbox
-    label_map: "{const.label_map}"
 
 callbacks:
   ModelCheckpoint:

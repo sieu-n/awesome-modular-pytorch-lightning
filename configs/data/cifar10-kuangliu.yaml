@@ -8,7 +8,6 @@ debug:
     subplot_dim: [4, 4]
     plot_size: 5
     resize_to: [256, 256] # resize so class text is displayed.
-    label_map: "{const.label_map}"
   network_summary:
     input_shape: [3, 32, 32]
 
