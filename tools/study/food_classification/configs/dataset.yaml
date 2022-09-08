@@ -7,6 +7,7 @@ debug:
 
     subplot_dim: [4, 4]
     plot_size: 5
+    label_map: "{const.label_map}"
   network_summary:
     input_shape: [3, 256, 256]
 
