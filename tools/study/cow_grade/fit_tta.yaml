@@ -10,8 +10,8 @@ transform:
       "trn,val,pred",
       [
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "Pad", "ARGS": { "padding": [24, 0] } },
+          "name": "TorchvisionTransform",
+          "args": { "name": "Pad", "args": { "padding": [24, 0] } },
         },
       ],
     ],

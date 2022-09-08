@@ -1,3 +1,5 @@
+import warnings
+
 import catalog
 import torch
 import wandb
@@ -31,9 +33,9 @@ class _BaseLightningTrainer(_LightningModule):
             )
         # 1. build backbone
         if "backbone" in model_cfg:
+            warnings.warn("backbone will be deprecated.", DeprecationWarning)
             backbone_cfg = model_cfg["backbone"]
             print(f"(1/6) Building backbone model: {backbone_cfg['name']}")
-            warnings.warn("Backbone should be specified as a module.")
             self.backbone = catalog.backbone.build(
                 name=backbone_cfg["name"],
                 args=backbone_cfg.get("args", {}),
@@ -180,26 +182,29 @@ class _BaseLightningTrainer(_LightningModule):
             metric_data["metric"].reset()
 
             log_key = f"epoch_{subset}/{metric_name}"
-            # special metrics with specific names are treated differently.
-            if metric_name == "confusion_matrix":
-                if wandb.run is not None:
-                    # log confusion matrix as image to wandb.
-                    disp = ConfusionMatrixDisplay(
-                        confusion_matrix=res.numpy(),
-                        display_labels=self.const_cfg.get("label_map", None),
-                    )
-                    disp.plot()
-                    wandb.log({log_key: disp.figure_})
-                else:
-                    self.log(log_key, res)
+            self.log(name=log_key, value=res, metric_name=metric_name)
+
+    def log(self, name, value, metric_name=None, *args, **kwargs):
+        # special metrics with specific names are treated differently.
+        if metric_name == "confusion_matrix":
+            if wandb.run is not None:
+                # log confusion matrix as image to wandb.
+                disp = ConfusionMatrixDisplay(
+                    confusion_matrix=value.numpy(),
+                    display_labels=self.const_cfg.get("label_map", None),
+                )
+                disp.plot()
+                wandb.log({name: disp.figure_})
             else:
-                # typical metrics
-                if isinstance(res, dict):
-                    for k in list(res.keys()):
-                        res[f"{log_key}/{k}"] = res.pop(k)
-                    self.log_dict(res)
-                else:
-                    self.log(log_key, res)
+                super().log(name, value, *args, **kwargs)
+        else:
+            # typical metrics
+            if isinstance(value, dict):
+                for k in list(value.keys()):
+                    value[f"{name}/{k}"] = value.pop(k)
+                self.log_dict(value, *args, **kwargs)
+            else:
+                super().log(name, value, *args, **kwargs)
 
     def init(self):
         raise NotImplementedError()
@@ -250,12 +255,12 @@ class _BaseLightningTrainer(_LightningModule):
         self.update_metrics("trn", res)
         return loss
 
-    def validation_step(self, batch, batch_idx):
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
         res = self.evaluate(batch, "val")
         self.update_metrics("val", res)
         return res
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch, batch_idx, dataloader_idx=0):
         if self.is_tta_enabled:
             # apply test-time augmentation if specified.
             pred, res = self.TTA_module(batch)

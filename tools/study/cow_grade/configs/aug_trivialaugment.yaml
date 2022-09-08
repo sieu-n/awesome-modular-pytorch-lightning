@@ -4,21 +4,24 @@ transform:
       "trn",
       [
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
         },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomRotation", "ARGS": { "degrees": [0, 360] } },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomVerticalFlip" },
+        },
+        {
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomRotation", "args": { "degrees": [0, 360] } },
         },
 
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
-              "NAME": "TrivialAugmentWide",
-              "ARGS": { "num_magnitude_bins": 31 },
+              "name": "TrivialAugmentWide",
+              "args": { "num_magnitude_bins": 31 },
             },
         },
       ],

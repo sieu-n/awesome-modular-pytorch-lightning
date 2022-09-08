@@ -1,8 +1,11 @@
+from typing import Iterable
+
 import catalog.metric
+import numpy as np
+import torch
 import torchmetrics
 from torch import nn
-
-from typing import Iterable
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
 
 
 def TorchMetric(name, args={}):
@@ -57,3 +60,25 @@ class SubsetMetric(torchmetrics.Metric):
     def reset(self):
         for m in self.metrics:
             m.reset()
+
+
+class MMDet2TorchMetricmAP(MeanAveragePrecision):
+    def update(self, pred_boxes, pred_scores, target_boxes, target_labels):
+        labels = []
+        for idx in range(len(pred_scores)):
+            labels += [idx] * len(pred_scores[idx])
+        super(MMDet2TorchMetricmAP, self).update(
+            preds=[
+                dict(
+                    boxes=torch.tensor(np.concatenate(pred_boxes)),
+                    scores=torch.tensor(np.concatenate(pred_scores)),
+                    labels=torch.tensor(labels),
+                )
+            ],
+            target=[
+                dict(
+                    boxes=target_boxes,
+                    labels=target_labels - 1,
+                )
+            ],
+        )

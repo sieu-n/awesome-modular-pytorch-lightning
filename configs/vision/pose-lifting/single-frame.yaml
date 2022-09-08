@@ -16,6 +16,7 @@ training:
 
   epochs: 200
   lr: 0.001
+  get_decoded: false
 
   optimizer: "adamw"
   optimizer_cfg:
@@ -39,12 +40,12 @@ training:
       update:
         value: "loss"
     # compute action-wise MPJPE loss
-    mpjpe:
+    mpjpe/GT:
       when: "val,test"
       name: SubsetMetric
       args:
         name: MPJPE
-        num_subsets: 17
+        num_subsets: 15
         get_avg: True
 
       update:
@@ -55,6 +56,20 @@ training:
     #pmpjpe:
     # protocol 3
     #nmpjpe:
+
+    # compute metrics for 2d joints from pose estimator
+    mpjpe/2DEstimator:
+      when: "val,test"
+      name: SubsetMetric
+      args:
+        name: MPJPE
+        num_subsets: 15
+        get_avg: True
+
+      update:
+        reconstructed_joints: "pose_estimator_reconstruction_global"
+        gt_joints: "joints_gt_global"
+        subset: "action_idx"
 
 callbacks:
   ModelCheckpoint:
@@ -74,15 +89,16 @@ callbacks:
         logging_interval: "epoch"
 
 model:
-  backbone:
-    name: "PoseLiftingSingleFrameMLP"
-    args:
-      num_features: 1024
-      dropout: 0.5
-      num_layers: 2
-      num_blocks: 2
-      num_joints: "{const.num_joints}"
   modules:
+    backbone:
+      name: "PoseLiftingSingleFrameMLP"
+      args:
+        num_features: 1024
+        dropout: 0.5
+        num_layers: 2
+        num_blocks: 2
+        num_joints: "{const.num_joints}"
+
     loss_fn:
       name: "MSELoss"
 wandb:
