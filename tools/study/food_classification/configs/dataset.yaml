@@ -44,8 +44,8 @@ transform:
       "trn",
       [
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
         },
       ],
     ],

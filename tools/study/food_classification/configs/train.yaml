@@ -15,14 +15,12 @@ model:
       input: "output"
       args:
         reduction: "gap"
-        in_features: 2048
+        in_features: "{model.modules.backbone.out_features}"
         dropout: 0.2
-        num_classes: 5
+        num_classes: "{const.num_classes}"
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
-      args:
-        label_smoothing: 0.1
 
 callbacks:
   ModelCheckpoint:
@@ -68,16 +66,6 @@ training:
         name: "MeanMetric"
       update:
         value: "cls_loss"
-    cohens_kappa:
-      when: "trn,val,test"
-      name: TorchMetric
-      args:
-        name: "CohenKappa"
-        args:
-          num_classes: 5
-      update:
-        preds: "logits"
-        target: "y"
     confusion_matrix:
       interval: { "trn": 50 }
       when: "trn,val,test"
@@ -85,7 +73,7 @@ training:
       args:
         name: "ConfusionMatrix"
         args:
-          num_classes: 5
+          num_classes: "{const.num_classes}"
       update:
         preds: "logits"
         target: "y"

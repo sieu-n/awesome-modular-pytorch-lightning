@@ -1,7 +1,9 @@
 model:
-  backbone:
-    TYPE: "timm"
-    ID: "resnet18"
-    cfg:
-      pretrained: False
-    out_features: 512
+  modules:
+    backbone:
+      name: "TimmNetwork"
+      args:
+        name: "resnet18"
+        args:
+          pretrained: false
+      out_features: 512

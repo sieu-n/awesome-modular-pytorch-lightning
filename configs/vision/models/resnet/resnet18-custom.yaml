@@ -1,5 +1,4 @@
 model:
   backbone:
-    TYPE: "custom"
-    ID: "ResNet18"
+    name: "ResNet18"
     out_features: 512

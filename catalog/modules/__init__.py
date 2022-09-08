@@ -16,5 +16,5 @@ def get(name, file=None):
     )
 
 
-def build(name, file=None, *args, **kwargs):
-    return get(name, file)(*args, **kwargs)
+def build(name, file=None, args={}, *_args, **kwargs):
+    return get(name, file)(*_args, **args, **kwargs)

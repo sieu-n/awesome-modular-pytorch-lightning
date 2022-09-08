@@ -1,7 +1,9 @@
 model:
-  backbone:
-    TYPE: "timm"
-    ID: "tresnet_m"
-    cfg:
-      pretrained: False
-    out_features: 2048
+  modules:
+    backbone:
+      name: "TimmNetwork"
+      args:
+        name: "tresnet_m"
+        args:
+          pretrained: false
+      out_features: 2048
