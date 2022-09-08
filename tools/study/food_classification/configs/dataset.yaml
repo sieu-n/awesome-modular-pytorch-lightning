@@ -35,7 +35,8 @@ dataset:
                 "subset": "val",
                 "fold_idx": 0,
                 "max_folds": 5,
-      }}]]
+      }}]],
+      ["trn,val", [{ "name": "PrecomputeDataset" }]],
     ]
 transform:
   [

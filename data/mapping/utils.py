@@ -12,5 +12,8 @@ class PrecomputeDataset(Dataset):
     def __init__(self, base_dataset, const_cfg=None):
         self.memory = [base_dataset[x] for x in tqdm(range(len(base_dataset)))]
 
+    def __getitem__(self, idx):
+        return self.memory[idx]
+
     def __len__(self):
         return len(self.memory)
