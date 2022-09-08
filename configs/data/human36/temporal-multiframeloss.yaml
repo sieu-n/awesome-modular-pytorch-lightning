@@ -39,23 +39,29 @@ transform: [
           "args": { "mapper": { "temporal_joints": "joint" } },
         },
         # reshape (243, 17, 3) -> (17 * 243, 3)
-        { 
+        {
           "name": "NumpyTransform",
-          "args": {
-            "key": "joint",
-            "name": "reshape",
-            "args": {"newshape": [-1, 3]},
-          }
+          "args":
+            {
+              "key": "joint",
+              "name": "reshape",
+              "args": { "newshape": [-1, 3] },
+            },
         },
         { "name": "WorldToCameraCoord" },
         # reshape (17 * 243, 3) -> (243, 17, 3)
-        { 
-          "name": "NumpyTransform", 
-          "args": {
-            "key": "joint",
-            "name": "reshape",
-            "args": {"newshape": ["{const.receptive_field}", "{const.num_joints}", 3]},
-          }
+        {
+          "name": "NumpyTransform",
+          "args":
+            {
+              "key": "joint",
+              "name": "reshape",
+              "args":
+                {
+                  "newshape":
+                    ["{const.receptive_field}", "{const.num_joints}", 3],
+                },
+            },
         },
         { "name": "CenterAroundJoint" },
         { "name": "ToTensor", "args": {
@@ -63,10 +69,8 @@ transform: [
               "dtype": "float",
               # (243, 17, 3) -> (17, 3, 243)
               "channel_axis": [1, 2],
-            } 
-        },
-
-      ]
+            } },
+      ],
     ],
     [
       "val",
@@ -76,46 +80,14 @@ transform: [
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
         { "name": "ToTensor", "args": { "key": "joint", "dtype": "float" } },
-      ]
+      ],
     ],
-    [
-      "trn,val",
-      [
-        { "name": "ToTensor", "args": {
+    ["trn,val", [{ "name": "ToTensor", "args": {
               "key": "joint_2d",
               "dtype": "float",
               # (243, 17, 2) -> (17, 2, 243)
               "channel_axis": [1, 2],
-            } },
-        {
-          "name": "MultipleKeyTransform",
-          "args":
-            {
-              "keys": ["camera", "meta"],
-              "name": "CollectDataContainer",
-              "args": { "cpu_only": True },
-            },
-        },
-        {
-          "name": "FastNormalize",
-          "args":
-            {
-              "mean": "{const.normalization_mean}",
-              "std": "{const.normalization_std}",
-              "key": "joint",
-            },
-        },
-        {
-          "name": "FastNormalize",
-          "args":
-            {
-              "mean": "{const.normalization_mean_2d}",
-              "std": "{const.normalization_std_2d}",
-              "key": "joint_2d",
-            },
-        },
-      ],
-    ],
+            } }, { "name": "MultipleKeyTransform", "args": { "keys": ["camera", "meta"], "name": "CollectDataContainer", "args": { "cpu_only": True } } }, { "name": "FastNormalize", "args": { "mean": "{const.normalization_mean}", "std": "{const.normalization_std}", "key": "joint" } }, { "name": "FastNormalize", "args": { "mean": "{const.normalization_mean_2d}", "std": "{const.normalization_std_2d}", "key": "joint_2d" } }]],
   ]
 
 # other useful configs.

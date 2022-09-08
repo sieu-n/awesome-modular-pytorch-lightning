@@ -1,9 +1,10 @@
 import os
 import random
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms.functional as TF
-import warnings
 from catalog.transforms import MMdetDataset2Torchvision, UnNormalize
 from torchvision.transforms import Compose
 from utils.experiment import makedir
@@ -92,17 +93,23 @@ def plot_samples_from_dataset(
 
         # warn about range of values.
         if data["images"].min() < -0.1:
-            warnings.warn(f"Input image is expected to have positive pixel values but has minimum \
-                    value of {data['images'].min()}. Are you sure you unnormalized the data?")
+            warnings.warn(
+                f"Input image is expected to have positive pixel values but has minimum \
+                    value of {data['images'].min()}. Are you sure you unnormalized the data?"
+            )
         if not is_01:
             if data["images"].max() < 1.1:
-                warnings.warn(f"Input image is expected to be in range [0, 255] but has maximum \
-                    value of {data['images'].max()}.")
+                warnings.warn(
+                    f"Input image is expected to be in range [0, 255] but has maximum \
+                    value of {data['images'].max()}."
+                )
             data["images"] = data["images"].astype(np.uint8)
         else:
             if data["images"].max() > 1.1:
-                warnings.warn(f"Input image is expected to be in range [0, 1] but has maximum \
-                    value of {data['images'].max()}.")
+                warnings.warn(
+                    f"Input image is expected to be in range [0, 1] but has maximum \
+                    value of {data['images'].max()}."
+                )
 
         plt.subplot(w, h, idx + 1)
         plot_image = plot_sample(

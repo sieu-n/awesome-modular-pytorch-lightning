@@ -1,7 +1,4 @@
 from .noise import InstanceIndependantNoise  # noqa
-from .utils import (  # noqa
-    PrecomputeDataset,
-)
 from .split import (  # noqa
     ClassBalanceTrainValSplit,
     KFoldValidation,
@@ -9,3 +6,4 @@ from .split import (  # noqa
     SubsetDataset,
     TrainValSplit,
 )
+from .utils import PrecomputeDataset  # noqa

@@ -1,1 +1,1 @@
-from .precompute import PrecomputedDataset  # noqa
+from .preload import PreloadedDataset  # noqa

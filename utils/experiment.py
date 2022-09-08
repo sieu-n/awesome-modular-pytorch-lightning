@@ -1,10 +1,10 @@
 import json
 import os
 import pickle
+import warnings
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
-import warnings
 
 import catalog
 import yaml
@@ -29,15 +29,18 @@ def apply_dataset_mapping(base_datasets, mapping_cfg, const_cfg):
             # find transform from name
             data_mapper = catalog.dataset_mapping.get(f_name)
             # build transform using arguments.
-            kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
+            # feed const data such as label map.
+            kwargs["const_cfg"] = const_cfg
 
             # 2. apply dataset mapping to each subset specified.
             for subset in subsets.split(","):
                 if subset in base_datasets:
                     base_datasets[subset] = data_mapper(base_datasets[subset], **kwargs)
                 else:
-                    warnings.warn(f"{subset} was found in dataset mappings but no {subset} of \
-                                    dataset was not provided.")
+                    warnings.warn(
+                        f"{subset} was found in dataset mappings but no {subset} of \
+                                    dataset was not provided."
+                    )
 
     return base_datasets
 
@@ -53,7 +56,8 @@ def build_transforms(transform_cfg, const_cfg):
             # find transform from name
             transform_f = catalog.transforms.get(f_name)
             # build transform using arguments.
-            kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
+            # feed const data such as label map.
+            kwargs["const_cfg"] = const_cfg
             t.append(transform_f(**kwargs))
 
         for subset in subsets.split(","):

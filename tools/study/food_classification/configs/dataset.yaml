@@ -13,7 +13,7 @@ debug:
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "PrecomputedDataset"
+    name: "PreloadedDataset"
     args:
       name: "TorchvisionDataset"
       args:
@@ -28,16 +28,24 @@ dataset:
   mapping:
     # split train / val images. validation set consists of 5 out of 200 images per class.
     [
-      ["trn", [{ "name": "KFoldValidation", "args": {
-                "subset": "trn",
-                "fold_idx": 0,
-                "max_folds": 5,
-      }}]], 
-      ["val", [{ "name": "KFoldValidation", "args": {
-                "subset": "val",
-                "fold_idx": 0,
-                "max_folds": 5,
-      }}]],
+      [
+        "trn",
+        [
+          {
+            "name": "KFoldValidation",
+            "args": { "subset": "trn", "fold_idx": 0, "max_folds": 5 },
+          },
+        ],
+      ],
+      [
+        "val",
+        [
+          {
+            "name": "KFoldValidation",
+            "args": { "subset": "val", "fold_idx": 0, "max_folds": 5 },
+          },
+        ],
+      ],
     ]
 transform:
   [

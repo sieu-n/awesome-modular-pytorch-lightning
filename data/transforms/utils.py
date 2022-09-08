@@ -104,7 +104,9 @@ class ComposeTransforms:
                 d = t(d)
             except:  # noqa
                 traceback.print_exc()
-                print(f"Error occured during transformation {idx} / {len(self.transforms)}: {t}")
+                print(
+                    f"Error occured during transformation {idx} / {len(self.transforms)}: {t}"
+                )
                 exit()
         return d
 

@@ -1,6 +1,8 @@
 import random
+
 from torch.utils.data import Dataset
 from tqdm import tqdm
+
 """
 Datasets that simply remap indices and sample data in a different order.
 """
@@ -142,7 +144,7 @@ class KFoldValidation(RemapIndices):
         random.Random(seed).shuffle(indices)
         idx_start = int(dataset_size * fold_idx / max_folds)
         idx_end = int(dataset_size * (fold_idx + 1) / max_folds)
-        return indices[idx_start: idx_end]
+        return indices[idx_start:idx_end]
 
 
 class SubsetDataset(RemapIndices):

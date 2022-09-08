@@ -4,7 +4,7 @@ from tqdm import tqdm
 import catalog
 
 
-class PrecomputedDataset(Dataset):
+class PreloadedDataset(Dataset):
     """
     Precompute the entire dataset and cache it. This is useful for speeding up
     training when the entire dataset can be cached. This can be used as a wrapper around

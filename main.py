@@ -7,8 +7,8 @@ import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
-from utils.experiment import apply_transforms
 from utils.experiment import apply_dataset_mapping as _apply_dataset_mapping
+from utils.experiment import apply_transforms
 from utils.experiment import build_initial_transform as _build_initial_transform
 from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
@@ -254,10 +254,7 @@ class Experiment:
     ):
         if subset_list:
             # constrain subsets when `subset_list` is specified.
-            base_datasets = {
-                subset: base_datasets[subset]
-                for subset in subset_list
-            }
+            base_datasets = {subset: base_datasets[subset] for subset in subset_list}
         mapped_dataset = _apply_dataset_mapping(
             base_datasets,
             mapping_cfg=mapping_cfg,

@@ -1,8 +1,7 @@
 # deprecated.
-from ..modules.backbone import *  # noqa
-
 # utils
 from .._get import _get
+from ..modules.backbone import *  # noqa
 
 
 def get(name):

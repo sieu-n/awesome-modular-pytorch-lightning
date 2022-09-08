@@ -34,7 +34,6 @@ dataloader:
   base_dataloader:
     batch_size: 256
 
-
 training:
   ID: "ClassificationTrainer"
 
@@ -68,7 +67,7 @@ training:
       update:
         value: "cls_loss"
     confusion_matrix:
-      interval: { "val": 5  }
+      interval: { "val": 5 }
       when: "val,test"
       name: TorchMetric
       args:
