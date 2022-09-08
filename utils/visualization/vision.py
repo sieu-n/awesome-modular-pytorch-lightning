@@ -20,7 +20,7 @@ def plot_image_classification(images, labels=None, label_map=None, **kwargs):
     if labels is not None:
         label = int(labels)
         # convert label to correct str id if specified.
-        if label_map and label in label_map:
+        if label_map is not None:
             label = label_map[label]
         image = cv2.putText(
             image,
@@ -76,7 +76,7 @@ def plot_object_detection(
             obj_class = int(obj_classes[obj_idx])
             obj_bbox = list(obj_bboxes[obj_idx])
 
-            if label_map and obj_class in label_map:
+            if label_map is not None:
                 # convert label to correct str id if specified.
                 obj_class = label_map[obj_class]
             if bbox_unnormalization:
