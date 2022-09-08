@@ -6,6 +6,9 @@ from data.dataset.vision import (  # noqa
     MMPoseDataset,
     TorchvisionDataset,
 )
+from data.dataset.utils import (  # noqa
+    PrecomputedDataset,
+)
 
 # utils
 from ._get import _get

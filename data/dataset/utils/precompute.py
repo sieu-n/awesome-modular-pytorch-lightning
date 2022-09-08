@@ -1,15 +1,21 @@
 from torch.utils.data import Dataset
 from tqdm import tqdm
 
+import catalog
 
-class PrecomputeDataset(Dataset):
+
+class PrecomputedDataset(Dataset):
     """
     Precompute the entire dataset and cache it. This is useful for speeding up
-    training when the entire dataset can be cached. Be aware to apply data
-    augmentations after applying this dataset.
+    training when the entire dataset can be cached. This can be used as a wrapper around
+    the base dataset in the config file.
     """
 
-    def __init__(self, base_dataset, const_cfg=None):
+    def __init__(self, name, args={}):
+        base_dataset = catalog.dataset.build(
+            name=name,
+            args=args,
+        )
         print("`PrecomputeDataset` is loading memory.")
         self.memory = [base_dataset[x] for x in tqdm(range(len(base_dataset)))]
 

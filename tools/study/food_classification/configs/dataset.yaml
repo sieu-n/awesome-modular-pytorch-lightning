@@ -13,11 +13,13 @@ debug:
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "TorchvisionDataset"
+    name: "PrecomputedDataset"
     args:
-      name: "ImageFolder"
+      name: "TorchvisionDataset"
       args:
-        root: "/content/drive/MyDrive/data/kt/train"
+        name: "ImageFolder"
+        args:
+          root: "/content/drive/MyDrive/data/kt/train"
   dataset_subset_cfg:
     trn: {}
     val: {}
@@ -36,7 +38,6 @@ dataset:
                 "fold_idx": 0,
                 "max_folds": 5,
       }}]],
-      ["trn,val", [{ "name": "PrecomputeDataset" }]],
     ]
 transform:
   [
