@@ -4,7 +4,7 @@ import warnings
 
 import torchvision
 import torchvision.transforms.functional as TF
-from ..utils import _BaseTransform
+from data.transforms import _BaseTransform
 from torchvision.transforms.functional import InterpolationMode
 
 from ..utils import str2interpolation

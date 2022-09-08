@@ -6,7 +6,7 @@ import numpy as np
 import torch
 from utils.data_container import DataContainer
 
-from .utils import _BaseTransform, _KeyTransform
+from . import _BaseTransform, _KeyTransform
 
 
 class ToTensor(_KeyTransform):
