@@ -11,7 +11,7 @@ dataset:
   dataset_base_cfg:
     name: "Human36AnnotationTemporalDataset"
     args:
-      receptive_field: 243
+      receptive_field: "{const.receptive_field}"
       base_dir: "./human36m"
 
   dataset_subset_cfg:
@@ -29,33 +29,64 @@ dataset:
           - 9
           - 11
 
-transform:
-  [
+transform: [
     [
-      "trn,val",
+      "trn",
+      [
+        { "name": "Create2DProjectionTemporal" },
+        {
+          "name": "RenameKeys",
+          "args": { "mapper": { "temporal_joints": "joint" } },
+        },
+        # reshape (243, 17, 3) -> (17 * 243, 3)
+        { 
+          "name": "NumpyTransform",
+          "args": {
+            "key": "joint",
+            "name": "reshape",
+            "args": {"newshape": [-1, 3]},
+          }
+        },
+        { "name": "WorldToCameraCoord" },
+        # reshape (17 * 243, 3) -> (243, 17, 3)
+        { 
+          "name": "NumpyTransform", 
+          "args": {
+            "key": "joint",
+            "name": "reshape",
+            "args": {"newshape": ["{const.receptive_field}", "{const.num_joints}", 3]},
+          }
+        },
+        { "name": "CenterAroundJoint" },
+        { "name": "ToTensor", "args": {
+              "key": "joint",
+              "dtype": "float",
+              # (243, 17, 3) -> (17, 3, 243)
+              "channel_axis": [1, 2],
+            } 
+        },
+
+      ]
+    ],
+    [
+      "val",
       [
         { "name": "Create2DProjectionTemporal" },
         { "name": "RemoveKeys", "args": { "keys": ["temporal_joints"] } },
         { "name": "WorldToCameraCoord" },
         { "name": "CenterAroundJoint" },
-        {
-          "name": "ToTensor",
-          "args":
-            {
-              "key": "joint",
-              "dtype": "float",
-            },
-        },
-        {
-          "name": "ToTensor",
-          "args":
-            {
+        { "name": "ToTensor", "args": { "key": "joint", "dtype": "float" } },
+      ]
+    ],
+    [
+      "trn,val",
+      [
+        { "name": "ToTensor", "args": {
               "key": "joint_2d",
               "dtype": "float",
-              # (243, 17, 3) -> (17, 3, 243)
+              # (243, 17, 2) -> (17, 2, 243)
               "channel_axis": [1, 2],
-            },
-        },
+            } },
         {
           "name": "MultipleKeyTransform",
           "args":

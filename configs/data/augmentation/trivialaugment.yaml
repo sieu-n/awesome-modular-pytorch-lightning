@@ -6,21 +6,21 @@ transform: [
       [
         # trivial augmentation is implemented inside torchvision.transforms!!
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
-              "NAME": "TrivialAugmentWide",
-              "ARGS": { "num_magnitude_bins": 31 },
+              "name": "TrivialAugmentWide",
+              "args": { "num_magnitude_bins": 31 },
             },
         },
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransform",
           "args":
-            { "NAME": "RandomCrop", "ARGS": { "size": 32, "padding": 4 } },
+            { "name": "RandomCrop", "args": { "size": 32, "padding": 4 } },
         },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
         },
       ],
     ],

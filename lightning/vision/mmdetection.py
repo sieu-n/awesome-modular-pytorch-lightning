@@ -61,7 +61,9 @@ class MMDetectionTrainer(_BaseLightningTrainer):
 
         # log step losses
         self.log_step_results(losses)
-        return total_loss, losses
+        res = total_loss
+
+        return res, losses
 
     def evaluate(self, sample, stage=None):
         """
@@ -72,10 +74,18 @@ class MMDetectionTrainer(_BaseLightningTrainer):
         send_datacontainers_to_device(data=sample, device=self.device)
         sample = unpack_datacontainers(sample)
         # assert a bunch of stuff
-        assert sample["img"].size(0) == 1 and sample["img"].size(1) == 3
-
-        _, losses = self.compute_loss(**sample)
-        return losses
+        assert len(sample["img"]) == 1 and sample["img"][0].size(1) == 3
+        pred = self.MMDET_model.forward_test(
+            imgs=sample["img"],
+            img_metas=sample["img_metas"],
+        )
+        res = {
+            "pred_bbox": [p[:, :4] for p in pred[0]],
+            "pred_score": [p[:, 4] for p in pred[0]],
+            "target_bbox": sample["gt_bboxes"][0][0],
+            "target_label": sample["gt_labels"][0][0],
+        }
+        return res
 
     def compute_loss(self, img, img_metas, gt_bboxes, gt_labels, *args, **kwargs):
         """

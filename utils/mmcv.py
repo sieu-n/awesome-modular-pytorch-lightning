@@ -10,14 +10,16 @@ def unpack_datacontainers(datacontainers):
     Recursively unpack all `mmcv.parallel.DataContainer` objects from a dictionary.
     """
     if isinstance(datacontainers, DataContainer):
-        return datacontainers.data
+        return unpack_datacontainers(datacontainers.data)
 
-    if isinstance(datacontainers, dict):
+    elif isinstance(datacontainers, dict):
         for k, v in datacontainers.items():
-            if isinstance(v, DataContainer):
-                datacontainers[k] = v.data
-            elif isinstance(v, dict):
-                datacontainers[k] = unpack_datacontainers(v)
+            datacontainers[k] = unpack_datacontainers(v)
+        return datacontainers
+
+    elif isinstance(datacontainers, list):
+        for idx in range(len(datacontainers)):
+            datacontainers[idx] = unpack_datacontainers(datacontainers[idx])
         return datacontainers
 
     else:

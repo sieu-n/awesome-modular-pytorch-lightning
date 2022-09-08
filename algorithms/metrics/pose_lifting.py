@@ -12,12 +12,21 @@ class MPJPE(torchmetrics.Metric):
         self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
 
     def update(self, reconstructed_joints, gt_joints):
+        """
+        Compute the distance between batch of 3d joint.
+
+        Parameters
+        ----------
+        reconstructed_joints: Tensor
+            batch_size x num_joints x 3
+        gt_joints: Tensor
+            batch_size x num_joints x 3
+        """
         self.total += len(reconstructed_joints)
 
-        dist_across = list(range(1, reconstructed_joints.ndim))
-        self.dist += (
-            (reconstructed_joints - gt_joints).pow(2).sum(dim=dist_across).sqrt().sum()
-        )
+        dist = (reconstructed_joints - gt_joints).pow(2).sum(dim=2).sqrt()
+        # add sum of MPJPE distance.
+        self.dist += dist.sum(dim=0).mean()
 
     def compute(self):
         return self.dist / self.total

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import catalog
 import yaml
-from data.transforms.base import ApplyTransforms, ComposeTransforms
+from data.transforms.utils import ApplyTransforms, ComposeTransforms
 
 from .verbose import set_verbose
 
@@ -172,7 +172,10 @@ def get_timestamp():
 
 
 def print_to_end(char="#", max_len=100):
-    rows, columns = os.popen("stty size", "r").read().split()
+    try:
+        rows, columns = os.popen("stty size", "r").read().split()
+    except ValueError:
+        return
     columns = max(int(columns), max_len)
     spaces = char * (columns // len(char))
     print(spaces)

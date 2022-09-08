@@ -1,7 +1,8 @@
 import random
+import traceback
 
-import catalog
 from torch.utils.data import Dataset
+from torchvision.transforms.functional import InterpolationMode
 
 
 class _BaseTransform:
@@ -26,19 +27,19 @@ class _BaseTransform:
         raise NotImplementedError
 
 
-class _KeyTransform:
+class _KeyTransform(_BaseTransform):
     """
     Apply transform to certain key. Implement transformation by overriding `transform`.
     """
 
-    def __init__(self, key=None, const_cfg=None):
-        if const_cfg is None:
-            print(
-                f"`const_cfg` was not specified while initializing `{self}`. This might lead to unexpected behaviour."
-            )
+    def __init__(self, key=None, *args, **kwargs):
+        super(_KeyTransform, self).__init__(*args, **kwargs)
+        if key is not None:
+            self.key = key
+        elif hasattr(self, "key"):  # default key is defined
+            pass
         else:
-            self.const_cfg = const_cfg
-        self.key = key
+            self.key = None
 
     def transform(self):
         raise NotImplementedError
@@ -56,16 +57,16 @@ class _KeyTransform:
         return d
 
 
-class MultipleKeyTransform(_BaseTransform):
-    def __init__(self, keys, name, args={}, *_args, **kwargs):
-        super(MultipleKeyTransform, self).__init__(*_args, **kwargs)
-        self.ts = [catalog.transforms.build(name=name, args=args, key=k) for k in keys]
-        self.keys = keys
-
-    def __call__(self, d):
-        for t in self.ts:
-            d = t(d)
-        return d
+def interpolation2str(i):
+    conversion_d = {
+        InterpolationMode.NEAREST: "nearest",
+        InterpolationMode.BILINEAR: "bilinear",
+        InterpolationMode.BICUBIC: "bicubic",
+        InterpolationMode.BOX: "box",
+        InterpolationMode.HAMMING: "hamming",
+        InterpolationMode.LANCZOS: "lancoz",
+    }
+    return conversion_d[i]
 
 
 class ApplyTransforms(Dataset):
@@ -98,8 +99,13 @@ class ComposeTransforms:
         self.transforms = transforms
 
     def __call__(self, d):
-        for t in self.transforms:
-            d = t(d)
+        for idx, t in enumerate(self.transforms):
+            try:
+                d = t(d)
+            except:  # noqa
+                traceback.print_exc()
+                print(f"Error occured during transformation {idx} / {len(self.transforms)}: {t}")
+                exit()
         return d
 
 
@@ -118,3 +124,24 @@ class RandomOrder:
             t = self.transforms[apply_order[idx]]
             d = t(d)
         return d
+
+
+def str2interpolation(s):
+    assert s in [
+        "nearest",
+        "bilinear",
+        "bicubic",
+        "box",
+        "hamming",
+        "lancoz",
+    ], f"Expected key to have one of values \
+                in the list, but got {s}"
+    conversion_d = {
+        "nearest": InterpolationMode.NEAREST,
+        "bilinear": InterpolationMode.BILINEAR,
+        "bicubic": InterpolationMode.BICUBIC,
+        "box": InterpolationMode.BOX,
+        "hamming": InterpolationMode.HAMMING,
+        "lancoz": InterpolationMode.LANCZOS,
+    }
+    return conversion_d[s]

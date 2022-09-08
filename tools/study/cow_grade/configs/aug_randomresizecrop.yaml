@@ -4,13 +4,16 @@ transform:
       "trn",
       [
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
         },
-        { "name": "TorchTransforms", "args": { "NAME": "RandomVerticalFlip" } },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomRotation", "ARGS": { "degrees": [0, 360] } },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomVerticalFlip" },
+        },
+        {
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomRotation", "args": { "degrees": [0, 360] } },
         },
         {
           "name": "RandomResizedCropAndInterpolation",
@@ -24,11 +27,11 @@ transform:
         },
 
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
-              "NAME": "ColorJitter",
-              "ARGS": { "brightness": 0.4, "contrast": 0.4, "saturation": 0.4 },
+              "name": "ColorJitter",
+              "args": { "brightness": 0.4, "contrast": 0.4, "saturation": 0.4 },
             },
         },
       ],

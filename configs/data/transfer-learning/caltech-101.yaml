@@ -9,7 +9,7 @@
 
 dataset:
   MODE: "torchvision"
-  NAME: "Caltech101"
+  name: "Caltech101"
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     root: "./Caltech101"

@@ -21,7 +21,7 @@ if __name__ == "__main__":
     cfg = read_configs(args.configs)
     if args.name is not None:
         cfg["name"] = args.name
-    if args.group:
+    if args.group is not None:
         cfg["wandb"]["group"] = args.group
     if args.offline:
         cfg["wandb"]["offline"] = True
@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     # train
     save_path = "checkpoints/model_state_dict.pth"
-    if not args.root_dir:
+    if args.root_dir is None:
         root_dir = os.path.join(
             f"{experiment.exp_dir}/checkpoints", experiment.experiment_name
         )

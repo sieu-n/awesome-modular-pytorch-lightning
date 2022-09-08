@@ -1,17 +1,21 @@
 import numpy as np
 import torch
-import torchvision.transforms as T
+import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from ..base import _KeyTransform
-from .util import str2interpolation
+from . import _ImageTransform
+from ..utils import str2interpolation
 
 
-class _ImageTransform(_KeyTransform):
-    def __init__(self, key="images", *args, **kwargs):
-        super(_ImageTransform, self).__init__(*args, **kwargs)
-        self.key = key
+class TorchvisionTransform(_ImageTransform):
+    def __init__(self, name, args={}, *_args, **kwargs):
+        super().__init__(*_args, **kwargs)
+        self.transform_f = getattr(TT, name)(**args)
+        print(f"Found name `{name} from `torchvision.transforms`.")
+
+    def transform(self, d):
+        return self.transform_f(d)
 
 
 class Normalize(_ImageTransform):
@@ -81,7 +85,7 @@ class ColorJitter(_ImageTransform):
         saturation=None,
         hue=None,
     ):
-        self.color_jitter = T.ColorJitter(
+        self.color_jitter = TT.ColorJitter(
             brightness=brightness,
             contrast=contrast,
             saturation=saturation,
@@ -137,7 +141,7 @@ class CutOut(_ImageTransform):
         p=0.5,
         cutout_inside=False,
         mask_color=0,
-        **kwargs
+        **kwargs,
     ):
         """
         https://github.com/hysts/pytorch_cutout/blob/ca4711283c7bc797774d486c6c41e06714350ded/dataloader.py#L36
@@ -197,7 +201,7 @@ class CutOut(_ImageTransform):
 class ImageToTensor(_ImageTransform):
     """
     torchvision.transform is intended for 2d / 3d images. General conversion
-    should be done using `data.transforms.common.ToTensor` instead.
+    should be done using `data.transforms.ToTensor` instead.
     """
 
     def transform(self, image):

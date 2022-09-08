@@ -1,0 +1,97 @@
+dataloader:
+  trn:
+    batch_size: 64
+  val:
+    batch_size: 32
+  test:
+    batch_size: 32
+
+training:
+  ID: "MMPoseTrainer"
+
+  epochs: 200
+  lr: 0.0005
+
+  optimizer: "adam"
+  optimizer_cfg:
+    lr: "{training.lr}"
+
+  lr_warmup:
+    total_epoch: 3
+  lr_scheduler:
+    name: "cosine"
+    args:
+      T_max: "{training.epochs}"
+    cfg:
+      interval: "epoch"
+
+model:
+  mm_model:
+    backbone:
+      extra:
+        stage1:
+          block: BOTTLENECK
+          num_blocks:
+            - 4
+          num_branches: 1
+          num_channels:
+            - 64
+          num_modules: 1
+        stage2:
+          block: BASIC
+          num_blocks:
+            - 4
+            - 4
+          num_branches: 2
+          num_channels:
+            - 32
+            - 64
+          num_modules: 1
+        stage3:
+          block: BASIC
+          num_blocks:
+            - 4
+            - 4
+            - 4
+          num_branches: 3
+          num_channels:
+            - 32
+            - 64
+            - 128
+          num_modules: 4
+        stage4:
+          block: BASIC
+          num_blocks:
+            - 4
+            - 4
+            - 4
+            - 4
+          num_branches: 4
+          num_channels:
+            - 32
+            - 64
+            - 128
+            - 256
+          num_modules: 3
+      in_channels: 3
+      type: HRNet
+    keypoint_head:
+      extra:
+        final_conv_kernel: 1
+      in_channels: 32
+      loss_keypoint:
+        type: JointsMSELoss
+        use_target_weight: true
+      num_deconv_layers: 0
+      out_channels: "{const.num_joints}"
+      type: TopdownHeatmapSimpleHead
+    pretrained:
+      https://download.openmmlab.com/mmpose/pretrain_models/hrnet_w32-36af842e.pth
+      https://download.openmmlab.com/mmpose/top_down/hrnet/hrnet_w32_h36m_256x256-d3206675_20210621.pth
+    test_cfg:
+      flip_test: true
+      modulate_kernel: 11
+      post_process: default
+      shift_heatmap: true
+    train_cfg: {}
+    type: TopDown

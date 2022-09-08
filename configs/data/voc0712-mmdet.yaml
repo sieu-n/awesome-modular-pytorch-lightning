@@ -43,7 +43,6 @@ dataset:
             - type: LoadImageFromFile
             - type: LoadAnnotations
               with_bbox: true
-
             - flip: false
               img_scale: "tuple({const.img_scale})"
               transforms:

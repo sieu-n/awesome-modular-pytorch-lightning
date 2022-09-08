@@ -10,7 +10,7 @@
 
 dataset:
   MODE: "torchvision"
-  NAME: "DTD"
+  name: "DTD"
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
     root: "./DTD"

@@ -1,3 +1,4 @@
+einops
 matplotlib
 numpy
 opencv_python

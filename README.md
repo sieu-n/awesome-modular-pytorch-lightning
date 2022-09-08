@@ -3,21 +3,36 @@
 
 What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 - Ever wanted to train `tresnetm50` models and apply TTA(test-time augmentation) or SWA(stocahstic weight averaging) to enhance performance? Apply sharpness-aware minimization to semantic segmentation models and measure the difference in calibration? LightCollections is a framework that utilize and connects existing libraries so experiments can be run effortlessly.
-- LightCollection aims at extending the features of `pytorch-lightning`. We aim to provide training procedures of various subtasks in Computer Vision with a collection of `LightningModule` and utilities for easily using model architecture, metrics, dataset, and training algorithms.
-- This repository utilize many amazing and robust and open-source projects such as `timm`, `torchmetrics`, and more. Currently, the following frameworks are integrated into `LightCollections` and can be easily applied through the config files:
+- Although many popular repositories provide great implementations of algorithms, they are often fragmented and tedious to use in cooperation. LightCollection wraps many existing repositories into components of `pytorch-lightning`. We aim to provide training procedures of various subtasks in Computer Vision with a collection of `LightningModule` and utilities for easily using model architecture, metrics, dataset, and training algorithms.
+- The components can be used through our system or simply imported from outside to be used in your `pytorch` or `pytorch-lightning` project. Currently, the following frameworks are integrated into `LightCollections`:
   - `torchvision.models` for models, `torchvision.transforms` for transforms, optimizers and learning rate schedules from `pytorch`.
   - Network architecture and weights from `timm`.
   - Object detection frameworks and techniques from [`mmdetection`](https://github.com/open-mmlab/mmdetection)
+  - Keypoint detection(pose estimation) frameworks and techniques from [`mmpose`](https://github.com/open-mmlab/mmpose)
   - `inagenet21k` [pretrained weights](https://github.com/Alibaba-MIIL/ImageNet21K) and feature to load model weights from url / `.pth` file.
   - `TTAch` for test-time augmentation.
-  - `torchmetrics` for metrics.
+  - Metrics implemented in `torchmetrics`.
   - WIP & future TODO:
     - Data augmentation from `albumentations`
     - Semantic segmentation models and weights from `mmsegmentation`
 
+A number of algorithms and research papers are also adopted into our framework. Please refer to the examples below for more information.
+
 # Quickstart
 
+```
+%cd /content
+!git clone https://github.com/krenerd/awesome-modular-pytorch-lightning
+%cd awesome-modular-pytorch-lightning
+
+!pip install -r requirements.txt -q 
+# (optional) use `wandb` to log progress.
+!wandb login
+```
+
 ## Running experiments with `train.py`
+
+After installing required packages, you can run the following experiments on COLAB.
 
 - CIFAR10 image classification with ResNet18.
 ```shell
@@ -32,7 +47,9 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
 
 - Transfer learning experiments on Stanford Dogs dataset using TResNet-M
 ```shell
+# uncomment when using TResNet models, this takes quite long
 !pip install git+https://github.com/mapillary/inplace_abn.git@v1.0.12 -q
+
 !python train.py --name TResNetM-StanfordDogs --config \
     configs/data/transfer-learning/training/colab-modification.yaml \
     configs/data/transfer-learning/training/random-init.yaml \
@@ -44,7 +61,7 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/utils/train.yaml
 ```
 
-- `FasterRCNN-FPN` on `voc0712` object detection dataset (COLAB)
+- Object detection based on `FasterRCNN-FPN` and `mmdetection` on `voc0712` dataset.
 ```shell
 # refer to: https://mmcv.readthedocs.io/en/latest/get_started/installation.html
 # install dependencies: (use cu113+torch1.12 because colab has CUDA 11.3)
@@ -75,6 +92,37 @@ What is `modular-pytorch-Lightning-Collections⚡`(LightCollections⚡️) for?
     configs/device/gpu.yaml \
     configs/utils/wandb.yaml \
     configs/utils/train.yaml
+```
+
+- 2D Pose estimation based on `HRNet` and `mmdetection` in `MPII` dataset.
+```shell
+# train HRNet pose estimation on MPII
+# refer to: https://mmcv.readthedocs.io/en/latest/get_started/installation.html
+# install dependencies: (use cu113+torch1.12 because colab has CUDA 11.3)
+# install mmcv-full thus we could use CUDA operators
+!pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.12.0/index.html
+
+# Install mmdetection
+!rm -rf mmpose
+!git clone https://github.com/open-mmlab/mmpose.git
+%cd mmpose
+!pip install -e .
+
+# clone MPL
+%cd ..
+
+# setup voc07+12 dataset
+!python tools/download_dataset.py --dataset-name mpii --save-dir data/mpii --delete --unzip
+
+# run experiment
+!python train.py --name MPII-HRNet32 --config \
+    configs/vision/pose/mmpose/hrnet_w32_256x256.yaml \
+    configs/vision/pose/mmpose/mmpose-base.yaml \
+    configs/data/pose-2d/mpii-hrnet.yaml \
+    configs/device/gpu.yaml \
+    configs/utils/wandb.yaml \
+    configs/utils/train.yaml
+
 ```
 
 - Supervised VideoPose3D 3D-pose estimation on `Human3.6M` dataset
@@ -234,8 +282,8 @@ transform: [
             },
         },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "RandomHorizontalFlip" },
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
         },
         # more data augmentation (rand augment, auto augment, ...)
       ],
@@ -249,8 +297,8 @@ transform: [
           "args": { "size": [256, 256], "interpolation": "bilinear" },
         },
         {
-          "name": "TorchTransforms",
-          "args": { "NAME": "CenterCrop", "ARGS": { "size": [224, 224] } },
+          "name": "TorchvisionTransform",
+          "args": { "name": "CenterCrop", "args": { "size": [224, 224] } },
         },
         # more data augmentation (rand augment, auto augment, ...)
       ],
@@ -282,11 +330,11 @@ transform: [
 transform:
 ...
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransform",
           "args":
             { 
-              "NAME": "RandAugment",
-              "ARGS": { "num_ops": 2, "magnitude": 9 } 
+              "name": "RandAugment",
+              "args": { "num_ops": 2, "magnitude": 9 } 
             },
         },
 ...
@@ -301,11 +349,11 @@ Refer to: `configs/algorithms/data_augmentation/randaugment.yaml`
 transform:
 ...
         {
-          "name": "TorchTransforms",
+          "name": "TorchvisionTransform",
           "args":
             {
-              "NAME": "TrivialAugmentWide",
-              "ARGS": { "num_magnitude_bins": 31 },
+              "name": "TrivialAugmentWide",
+              "args": { "num_magnitude_bins": 31 },
             },
         },
 ...

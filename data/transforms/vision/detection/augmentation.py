@@ -2,7 +2,7 @@ import random
 
 import torch
 import torchvision.transforms.functional as TF
-from data.transforms.base import _BaseTransform
+from data.transforms import _BaseTransform
 from utils.bbox import (
     normalize_bbox,
     unnormalize_bbox,
