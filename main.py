@@ -14,7 +14,7 @@ from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
 from utils.logging import create_logger
-from utils.visualization.utils import plot_samples_from_dataset
+from utils.visualization import plot_samples_from_dataset
 
 
 class Experiment:

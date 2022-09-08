@@ -3,6 +3,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms.functional as TF
+import warnings
 from catalog.transforms import MMdetDataset2Torchvision, UnNormalize
 from torchvision.transforms import Compose
 from utils.experiment import makedir
@@ -19,7 +20,7 @@ preprocessor_factory = {
 
 
 def plot_sample(
-    task, data, mode="save", savedir="results/example.png", label_map=None, **kwargs
+    data, task, mode="save", savedir="results/example.png", label_map=None, **kwargs
 ):
     get_image = function_for_plotting[task]
     image = get_image(label_map=label_map, **data, **kwargs)
@@ -43,6 +44,7 @@ def plot_samples_from_dataset(
     save_to="results/samples_vis.png",
     root_dir="",
     image_tensor_to_numpy=True,
+    is_01=True,
     unnormalize=False,
     normalization_mean=(0.5, 0.5, 0.5),
     normalization_std=(0.5, 0.5, 0.5),
@@ -73,7 +75,7 @@ def plot_samples_from_dataset(
         idx_iter = random.Random(seed).sample(range(len(dataset)), w * h)
     else:
         idx_iter = range(w * h)
-    for idx, i in idx_iter:
+    for idx, i in enumerate(idx_iter):
         data = dataset[i]
 
         if preprocess_f is not None:
@@ -86,11 +88,25 @@ def plot_samples_from_dataset(
         if unnormalize:
             data = UnNormalize(normalization_mean, normalization_std, key=None)(data)
         if image_tensor_to_numpy:
-            data["images"] = data["images"].permute(1, 2, 0).numpy().astype(np.uint8)
+            data["images"] = data["images"].permute(1, 2, 0).numpy()
 
-        plt.subplot(w, h, idx)
+        # warn about range of values.
+        if data["images"].min() < -0.1:
+            warnings.warn(f"Input image is expected to have positive pixel values but has minimum \
+                    value of {data['images'].min()}. Are you sure you unnormalized the data?")
+        if not is_01:
+            if data["images"].max() < 1.1:
+                warnings.warn(f"Input image is expected to be in range [0, 255] but has maximum \
+                    value of {data['images'].max()}.")
+            data["images"] = data["images"].astype(np.uint8)
+        else:
+            if data["images"].max() > 1.1:
+                warnings.warn(f"Input image is expected to be in range [0, 1] but has maximum \
+                    value of {data['images'].max()}.")
+
+        plt.subplot(w, h, idx + 1)
         plot_image = plot_sample(
-            task, data=data, mode="return", label_map=label_map, **kwargs
+            data=data, task=task, mode="return", label_map=label_map, **kwargs
         )
         plt.imshow(plot_image)
         plt.axis("off")
