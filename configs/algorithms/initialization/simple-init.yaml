@@ -1,0 +1,9 @@
+# simple weight initialization using normal distribution.
+callbacks:
+  Initialization:
+    name: WeightInitialization
+    args:
+      mode: normal
+      mean: 0
+      var: 1.0
+      bias: False
