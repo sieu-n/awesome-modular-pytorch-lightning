@@ -1,7 +1,6 @@
+import catalog
 from torch.utils.data import Dataset
 from tqdm import tqdm
-
-import catalog
 
 
 class PreloadedDataset(Dataset):
