@@ -32,13 +32,13 @@ callbacks:
 
 dataloader:
   base_dataloader:
-    batch_size: 256
+    batch_size: 128
 
 training:
   ID: "ClassificationTrainer"
 
-  epochs: 200
-  lr: 0.01
+  epochs: 50
+  lr: 0.1
   optimizer: "sgd"
 
   optimizer_cfg:
