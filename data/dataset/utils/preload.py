@@ -15,7 +15,7 @@ class PreloadedDataset(Dataset):
             name=name,
             args=args,
         )
-        print("`PrecomputeDataset` is loading memory.")
+        print("`PreloadedDataset` is loading memory.")
         self.memory = [base_dataset[x] for x in tqdm(range(len(base_dataset)))]
 
     def __getitem__(self, idx):
