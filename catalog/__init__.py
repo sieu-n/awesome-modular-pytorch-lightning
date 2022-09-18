@@ -1,4 +1,5 @@
 from . import (  # noqa
+    TTA_layers,
     TTA_modules,
     backbone,
     callbacks,

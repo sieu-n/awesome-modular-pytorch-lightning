@@ -1,8 +1,14 @@
 dataset:
   dataset_base_cfg:
-    download: False
+    args:
+      args:
+        download: False
   dataset_subset_cfg:
     trn:
-      download: False
+      args:
+        args:
+          download: False
     val:
-      download: False
+      args:
+        args:
+          download: False
