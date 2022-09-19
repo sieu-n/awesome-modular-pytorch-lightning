@@ -45,7 +45,7 @@ training:
     lr: "{training.lr}"
     momentum: 0.9
     nesterov: True
-    weight_decay: "0.0003"
+    weight_decay: 0.0003
 
   lr_scheduler:
     name: "cosine"
