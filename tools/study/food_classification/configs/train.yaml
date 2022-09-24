@@ -66,17 +66,6 @@ training:
         name: "MeanMetric"
       update:
         value: "cls_loss"
-    confusion_matrix:
-      interval: { "val": 5 }
-      when: "val,test"
-      name: TorchMetric
-      args:
-        name: "ConfusionMatrix"
-        args:
-          num_classes: "{const.num_classes}"
-      update:
-        preds: "logits"
-        target: "y"
     accuracy:
       when: "trn,val,test"
       name: TorchMetric
@@ -92,5 +81,5 @@ debug:
 
 # other useful configs.
 wandb:
-  project: "kt_food_classification_challenge_2022"
+  project: "devchal_2022_final"
   group: "baseline"
