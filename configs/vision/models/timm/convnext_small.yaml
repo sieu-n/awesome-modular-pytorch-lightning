@@ -1,0 +1,9 @@
+model:
+  modules:
+    backbone:
+      name: "TimmNetwork"
+      args:
+        name: "convnext_small"
+        args:
+          pretrained: false
+      out_features: 768

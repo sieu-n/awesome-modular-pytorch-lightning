@@ -22,11 +22,13 @@ dataset:
     trn:
       args:
         args:
-          root: "./Food_dataset/trn"
+          args:
+            root: "./Food_dataset/train"
     val:
       args:
         args:
-          root: "./Food_dataset/val"
+          args:
+            root: "./Food_dataset/val"
   initial_transform:
     name: "TupleToClassificationData"
 transform:

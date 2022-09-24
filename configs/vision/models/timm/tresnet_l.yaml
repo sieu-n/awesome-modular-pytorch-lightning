@@ -1,0 +1,9 @@
+model:
+  modules:
+    backbone:
+      name: "TimmNetwork"
+      args:
+        name: "tresnet_l"
+        args:
+          pretrained: false
+      out_features: 2432

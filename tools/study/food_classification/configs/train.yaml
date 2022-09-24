@@ -37,7 +37,7 @@ dataloader:
 training:
   ID: "ClassificationTrainer"
 
-  epochs: 50
+  epochs: 400
   lr: 0.1
   optimizer: "sgd"
 
@@ -45,7 +45,7 @@ training:
     lr: "{training.lr}"
     momentum: 0.9
     nesterov: True
-    weight_decay: 0.0003
+    weight_decay: 0.0
 
   lr_scheduler:
     name: "cosine"
