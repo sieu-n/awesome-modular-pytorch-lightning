@@ -1,5 +1,4 @@
-transform: 
-  [
+transform: [
     [
       "trn,val",
       [
@@ -7,7 +6,7 @@ transform:
           "name": "Resize",
           "args": { "size": [224, 224], "interpolation": "bilinear" },
         },
-      ]
+      ],
     ],
 
     [
@@ -57,7 +56,6 @@ transform:
     [
       "trn,val",
       [
-        
         { "name": "ImageToTensor", "args": {} },
         {
           "name": "Normalize",

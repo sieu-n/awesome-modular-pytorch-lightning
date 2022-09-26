@@ -1,1 +1,1 @@
-from . import classification, fasterrcnn  # noqa F401
+from .classification import ClassificationHead, MLDecoderClassificationHead  # noqa F401

@@ -1,6 +1,5 @@
 import pytorch_lightning as pl
 
-
 """
 # USE `trainer.estimated_stepping_batches` instead! - https://pytorch-lightning.readthedocs.io/en/stable/api/
 # pytorch_lightning.trainer.trainer.Trainer.html#pytorch_lightning.trainer.trainer.Trainer.estimated_stepping_batches

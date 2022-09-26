@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # code from `mmcv.parallel.data_container.py`
 import functools
-from typing import Callable, Type, Union
 from collections import OrderedDict
+from typing import Callable, Type, Union
 
 import numpy as np
 import torch
