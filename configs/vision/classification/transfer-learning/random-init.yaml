@@ -83,7 +83,7 @@ model:
       input: "output"
       args:
         reduction: "gap"
-        in_features: "{model.backbone.out_features}"
+        in_features: "{model.modules.backbone.out_features}"
         num_classes: "{const.num_classes}"
         return_logits: True # return logits instead of softmax probability.
     loss_fn:

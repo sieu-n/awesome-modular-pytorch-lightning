@@ -160,8 +160,10 @@ class MLDecoderClassificationHead(nn.Module):
         initial_num_features: int,
         num_classes: int,
         num_of_groups: int = None,
+        dropout: float = 0.0,
         decoder_embedding: int = 768,
         zsl: bool = False,
+        return_logits: bool = True,
     ):
         super(MLDecoderClassificationHead, self).__init__()
         embed_len_decoder = num_classes if num_of_groups is None else num_of_groups
@@ -176,13 +178,13 @@ class MLDecoderClassificationHead(nn.Module):
             query_embed = None
 
         # decoder
-        decoder_dropout = 0.1
         num_layers_decoder = 1
         dim_feedforward = 2048
+        assert dropout >= 0.0 and dropout <= 1.0
         layer_decode = _MLDecoderTransformerDecoderLayerOptimal(
             d_model=decoder_embedding,
             dim_feedforward=dim_feedforward,
-            dropout=decoder_dropout,
+            dropout=dropout,
         )
         self.decoder = nn.TransformerDecoder(
             layer_decode, num_layers=num_layers_decoder
@@ -218,6 +220,10 @@ class MLDecoderClassificationHead(nn.Module):
         self.decoder.group_fc = _MLDecoderGroupFC(embed_len_decoder)
         self.train_wordvecs = None
         self.test_wordvecs = None
+
+        # build activation.
+        if not return_logits:
+            self.output_activation = nn.Softmax(dim=1)
 
     def forward(self, x):
         if len(x.shape) == 4:  # [bs,2048, 7,7]
@@ -259,4 +265,7 @@ class MLDecoderClassificationHead(nn.Module):
             h_out = out_extrap.flatten(1)
         h_out += self.decoder.duplicate_pooling_bias
         logits = h_out
+
+        if hasattr(self, "output_activation"):
+            logits = self.output_activation(logits)
         return logits
