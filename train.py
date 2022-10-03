@@ -43,9 +43,7 @@ if __name__ == "__main__":
     # train
     save_path = "checkpoints/model_state_dict.pth"
     if args.root_dir is None:
-        root_dir = os.path.join(
-            f"{experiment.exp_dir}/checkpoints", experiment.experiment_name
-        )
+        root_dir = experiment.exp_dir
     else:
         root_dir = os.path.join(args.root_dir, experiment.experiment_name)
     epochs = cfg["training"]["epochs"]
