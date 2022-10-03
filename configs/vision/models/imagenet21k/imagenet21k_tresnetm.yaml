@@ -1,12 +1,10 @@
 # use backbone from https://github.com/Alibaba-MIIL/ImageNet21K
 model:
-  backbone:
-    TYPE: "timm"
-    ID: "tresnet_m_miil_in21k"
-    cfg:
-      pretrained: True
-    out_features: 2048
   modules:
-    classifier:
+    backbone:
+      name: "TimmNetwork"
       args:
-        in_features: 2048
+        name: "tresnet_m_miil_in21k"
+        args:
+          pretrained: True
+      out_features: 2048

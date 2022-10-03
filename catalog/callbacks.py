@@ -1,4 +1,8 @@
 # callback catalog
+from algorithms.gradient_noise import (  # noqa
+    AdditiveGradientNoiseCallback,
+    DecayingGradientNoiseCallback,
+)
 from utils.callbacks import *  # noqa
 
 # utils

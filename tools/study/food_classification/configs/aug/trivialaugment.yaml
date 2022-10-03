@@ -1,0 +1,43 @@
+transform:
+  [
+    [
+      "trn,val",
+      [
+        {
+          "name": "Resize",
+          "args": { "size": [224, 224], "interpolation": "bilinear" },
+        },
+      ],
+    ],
+    [
+      "trn",
+      [
+        {
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
+        },
+        {
+          "name": "TorchvisionTransform",
+          "args":
+            {
+              "name": "TrivialAugmentWide",
+              "args": { "num_magnitude_bins": 31 },
+            },
+        },
+      ],
+    ],
+    [
+      "trn,val",
+      [
+        { "name": "ImageToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+            },
+        },
+      ],
+    ],
+  ]

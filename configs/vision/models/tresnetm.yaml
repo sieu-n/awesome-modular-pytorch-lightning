@@ -1,7 +1,0 @@
-model:
-  backbone:
-    TYPE: "timm"
-    ID: "tresnet_m"
-    cfg:
-      pretrained: False
-    out_features: 2048

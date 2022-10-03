@@ -90,7 +90,8 @@ class BaseFinetuning(Callback):
             ]
         else:
             # compatibility to load from old checkpoints before PR #11887
-            self._internal_optimizer_metadata = state_dict  # type: ignore[assignment]
+            # type: ignore[assignment]
+            self._internal_optimizer_metadata = state_dict
 
     def on_fit_start(
         self, trainer: "pl.Trainer", pl_module: "pl.LightningModule"

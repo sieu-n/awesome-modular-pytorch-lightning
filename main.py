@@ -7,14 +7,14 @@ import torch
 from torch.utils.data import DataLoader
 from torchinfo import summary as print_model_summary
 from utils.configs import merge_config
+from utils.experiment import apply_dataset_mapping as _apply_dataset_mapping
 from utils.experiment import apply_transforms
-from utils.experiment import build_dataset_mapping as _build_dataset_mapping
 from utils.experiment import build_initial_transform as _build_initial_transform
 from utils.experiment import build_transforms as _build_transforms
 from utils.experiment import initialize_environment as _initialize_environment
 from utils.experiment import print_to_end
 from utils.logging import create_logger
-from utils.visualization.utils import plot_samples_from_dataset
+from utils.visualization import plot_samples_from_dataset
 
 
 class Experiment:
@@ -35,8 +35,7 @@ class Experiment:
 
     def initialize_environment(self, cfg):
         print_to_end("=")
-        self.experiment_name = _initialize_environment(cfg)
-        self.exp_dir = f"results/{self.experiment_name}"
+        self.experiment_name, self.exp_dir = _initialize_environment(cfg)
         # set `experiment_name` as os.environ
         os.environ["EXPERIMENT_NAME"] = self.experiment_name
         # initialize seed
@@ -109,22 +108,22 @@ class Experiment:
                 "(3/5) `transform` is not defined in config. Skipping transformations."
             )
             transforms = {}
-        # 4. apply dataset wrappers such as "SubsetDataset"
-        subsets = datasets.keys()
-        dataset_mapping = self.get_dataset_mapping(
-            mapping_cfg=dataset_cfg.get("mapping", {}), subset_list=subsets
-        )
 
-        # 5. actually apply transformations.
+        # 4. actually apply transformations.
+        subsets = datasets.keys()
         datasets = {
             subset: apply_transforms(
                 datasets[subset], initial_transform, transforms.get(subset, None)
             )
             for subset in subsets
         }
-        datasets = {
-            subset: dataset_mapping[subset](datasets[subset]) for subset in subsets
-        }
+
+        # 5. apply dataset mapping such as "SubsetDataset". These are differnt from transforms
+        # since they refernece the entire dataset and can change the length of the dataset as
+        # opposed to transforms that are applied to single samples.
+        datasets = self.apply_dataset_mapping(
+            datasets, mapping_cfg=dataset_cfg.get("mapping", {}), subset_list=subsets
+        )
 
         # plot samples after data augmentation
         if self.debug_cfg and "view_train_augmentation" in self.debug_cfg:
@@ -245,31 +244,28 @@ class Experiment:
             const_cfg=const_cfg,
         )
 
-    def get_dataset_mapping(
+    def apply_dataset_mapping(
         self,
+        base_datasets,
         mapping_cfg,
         subset=None,
         subset_list=None,
         const_cfg={},
     ):
-        # build list of transformations using arguments of cfg["transform"]
-        dataset_mapper = _build_dataset_mapping(
+        if subset_list:
+            # constrain subsets when `subset_list` is specified.
+            base_datasets = {subset: base_datasets[subset] for subset in subset_list}
+        mapped_dataset = _apply_dataset_mapping(
+            base_datasets,
             mapping_cfg=mapping_cfg,
             const_cfg=const_cfg,
         )
-        if subset_list:
-            dataset_mapper = {
-                subset: dataset_mapper[subset]
-                if subset in dataset_mapper
-                else lambda x: x
-                for subset in subset_list
-            }
         # return every subset as a dictionary if `subset` is None
         if subset is None:
             # datasets: dict{subset_key: torch.utils.data.Dataset, ...}
-            return dataset_mapper
+            return mapped_dataset
         else:
-            return dataset_mapper[subset]
+            return mapped_dataset[subset]
 
     def get_transform(
         self,

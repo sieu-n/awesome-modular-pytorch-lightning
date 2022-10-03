@@ -1,0 +1,70 @@
+transform: [
+    [
+      "trn,val",
+      [
+        {
+          "name": "Resize",
+          "args": { "size": [224, 224], "interpolation": "bilinear" },
+        },
+      ],
+    ],
+
+    [
+      "trn",
+      [
+        {
+          "name": "RandomResizedCropAndInterpolation",
+          "args":
+            {
+              "size": 224,
+              "scale": [0.08, 1.0],
+              "ratio": [0.75, 1.3333],
+              "interpolation": "random",
+            },
+        },
+        {
+          "name": "TorchvisionTransform",
+          "args":
+            {
+              "name": "TrivialAugmentWide",
+              "args": { "num_magnitude_bins": 31 },
+            },
+        },
+
+        {
+          "name": "TorchvisionTransform",
+          "args": { "name": "RandomHorizontalFlip" },
+        },
+      ],
+    ],
+    [
+      # standard approach to use images cropped to the central 87.5% for validation
+      "val,test",
+      [
+        {
+          "name": "Resize",
+          "args": { "size": [256, 256], "interpolation": "bilinear" },
+        },
+        {
+          "name": "TorchvisionTransform",
+          "args": { "name": "CenterCrop", "args": { "size": [224, 224] } },
+        },
+        # more data augmentation (rand augment, auto augment, ...)
+      ],
+    ],
+
+    [
+      "trn,val",
+      [
+        { "name": "ImageToTensor", "args": {} },
+        {
+          "name": "Normalize",
+          "args":
+            {
+              "mean": "{const.normalization_mean}",
+              "std": "{const.normalization_std}",
+            },
+        },
+      ],
+    ],
+  ]

@@ -45,7 +45,7 @@ training:
     mpjpe:
       when: "val,test"
       name: SubsetMetric
-      args: 
+      args:
         name: MPJPE
         num_subsets: 15 # number of actions
         get_avg: True

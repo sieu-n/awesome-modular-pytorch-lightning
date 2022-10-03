@@ -2,8 +2,8 @@ from copy import deepcopy
 from typing import List
 
 import catalog
-import torch
 import numpy as np
+import torch
 from utils.data_container import DataContainer
 
 from . import _BaseTransform, _KeyTransform
@@ -144,6 +144,8 @@ class AssertShape(_KeyTransform):
         self.shape = shape
 
     def transform(self, d):
-        assert d.shape == self.shape, f"Expected shape of `{self.key}` to have \
+        assert (
+            d.shape == self.shape
+        ), f"Expected shape of `{self.key}` to have \
             `{self.shape} but found {type(d)} of shape `{d.shape}`."
         return d

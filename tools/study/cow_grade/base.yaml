@@ -64,9 +64,9 @@ transform:
 model:
   backbone:
     TYPE: "timm"
-    ID: "tresnet_m_miil_in21k"
+    ID: "resnet50"
     cfg:
-      pretrained: True
+      pretrained: False
     out_features: 2048
   modules:
     classifier:
@@ -80,8 +80,6 @@ model:
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
-      args:
-        label_smoothing: 0.1
 
 dataloader:
   base_dataloader:

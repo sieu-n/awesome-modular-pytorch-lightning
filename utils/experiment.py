@@ -1,6 +1,7 @@
 import json
 import os
 import pickle
+import warnings
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -18,34 +19,30 @@ from .verbose import set_verbose
 ########################################################################
 # Find transforms and build dataset.
 ########################################################################
-def build_dataset_mapping(mapping_cfg, const_cfg):
+def apply_dataset_mapping(base_datasets, mapping_cfg, const_cfg):
     # returns: dict{subset_key: [t1, t2, ...], ...}
-    mappings = {}
     for subsets, d_configs in deepcopy(mapping_cfg):
-        t = []
-        # for each element of transforms,
+        # for each element of dataset mappings,
         for d_config in d_configs:
+            # 1. build components of dataset mapping
             f_name, kwargs = d_config["name"], d_config.get("args", {})
             # find transform from name
             data_mapper = catalog.dataset_mapping.get(f_name)
             # build transform using arguments.
-            kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
-            t.append(lambda base_dataset: data_mapper(base_dataset, **kwargs))
+            # feed const data such as label map.
+            kwargs["const_cfg"] = const_cfg
 
-        for subset in subsets.split(","):
-            # add single transform
-            mappings[subset] = mappings.get(subset, []) + t
+            # 2. apply dataset mapping to each subset specified.
+            for subset in subsets.split(","):
+                if subset in base_datasets:
+                    base_datasets[subset] = data_mapper(base_datasets[subset], **kwargs)
+                else:
+                    warnings.warn(
+                        f"{subset} was found in dataset mappings but no {subset} of \
+                                    dataset was not provided."
+                    )
 
-    def group(mapping_list):
-        def apply_mapping(base_dataset):
-            dataset = base_dataset
-            for build_mapping in mapping_list:
-                dataset = build_mapping(dataset)
-            return dataset
-
-        return apply_mapping
-
-    return {subset: group(mappings[subset]) for subset in mappings.keys()}
+    return base_datasets
 
 
 def build_transforms(transform_cfg, const_cfg):
@@ -59,7 +56,8 @@ def build_transforms(transform_cfg, const_cfg):
             # find transform from name
             transform_f = catalog.transforms.get(f_name)
             # build transform using arguments.
-            kwargs["const_cfg"] = const_cfg  # feed const data such as label map.
+            # feed const data such as label map.
+            kwargs["const_cfg"] = const_cfg
             t.append(transform_f(**kwargs))
 
         for subset in subsets.split(","):
@@ -124,10 +122,12 @@ def initialize_environment(
         verbose = cfg.get("VERBOSE", "DEFAULT")
         debug_mode = "TRUE" if ("DEBUG_MODE" in cfg and cfg["DEBUG_MODE"]) else "FALSE"
 
-    # set os.environ
+    # set experiment name.
     set_verbose(verbose)
     timestamp = get_timestamp()
     experiment_name = f"{base_name}-{timestamp}"
+    exp_dir = f"results/{experiment_name}"
+
     os.environ["DEBUG_MODE"] = debug_mode
 
     if cfg:
@@ -141,7 +141,10 @@ def initialize_environment(
         print("")
         print("Final config after merging:", pretty_cfg)
 
-        filename = f"configs/logs/{experiment_name}"
+        cfg_log_dir = f"{exp_dir}/configs"
+        if not os.path.exists(cfg_log_dir):
+            os.makedirs(cfg_log_dir)
+        filename = f"{cfg_log_dir}/cfg"
 
         # pkl should be guaranteed to work.
         print(f"Saving config to: {filename}.pkl")
@@ -156,7 +159,7 @@ def initialize_environment(
         with open(filename + ".json", "w") as file:
             json.dump(cfg, file)
 
-    return experiment_name
+    return experiment_name, exp_dir
 
 
 def makedir(path):

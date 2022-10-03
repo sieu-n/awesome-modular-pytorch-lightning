@@ -4,8 +4,8 @@ import torchvision.transforms as TT
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from . import _ImageTransform
 from ..utils import str2interpolation
+from . import _ImageTransform
 
 
 class TorchvisionTransform(_ImageTransform):

@@ -35,7 +35,7 @@ training:
             args:
               dropout: 0.2
               in_features: 2048
-              num_classes: 10
+              num_classes: "{const.num_classes}"
               reduction: gap
               return_logits: true
             input: output

@@ -51,22 +51,19 @@ class _BaseLightningTrainer(_LightningModule):
         # 2. build modules
         if "modules" in model_cfg:
             print("(2/6) Building modules attached to the backbone model...")
-            modules = model_cfg["modules"]
-            for module_name, module_cfg in modules.items():
-                module = catalog.modules.build(
+            modules_cfg = model_cfg["modules"]
+            for module_name, module_cfg in modules_cfg.items():
+                _module = catalog.modules.build(
                     name=module_cfg["name"],
                     file=module_cfg.get("file", None),
-                    **module_cfg.get("args", {}),
+                    args=module_cfg.get("args", {}),
                 )
-                # load weights from url / filepath
+                # load pre-trained weights from url / filepath
                 if "weights" in module_cfg:
-                    print(
-                        f"Loading pretrained `{module_name}`: {module_cfg['weights']}"
-                    )
-                    module = load_model_weights(model=module, **module_cfg["weights"])
+                    print(f"Using pretrained backbone: {module_cfg['weights']}")
+                    _module = load_model_weights(model=_module, **module_cfg["weights"])
 
-                setattr(self, module_name, module)
-
+                setattr(self, module_name, _module)
         else:
             print("(2/6) `model.modules` is not specified. Skipping building modules")
 

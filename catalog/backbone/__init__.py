@@ -1,8 +1,7 @@
-# model catalog
-from models.backbone.vision import *  # noqa
-
+# deprecated.
 # utils
 from .._get import _get
+from ..modules.backbone import *  # noqa
 
 
 def get(name):

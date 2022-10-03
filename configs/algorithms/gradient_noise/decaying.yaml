@@ -1,0 +1,8 @@
+# simple additive noise
+
+callbacks:
+  GradientNoise:
+    name: DecayingGradientNoiseCallback
+    args:
+      eta: 0.01
+      gamma: 0.55

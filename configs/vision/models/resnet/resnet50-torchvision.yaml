@@ -1,8 +1,10 @@
 model:
-  backbone:
-    TYPE: "torchvision"
-    ID: "resnet50"
-    cfg:
-      pretrained: False
-    drop_after: "avgpool"
-    out_features: 2048
+  modules:
+    backbone:
+      name: "TorchvisionNetwork"
+      args:
+        name: resnet50
+        drop_after: "avgpool"
+        args:
+          pretrained: false
+      out_features: 2048

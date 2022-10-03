@@ -317,7 +317,8 @@ class Human36AnnotationTemporalDataset(Human36AnnotationDataset):
         res = deepcopy(self.data[key])
         assert self.receptive_field == len(joints)
         res["temporal_joints"] = joints
-        res["joint"] = joints[sample_width]  # sample_width = self.receptive_field // 2
+        # sample_width = self.receptive_field // 2
+        res["joint"] = joints[sample_width]
         res["camera"] = self.cameras[subject_id][camera_idx]
         if self.get_precomputed_joints:
             res["precomputed_joints_2d"] = self.precomputed_joints[joint_key][

@@ -1,4 +1,5 @@
 # dataset catalog
+from data.dataset.utils import PreloadedDataset  # noqa
 from data.dataset.vision import (  # noqa
     Human36AnnotationDataset,
     Human36AnnotationTemporalDataset,

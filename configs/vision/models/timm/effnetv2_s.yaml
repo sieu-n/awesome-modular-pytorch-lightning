@@ -1,0 +1,9 @@
+model:
+  modules:
+    backbone:
+      name: "TimmNetwork"
+      args:
+        name: "efficientnetv2_s"
+        args:
+          pretrained: false
+      out_features: 1280

@@ -66,6 +66,7 @@ debug:
     subplot_dim: [4, 4]
     plot_size: 5
 
+    is_01: False
     normalization_mean: "{const.normalization_mean}"
     normalization_std: "{const.normalization_std}"
 

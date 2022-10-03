@@ -18,7 +18,7 @@ except ImportError:
     pass
 
 from lightning.base import _BaseLightningTrainer
-from utils.mmcv import send_datacontainers_to_device, unpack_datacontainers
+from utils.data_container import send_datacontainers_to_device, unpack_datacontainers
 
 
 class MMDetectionTrainer(_BaseLightningTrainer):

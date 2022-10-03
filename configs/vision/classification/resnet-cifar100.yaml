@@ -30,7 +30,7 @@ model:
       args:
         reduction: "gap"
         dropout: 0.2
-        num_classes: 100
+        num_classes: "{const.num_classes}"
         return_logits: True # return logits instead of softmax probability.
     loss_fn:
       name: "CrossEntropyLoss"
