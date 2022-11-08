@@ -1,6 +1,7 @@
 # dataset catalog
 from data.dataset.utils import PreloadedDataset  # noqa
 from data.dataset.vision import (  # noqa
+    DicomFolder,
     Human36AnnotationDataset,
     Human36AnnotationTemporalDataset,
     MMDetectionDataset,
