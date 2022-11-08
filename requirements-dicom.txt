@@ -1,0 +1,7 @@
+# requirements for processing DICOM files. Useful for processing medical images.
+nibabel
+pillow-jpls
+python-gdcm
+pylibjpeg 
+pylibjpeg-libjpeg 
+pydicom
