@@ -1,4 +1,4 @@
-name: "resnet50-bs256-sgd-lr0.01"
+name: "tresnetm-bs256-sgd-lr0.01-200epoch"
 
 model:
   modules:
@@ -37,7 +37,7 @@ dataloader:
 training:
   ID: "ClassificationTrainer"
 
-  epochs: 100
+  epochs: 200
   lr: 0.01
   optimizer: "sgd"
 
