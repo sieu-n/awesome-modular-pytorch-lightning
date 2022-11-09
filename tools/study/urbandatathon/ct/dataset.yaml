@@ -13,12 +13,28 @@ debug:
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "DicomFolder"
+    name: "PreloadedDataset"
     args:
-      root: "../CXR_train"
+      name: "TorchvisionDataset"
+      args:
+        name: "ImageFolder"
   dataset_subset_cfg:
-    trn: {}
-    val: {}
+    trn:
+      args:
+        args:
+          args:
+            root: "/home/hackathon/jupyter/storage/CT/Train"
+    val:
+      args:
+        args:
+          args:
+            root: "/home/hackathon/jupyter/storage/CT/Val"
+    
+    predict:
+      name: "ImagesInsideFolder"
+      args:
+        root: "/home/hackathon/jupyter/storage/CT/ct_new"
+
   initial_transform:
     name: "TupleToClassificationData"
 
