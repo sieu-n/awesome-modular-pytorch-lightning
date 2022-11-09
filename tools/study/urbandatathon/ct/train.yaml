@@ -81,5 +81,5 @@ debug:
 
 # other useful configs.
 wandb:
-  project: "urban-datathon-CXR"
+  project: "urban-datathon-CT"
   group: "baseline"

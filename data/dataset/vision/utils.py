@@ -12,4 +12,4 @@ class ImagesInsideFolder(ImageFolder):
         super().__init__(Path(root).parents[0], *args, **kwargs)
     
     def find_classes(self, root):
-        return ([self.folder_name], {self.folder_name: None})
+        return ([self.folder_name], {self.folder_name: -1})
