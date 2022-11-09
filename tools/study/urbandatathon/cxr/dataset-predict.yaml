@@ -13,23 +13,12 @@ debug:
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_base_cfg:
-    name: "PreloadedDataset"
+    name: "DicomFolder"
     args:
-      name: "TorchvisionDataset"
-      args:
-        name: "ImageFolder"
+      root: "../CXR_train"
   dataset_subset_cfg:
-    trn:
-      args:
-        args:
-          args:
-            root: "/home/hackathon/jupyter/storage/CT/Train"
-    val:
-      args:
-        args:
-          args:
-            root: "/home/hackathon/jupyter/storage/CT/Val"
-
+    trn: {}
+    val: {}
   initial_transform:
     name: "TupleToClassificationData"
 
@@ -74,10 +63,7 @@ const:
   task: "image classification"
   normalization_mean: [0.485, 0.456, 0.406]
   normalization_std: [0.229, 0.224, 0.225]
-  num_classes: 5
+  num_classes: 2
   label_map:
-    - ILD
-    - Lung_Cancer
-    - Normal
-    - pneumonia
-    - pneumothorax
+    - "normal"
+    - "abnormal"
