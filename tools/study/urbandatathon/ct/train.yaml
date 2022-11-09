@@ -1,4 +1,4 @@
-name: "resnet50-bs265-sgd-lr0.01"
+name: "resnet50-bs256-sgd-lr0.01"
 
 model:
   modules:
@@ -32,13 +32,13 @@ callbacks:
 
 dataloader:
   base_dataloader:
-    batch_size: 128
+    batch_size: 256
 
 training:
   ID: "ClassificationTrainer"
 
   epochs: 100
-  lr: 0.1
+  lr: 0.01
   optimizer: "sgd"
 
   optimizer_cfg:

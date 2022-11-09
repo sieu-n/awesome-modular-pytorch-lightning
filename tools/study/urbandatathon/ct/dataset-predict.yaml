@@ -1,7 +1,7 @@
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
   dataset_subset_cfg:
-    predict:
+    test:
       name: "ImagesInsideFolder"
       args:
         root: "/home/hackathon/jupyter/storage/CT/ct_new"
@@ -12,7 +12,7 @@ dataset:
 transform:
   [
     [
-      "trn,val",
+      "trn,val,test",
       [
         {
           "name": "Resize",
@@ -31,7 +31,7 @@ transform:
       ],
     ],
     [
-      "trn,val",
+      "trn,val,test",
       [
         { "name": "ImageToTensor", "args": {} },
         {

@@ -1,7 +1,7 @@
 transform:
   [
     [
-      "trn,val",
+      "trn,val,test",
       [
         {
           "name": "Resize",
@@ -27,7 +27,7 @@ transform:
       ],
     ],
     [
-      "trn,val",
+      "trn,val,test",
       [
         { "name": "ImageToTensor", "args": {} },
         {
