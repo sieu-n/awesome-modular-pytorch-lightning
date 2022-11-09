@@ -63,7 +63,10 @@ const:
   task: "image classification"
   normalization_mean: [0.485, 0.456, 0.406]
   normalization_std: [0.229, 0.224, 0.225]
-  num_classes: 2
+  num_classes: 5
   label_map:
-    - "normal"
-    - "abnormal"
+    - ILD
+    - Lung_Cancer
+    - Normal
+    - pneumonia
+    - pneumothorax

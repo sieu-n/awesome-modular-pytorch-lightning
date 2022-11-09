@@ -1,6 +1,7 @@
 from torchvision.datasets import DatasetFolder
 import pydicom as dicom
 import cv2
+from PIL import Image
 import numpy as np
 from typing import Optional, Callable, Any
 
@@ -13,11 +14,15 @@ def load_dicom(path):
     img=dicom.dcmread(path)
     img.PhotometricInterpretation = 'YBR_FULL'
     data = img.pixel_array
+    
+    # normalize each image to [0, 255]
     data = data - np.min(data)
     if np.max(data) != 0:
         data = data / np.max(data)
     data=(data * 255).astype(np.uint8)
-    return cv2.cvtColor(data, cv2.COLOR_GRAY2RGB)
+
+    # return as pil image with 3 channels for convenience.
+    return Image.fromarray(cv2.cvtColor(data, cv2.COLOR_GRAY2RGB))
 
 
 class DicomFolder(DatasetFolder):
