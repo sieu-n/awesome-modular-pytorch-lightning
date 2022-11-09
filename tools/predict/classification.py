@@ -31,7 +31,7 @@ if __name__ == "__main__":
         datasets=datasets,
         dataloader_cfg=cfg["dataloader"],
     )
-    pred_dataloader = dataloaders["predict"]
+    pred_dataloader = dataloaders[args.dataset_key]
     model = experiment.setup_model(model_cfg=cfg["model"], training_cfg=cfg["training"])
     logger_and_callbacks = experiment.setup_callbacks(cfg=cfg)
 
