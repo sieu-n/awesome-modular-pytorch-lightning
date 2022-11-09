@@ -15,7 +15,7 @@ dataloader:
   base_dataloader:
     #num_workers: 2
     #pin_memory: False
-    shuffle: True
+    shuffle: False
     #prefetch_factor: 2
   trn:
     shuffle: True
