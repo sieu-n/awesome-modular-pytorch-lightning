@@ -216,7 +216,7 @@ class Experiment:
                 dataset_subset_cfg, dict
             ), "Expected a dict, got {}.".format(dataset_subset_cfg)
             dataset_subset_cfg = merge_config(
-                dataset_cfg["dataset_base_cfg"], dataset_subset_cfg
+                dataset_cfg.get("dataset_base_cfg", {}), dataset_subset_cfg
             )
             # create dataset.
             datasets[subset_key] = catalog.dataset.build(

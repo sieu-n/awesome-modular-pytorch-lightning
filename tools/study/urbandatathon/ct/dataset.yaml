@@ -23,14 +23,16 @@ dataset:
       args:
         args:
           args:
-            root: "./Food_dataset/train"
+            root: "/home/hackathon/jupyter/storage/CT/Train"
     val:
       args:
         args:
           args:
-            root: "./Food_dataset/val"
+            root: "/home/hackathon/jupyter/storage/CT/Val"
+
   initial_transform:
     name: "TupleToClassificationData"
+
 transform:
   [
     [
@@ -72,4 +74,10 @@ const:
   task: "image classification"
   normalization_mean: [0.485, 0.456, 0.406]
   normalization_std: [0.229, 0.224, 0.225]
-  num_classes: 100
+  num_classes: 5
+  label_map:
+    - ILD
+    - Lung_Cancer
+    - Normal
+    - pneumonia
+    - pneumothorax

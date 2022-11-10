@@ -1,0 +1,2 @@
+# requirements for processing tresnet models. Useful for processing medical images.
+git+https://github.com/mapillary/inplace_abn.git@v1.0.12

@@ -1,4 +1,5 @@
 model:
-  backbone:
-    name: "ResNet18"
-    out_features: 512
+  modules:
+    backbone:
+      name: "ResNet18"
+      out_features: 512

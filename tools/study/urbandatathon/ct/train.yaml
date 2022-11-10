@@ -1,0 +1,96 @@
+name: "tresnetm-bs256-sgd-lr0.01-200epoch"
+
+model:
+  modules:
+    classifier:
+      name: "ClassificationHead"
+      input: "output"
+      args:
+        reduction: "gap"
+        in_features: "{model.modules.backbone.out_features}"
+        num_classes: "{const.num_classes}"
+        return_logits: True # return logits instead of softmax probability.
+    loss_fn:
+      name: "CrossEntropyLoss"
+
+callbacks:
+  ModelCheckpoint:
+    name: LightningCallback
+    args:
+      name: ModelCheckpoint
+      args:
+        monitor: "epoch_val/accuracy"
+        mode: "max"
+        save_last: True
+        save_top_k: 1
+  LearningRateMonitor:
+    name: LightningCallback
+    args:
+      name: "LearningRateMonitor"
+      args:
+        logging_interval: "epoch"
+
+dataloader:
+  base_dataloader:
+    batch_size: 256
+
+training:
+  ID: "ClassificationTrainer"
+
+  epochs: 200
+  lr: 0.01
+  optimizer: "sgd"
+
+  optimizer_cfg:
+    lr: "{training.lr}"
+    momentum: 0.9
+    nesterov: True
+    weight_decay: 0.0
+
+  lr_scheduler:
+    name: "cosine"
+    args:
+      T_max: "{training.epochs}"
+    cfg:
+      interval: "epoch"
+
+  lr_warmup:
+    multiplier: 1
+    total_epoch: 5
+
+  metrics:
+    confusion_matrix:
+      interval: { "trn": 50, "val": 5 }
+      when: "trn,val,test"
+      name: TorchMetric
+      args:
+        name: "ConfusionMatrix"
+        args:
+          num_classes: "{const.num_classes}"
+      update:
+        preds: "logits"
+        target: "y"
+    loss:
+      when: "trn,val,test"
+      name: TorchMetric
+      args:
+        name: "MeanMetric"
+      update:
+        value: "cls_loss"
+    accuracy:
+      when: "trn,val,test"
+      name: TorchMetric
+      args:
+        name: "Accuracy"
+      update:
+        preds: "logits"
+        target: "y"
+
+debug:
+  network_summary:
+    input_shape: [3, 224, 224]
+
+# other useful configs.
+wandb:
+  project: "urban-datathon-CT"
+  group: "baseline"

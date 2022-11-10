@@ -1,36 +1,14 @@
-debug:
-  view_train_augmentation:
-    save_to: "vis/training_samples.png"
-
-    normalization_mean: "{const.normalization_mean}"
-    normalization_std: "{const.normalization_std}"
-
-    subplot_dim: [4, 4]
-    plot_size: 5
-  network_summary:
-    input_shape: [3, 256, 256]
-
 dataset:
   # list of parameters used when using `data.dataset.torchvision_dataset` to load `torchvision.datasets`
-  dataset_base_cfg:
-    name: "PreloadedDataset"
-    args:
-      name: "TorchvisionDataset"
-      args:
-        name: "ImageFolder"
   dataset_subset_cfg:
-    trn:
+    test:
+      name: "ImagesInsideFolder"
       args:
-        args:
-          args:
-            root: "./Food_dataset/train"
-    val:
-      args:
-        args:
-          args:
-            root: "./Food_dataset/val"
+        root: "/home/hackathon/jupyter/storage/CT/ct_new"
+
   initial_transform:
     name: "TupleToClassificationData"
+
 transform:
   [
     [
@@ -72,4 +50,10 @@ const:
   task: "image classification"
   normalization_mean: [0.485, 0.456, 0.406]
   normalization_std: [0.229, 0.224, 0.225]
-  num_classes: 100
+  num_classes: 5
+  label_map:
+    - ILD
+    - Lung_Cancer
+    - Normal
+    - pneumonia
+    - pneumothorax

@@ -1,8 +1,9 @@
 model:
-  backbone:
-    TYPE: "torchvision"
-    ID: "resnet18"
-    cfg:
-      pretrained: False
-    drop_after: "avgpool"
-    out_features: 512
+  modules:
+    backbone:
+      TYPE: "torchvision"
+      ID: "resnet18"
+      cfg:
+        pretrained: False
+      drop_after: "avgpool"
+      out_features: 512

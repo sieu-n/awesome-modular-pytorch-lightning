@@ -13,5 +13,6 @@ torch
 torchinfo
 torchmetrics
 tqdm
+typing
 ttach
 wandb

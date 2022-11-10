@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
 from argparse import ArgumentParser
-
-import pytorch_lightning as pl
+import pickle
 import torch
+import pytorch_lightning as pl
 from main import Experiment
 from utils.configs import read_configs
 
@@ -10,6 +11,7 @@ if __name__ == "__main__":
     # read config yaml paths
     parser = ArgumentParser()
     parser.add_argument("-c", "--configs", nargs="+", required=True)
+    parser.add_argument("-d", "--dataset_key", required=True)
     parser.add_argument("-w", "--weights", required=True)
     parser.add_argument("--is_ckpt", default=False, action="store_true")
     parser.add_argument("--root_dir", type=str, default=None)
@@ -31,7 +33,7 @@ if __name__ == "__main__":
         datasets=datasets,
         dataloader_cfg=cfg["dataloader"],
     )
-    train_dataloader, val_dataloader = dataloaders["trn"], dataloaders["val"]
+    pred_dataloader = dataloaders[args.dataset_key]
     model = experiment.setup_model(model_cfg=cfg["model"], training_cfg=cfg["training"])
     logger_and_callbacks = experiment.setup_callbacks(cfg=cfg)
 
@@ -52,5 +54,8 @@ if __name__ == "__main__":
         **cfg["trainer"],
     )
 
-    res = pl_trainer.test(model, val_dataloader)
-    print("Result:", res)
+    res = pl_trainer.predict(model, pred_dataloader)
+    with open(f"results/predictions-{Path(args.weight).name}.pkl") as f:
+        pickle.dump(dict(
+            logits=torch.cat(res),
+        ))

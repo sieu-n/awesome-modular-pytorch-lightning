@@ -3,7 +3,7 @@ from timm.data.mixup import mixup_target
 
 
 class MixupCutmix(Mixup):
-    def __init__(self, multilabel=True, **kwargs):
+    def __init__(self, multilabel=True, allow_odd=True, **kwargs):
         """Mixup/Cutmix that applies different params to each element or whole batch
         https://github.com/rwightman/pytorch-image-models/blob/e4360e6125bb0bb4279785810c8eb33b40af3ebd/timm/data/mixup.py#L90
         Args:
@@ -18,10 +18,18 @@ class MixupCutmix(Mixup):
             num_classes (int): number of classes for target
         """
         super().__init__(**kwargs)
+        self.allow_odd = allow_odd
         self.multilabel = multilabel
 
     def __call__(self, x, target):
-        assert len(x) % 2 == 0, "Batch size should be even when using this"
+        if len(x) % 2 == 1:
+            if self.allow_odd:
+                print(f"Batch size should be even when applying mixup. Got batch of size: {x.shape}, trimming last image.")
+                x = x[:-1]
+                target = target[:-1]
+            else:
+                raise ValueError("Batch size should be even when using this")
+
         if self.mode == "elem":
             lam = self._mix_elem(x)
         elif self.mode == "pair":
