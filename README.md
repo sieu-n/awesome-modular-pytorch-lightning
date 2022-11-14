@@ -717,4 +717,4 @@ Currently `torchvision` datasets are supported by `Experiment`, however you coul
 
 ## About me
 
-- Contact: sieunpark77@gmail.com / sp380@student.london.ac.uk / +82) 10-6651-6432
+- Contact: sieunpark77@gmail.com
